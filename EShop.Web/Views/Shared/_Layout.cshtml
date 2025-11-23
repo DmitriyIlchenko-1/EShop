@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en-Us">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale-1"/>
+    <title>@ViewData["Title"]</title>
+    @await RenderSectionAsync("additionalMeta", false);
+
+  
+    <link rel="stylesheet" href="~/css/site.css"/>
+
+    @*Scripts*@
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js" defer></script>
+
+
+    @await RenderSectionAsync("additionalHead", false);
+</head>
+<body>
+<header class="navbar fixed-top navbar-expand-lg navbar-light bg-white">
+     
+
+</header>
+<main>
+    <a asp-action="Logout" asp-controller="Identity">Logout
+    </a>
+    @RenderBody()
+</main>
+@await RenderSectionAsync("scripts", false);
+</body>
+</html>

@@ -1,0 +1,27 @@
+@using EShop.Core.Platform.Identity.Domain
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model EShop.Web.Models.Identity.LoginModel
+ 
+
+
+<form asp-controller="Identity" asp-action="LogIn" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label">Email address</label>
+        <input asp-for="Email" value="test@test.com" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label asp-for="Password" class="form-label">Password</label>
+        <input asp-for="Password" value="123" class="form-control">
+    </div>
+    <div class="mb-3 form-check">
+        <input asp-for="RememberMe" class="form-check-input">
+        <label class="form-check-label" asp-for="RememberMe">Remember me</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+@await Html.PartialAsync("_ExternalAuthentication");
+
+
+ 

@@ -1,0 +1,37 @@
+@model EShop.Web.Models.Common.CarouselWidgetViewComponentModel
+
+
+<div id="carousel@(Model.Id)" class="carousel slide">
+    <div class="carousel-indicators">
+        @for (int i = 0; i < Model.Items.Count; i++)
+        {
+            if (i == 0)
+            {
+                <button type="button" data-bs-target="#carousel@(Model.Id)" data-bs-slide-to="0" class="active"
+                        aria-current="true" aria-label="Slide 1">
+                </button>
+            }
+
+            <button type="button" data-bs-target="#carousel@(Model.Id)" data-bs-slide-to="@i"
+                    aria-label="Slide @i"></button>
+        }
+    </div>
+    <div class="carousel-inner">
+        @foreach (var item in Model.Items)
+        {
+            <div class="carousel-item @(Model.Items.First() == item ? "active" : null)">
+                <a href="@item.TargetUrl">
+                    <img src="@item.Image" class="d-block w-100" alt="@item.Caption"/>
+                </a>
+            </div>
+        }
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carousel@(Model.Id)" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carousel@(Model.Id)" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>

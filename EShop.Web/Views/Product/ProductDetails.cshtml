@@ -1,0 +1,28 @@
+@using EShop.Web.Components
+@model EShop.Web.Models.Catalog.ProductDetailVm
+ 
+ 
+ @{
+     ViewBag.Title = Model.MetaTitle ?? Model.Name;
+ }
+ 
+ @section additionalMeta{
+     <meta name="description" content="@Model.MetaDescriptions"/>
+ }
+ 
+ 
+ <nav aria-label="breadcrumb">
+     <ol class="breadcrumb">
+         <li class="breadcrumb-item">
+             <a href="~/">Home</a>
+         </li>
+         @if (Model.Categories.Any())
+         {
+             @await Component.InvokeAsync("CategoryBreadcrumb", new
+             {
+                 categoryIds = Model.Categories.Select(x => x.Id)
+             })
+         }
+         <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+     </ol>
+ </nav>

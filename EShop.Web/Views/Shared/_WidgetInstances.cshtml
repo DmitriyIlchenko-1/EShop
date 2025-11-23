@@ -1,0 +1,18 @@
+@model IEnumerable<EShop.Web.Models.Widgets.WidgetInstanceModel>
+
+@foreach (var widgetInstance in Model)
+{
+    if (widgetInstance.WidgetId == "HtmlWidget")
+    {
+        @Html.Raw(widgetInstance.HtmlData)
+    }
+    else
+    {
+        @await Component.InvokeAsync(widgetInstance.ViewComponentName,
+            new
+            {
+                widgetInstance
+            })
+        ;
+    }
+}

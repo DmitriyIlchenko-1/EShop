@@ -1,0 +1,33 @@
+@using EShop.Core.Platform.Common
+@using EShop.Core.Platform.Identity.Domain
+@using Microsoft.AspNetCore.Identity
+
+@inject IWorkContext WorkContent
+@inject SignInManager<User> SignInManager
+
+<nav class="header__nav">
+    <div class="header__actions">
+        <a class="header__link">
+            CONTACT US
+        </a>
+        <div class="dropdown">
+            
+        </div>
+    </div>
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <div class="header__profile">
+            <span class="header__greetings"></span>
+            <a class="header__link"></a>
+        </div>
+    }
+    else
+    {
+        <a class="header__link" asp-action="Logout" asp-controller="Identity">
+            Logout
+        </a>
+        <a class="header__link">
+
+        </a>
+    }
+</nav>

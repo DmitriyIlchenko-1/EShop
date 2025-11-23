@@ -1,0 +1,50 @@
+@model EShop.Web.Models.Identity.ApplicationRegistrationModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<form method="post" asp-route-returnUrl="@ViewData["ReturnUrl"]">
+    <div>
+        <label asp-for="Email">Email</label>
+        <input asp-for="Email" type="email"/>
+    </div>
+    <div>
+        <label asp-for="FirstName">First Name</label>
+        <input asp-for="FirstName"/>
+    </div>
+    <div>
+        <label asp-for="LastName">Last Name</label>
+        <input asp-for="LastName"/>
+    </div>
+    <div>
+        <label asp-for="BirthDay">The date of birth</label>
+        <input   asp-for="BirthDay"   type="date"
+               max="@DateTime.Now.ToString("yyyy-MM-dd")"
+               min="@DateTime.Now.AddYears(-100).ToString("yyyy-MM-dd")"/>
+    </div>
+    <fieldset>
+        <legend>Choose your gender</legend>
+        <div>
+            <label for="gender-male">Male</label>
+            <input id="gender-male" readonly asp-for="Gender" value="Male" type="radio"/>
+        </div>
+        <div>
+            <label for="gender-female">Female</label>
+            <input id="gender-female" readonly asp-for="Gender" value="Female" type="radio"/>
+        </div>
+
+    </fieldset>
+    <div>
+        <label asp-for="Password">Password</label>
+        <input asp-for="Password" type="password"/>
+    </div>
+    
+    <div>
+        <label asp-for="ConfirmPassword">Confirm your password</label>
+        <input asp-for="ConfirmPassword" type="password"/>
+    </div>
+    <button>Submit</button>
+</form>
+
+@await Html.PartialAsync("_ExternalAuthentication");

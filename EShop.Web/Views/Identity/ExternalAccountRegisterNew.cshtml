@@ -1,0 +1,39 @@
+@model EShop.Web.Models.Identity.ExternalRegistrationModel
+
+
+<form method="post" asp-action="ExternalAccountRegisterNew" asp-controller="Identity"
+      asp-route-returnUrl="@ViewData["returnUrl"]">
+    <div>
+        <label asp-for="Email">Email</label>
+        <input readonly asp-for="Email" value="@Model.Email"/>
+    </div>
+    <div>
+        <label asp-for="FirstName">Name</label>
+        <input readonly asp-for="Email" value="@Model.FirstName"/>
+    </div>
+    <div>
+        @*TODO: figure out how to make it readonly only if the last name is missing*@
+        <label asp-for="LastName">Last name</label>
+        <input asp-for="LastName" value="@Model.LastName"/>
+    </div>
+    <div>
+        <label asp-for="BirthDay">The date of birth</label>
+        <input readonly asp-for="BirthDay" value="@Model.BirthDay" type="date"
+               max="@DateTime.Now.ToString("yyyy-MM-dd")"
+               min="@DateTime.Now.AddYears(-100).ToString("yyyy-MM-dd")"/>
+    </div>
+    <fieldset>
+        <legend>Choose your gender</legend>
+        <div>
+            <label for="gender-male">Male</label>
+            <input id="gender-male" readonly asp-for="Gender" value="Male" type="radio"/>
+        </div>
+        <div>
+            <label for="gender-female">Female</label>
+            <input id="gender-female" readonly asp-for="Gender" value="Female" type="radio"/>
+        </div>
+
+    </fieldset>
+
+    <button>Submit</button>
+</form>

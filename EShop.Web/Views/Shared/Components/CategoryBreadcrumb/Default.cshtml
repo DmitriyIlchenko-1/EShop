@@ -1,0 +1,10 @@
+@model List<EShop.Web.Models.Common.BreadcrumModel>
+
+@foreach (var item in Model)
+{
+    <li class="breadcrumb-item">
+        <a href="~/@item.Url">@item.RouteName</a>
+    </li>
+}
+
+ 

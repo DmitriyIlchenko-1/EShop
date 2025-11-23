@@ -1,0 +1,20 @@
+ 
+@using EShop.Core.Platform.Identity.Domain
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject SignInManager<User> SignInManager
+
+<div>
+    <form method="post">
+        @foreach (var scheme in await SignInManager.GetExternalAuthenticationSchemesAsync())
+        {
+            <button formmethod="post"
+                    asp-action="ExternalLogin"
+                    asp-controller="Identity"
+                    asp-route-returnUrl=@ViewData["ReturnUrl"]
+                    asp-route-provider="@scheme.Name"
+            >@scheme.DisplayName</button>
+        }
+    </form>
+
+</div>
