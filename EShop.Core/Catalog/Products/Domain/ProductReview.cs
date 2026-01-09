@@ -18,7 +18,7 @@ internal class ProductReviewMap : IEntityTypeConfiguration<ProductReview>
             .OnDelete(DeleteBehavior.Cascade);
         builder
             .HasMany(x => x.Replies)
-            .WithOne()
+            .WithOne(x => x.ProductReview)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -36,7 +36,7 @@ public class ProductThumbnail
 
     public int StockQuantity { get; set; }
 
-    public Media ThumbnailImage { get; set; }
+    public MediaFile ThumbnailImage { get; set; }
 
     public string ThumbnailUrl { get; set; }
 
@@ -55,9 +55,6 @@ public class ProductThumbnail
             IsVisibleIndividually = product.IsVisibleIndividually,
             IsAllowToOrder = product.IsAllowToOrder,
             StockQuantity = product.StockQuantity,
-            ReviewsCount = product.ReviewsCount,
-            RatingAverage = product.RatingAverage,
-            ThumbnailImage = product.ThumbnailImage
         };
     }
 }

@@ -1,7 +1,10 @@
 using EShop.Core.Catalog.Configuration;
+using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Data;
+using EShop.Infrastructure.Data;
 using EShop.Infrastructure.Http;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Core.Catalog.Products.Services;
 
@@ -39,12 +42,36 @@ public class RecentlyViewedProductsService : IRecentlyViewedProductsService
         };
 
         cookies.Append(CookieNames.RecentlyViewedProducts,
-            string.Join(',', newProductIds
-                .Take(_catalogSettings.RecentlyViewedProductsNumber)),
+            string.Join(',',
+                newProductIds
+                    .Take(_catalogSettings.RecentlyViewedProductsNumber)),
             options);
     }
 
-    private IEnumerable<int> GetRecentlyViewedProductIds(int count)
+    public async Task<IList<Product>> GetRecentlyViewedProducts(int count, int? productToSkipId = null)
+    {
+        var productIds = GetRecentlyViewedProductIds(count, productToSkipId);
+        if (!productIds.Any())
+        {
+            return [];
+        }
+
+        var products = await _db
+            .Products.AsNoTracking()
+            .Where(x => productIds.Contains(x.Id))
+            .Where(x => x.Published)
+            .SelectSummaryOnly()
+            .OrderBy(x => x.Id)
+            .Take(count)
+            .ToListAsync();
+        
+        //TODO: order property.
+        return products;
+
+
+    }
+
+    private IEnumerable<int> GetRecentlyViewedProductIds(int count, int? productToSkipId = null)
     {
         var request = _httpContextAccessor?.HttpContext?.Request;
         if (request != null && request.Cookies.TryGetValue(CookieNames.RecentlyViewedProducts, out string value))
@@ -52,11 +79,16 @@ public class RecentlyViewedProductsService : IRecentlyViewedProductsService
             var ids = value
                 .Split(',')
                 .Select(x => Convert.ToInt32(x))
-                .Where(id => id > 0)
+                .Where(id => id > 0);
+
+            if (productToSkipId.HasValue)
+            {
+                ids = ids.Where(x => x != productToSkipId.Value);
+            }
+
+            return ids
                 .Distinct()
                 .Take(count);
-
-            return ids;
         }
 
         return [];

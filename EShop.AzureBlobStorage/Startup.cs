@@ -21,6 +21,6 @@ public class Startup : IEStartup
 
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IMediaStorageProvider, TestProvider>();
+        
     }
 }

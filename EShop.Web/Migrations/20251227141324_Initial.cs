@@ -13,50 +13,6 @@ namespace EShop.Web.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Catalog_Brand",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    IsPublished = table.Column<bool>(type: "boolean", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Catalog_Brand", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Catalog_Category",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    Slug = table.Column<string>(type: "text", nullable: true),
-                    MetaDescriptions = table.Column<string>(type: "text", nullable: true),
-                    MetaTitle = table.Column<string>(type: "text", nullable: true),
-                    IncludeInMenu = table.Column<bool>(type: "boolean", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    IsPublished = table.Column<bool>(type: "boolean", nullable: false),
-                    IsRootParent = table.Column<bool>(type: "boolean", nullable: false),
-                    ParentId = table.Column<int>(type: "integer", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Catalog_Category", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Catalog_Category_Catalog_Category_ParentId",
-                        column: x => x.ParentId,
-                        principalTable: "Catalog_Category",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Catalog_ProductAttribute",
                 columns: table => new
                 {
@@ -97,11 +53,12 @@ namespace EShop.Web.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: true),
+                    Name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
                     IsBillingEnabled = table.Column<bool>(type: "boolean", nullable: false),
                     IsShippingEnabled = table.Column<bool>(type: "boolean", nullable: false),
                     IsCityEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    IsZipCodeEnabled = table.Column<bool>(type: "boolean", nullable: false)
+                    IsZipCodeEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -114,9 +71,9 @@ namespace EShop.Web.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    ColorHexValue = table.Column<string>(type: "text", nullable: true),
-                    DisplayLocate = table.Column<string>(type: "text", nullable: true),
+                    Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    ColorHexValue = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    DisplayLocate = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     DisplayOrder = table.Column<int>(type: "integer", nullable: false),
                     IsDefault = table.Column<bool>(type: "boolean", nullable: false),
                     MaxDays = table.Column<int>(type: "integer", nullable: true),
@@ -128,17 +85,25 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Content_Media",
+                name: "Content_MediaFile",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Filename = table.Column<string>(type: "text", nullable: true),
-                    UploadedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FileName = table.Column<string>(type: "text", nullable: true),
+                    Alt = table.Column<string>(type: "text", nullable: true),
+                    MimeType = table.Column<string>(type: "text", nullable: true),
+                    MediaType = table.Column<string>(type: "text", nullable: true),
+                    Size = table.Column<int>(type: "integer", nullable: false),
+                    Width = table.Column<int>(type: "integer", nullable: true),
+                    Height = table.Column<int>(type: "integer", nullable: true),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Deleted = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Content_Media", x => x.Id);
+                    table.PrimaryKey("PK_Content_MediaFile", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -296,8 +261,9 @@ namespace EShop.Web.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    CityId = table.Column<int>(type: "integer", nullable: false)
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    CityId = table.Column<int>(type: "integer", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -307,7 +273,73 @@ namespace EShop.Web.Migrations
                         column: x => x.CityId,
                         principalTable: "Common_City",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_Brand",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Description = table.Column<string>(type: "character varying(3000)", maxLength: 3000, nullable: true),
+                    Deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    IsPublished = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    MediaFileId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_Brand", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_Brand_Content_MediaFile_MediaFileId",
+                        column: x => x.MediaFileId,
+                        principalTable: "Content_MediaFile",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_Category",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Slug = table.Column<string>(type: "text", nullable: true),
+                    MetaTitle = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
+                    MetaDescription = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
+                    MetaKeywords = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ShowOnHomePage = table.Column<bool>(type: "boolean", nullable: false),
+                    IncludeInMenu = table.Column<bool>(type: "boolean", nullable: false),
+                    IsPublished = table.Column<bool>(type: "boolean", nullable: false),
+                    IsRootParent = table.Column<bool>(type: "boolean", nullable: false),
+                    Deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    ParentId = table.Column<int>(type: "integer", nullable: true),
+                    MediaFileId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_Category", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_Category_Catalog_Category_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Catalog_Category",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Catalog_Category_Content_MediaFile_MediaFileId",
+                        column: x => x.MediaFileId,
+                        principalTable: "Content_MediaFile",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -353,6 +385,8 @@ namespace EShop.Web.Migrations
                     Name = table.Column<string>(type: "text", nullable: true),
                     Slug = table.Column<string>(type: "text", nullable: true),
                     EntityId = table.Column<int>(type: "integer", nullable: false),
+                    EntityName = table.Column<string>(type: "text", nullable: true),
+                    Active = table.Column<bool>(type: "boolean", nullable: false),
                     EntityTypeId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -418,16 +452,15 @@ namespace EShop.Web.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FirstName = table.Column<string>(type: "text", nullable: true),
-                    LastName = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
-                    AddressLine1 = table.Column<string>(type: "text", nullable: true),
-                    AddressLine2 = table.Column<string>(type: "text", nullable: true),
-                    ZipCode = table.Column<string>(type: "text", nullable: true),
-                    CityId = table.Column<int>(type: "integer", nullable: true),
-                    DistrictId = table.Column<int>(type: "integer", nullable: true),
+                    FirstName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    LastName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    PhoneNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    AddressLine1 = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    AddressLine2 = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    ZipCode = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CityId = table.Column<int>(type: "integer", nullable: true),
+                    DistrictId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -444,6 +477,56 @@ namespace EShop.Web.Migrations
                         principalTable: "Common_District",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_Product",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(5000)", maxLength: 5000, nullable: true),
+                    ShortDescription = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    MetaTitle = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
+                    MetaDescription = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
+                    MetaKeywords = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Published = table.Column<bool>(type: "boolean", nullable: false),
+                    Deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    Sku = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
+                    Gtin = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
+                    HasOptions = table.Column<bool>(type: "boolean", nullable: false),
+                    IsAllowToOrder = table.Column<bool>(type: "boolean", nullable: false),
+                    ShowOnHomePage = table.Column<bool>(type: "boolean", nullable: false),
+                    HomePageDisplayOrder = table.Column<bool>(type: "boolean", nullable: false),
+                    IsVisibleIndividually = table.Column<bool>(type: "boolean", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    OldPrice = table.Column<decimal>(type: "numeric", nullable: true),
+                    SpecialPrice = table.Column<decimal>(type: "numeric", nullable: true),
+                    SpecialPriceEndsUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    SpecialPriceStartsUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ApprovedRatingSum = table.Column<int>(type: "integer", nullable: false),
+                    NotApprovedRatingSum = table.Column<int>(type: "integer", nullable: false),
+                    ApprovedReviewCount = table.Column<int>(type: "integer", nullable: false),
+                    NotApprovedReviewCount = table.Column<int>(type: "integer", nullable: false),
+                    StockQuantity = table.Column<int>(type: "integer", nullable: false),
+                    Height = table.Column<decimal>(type: "numeric", nullable: false),
+                    Weight = table.Column<decimal>(type: "numeric", nullable: false),
+                    Width = table.Column<decimal>(type: "numeric", nullable: false),
+                    Length = table.Column<decimal>(type: "numeric", nullable: false),
+                    BrandId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_Product", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_Product_Catalog_Brand_BrandId",
+                        column: x => x.BrandId,
+                        principalTable: "Catalog_Brand",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -504,73 +587,220 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Catalog_Product",
+                name: "Catalog_ProductAttribute_Mapping",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Description = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
-                    ShortDescription = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    Sku = table.Column<string>(type: "text", nullable: true),
-                    Gtin = table.Column<string>(type: "text", nullable: true),
-                    HasOptions = table.Column<bool>(type: "boolean", nullable: false),
-                    IsAllowToOrder = table.Column<bool>(type: "boolean", nullable: false),
-                    IsFeatured = table.Column<bool>(type: "boolean", nullable: false),
-                    IsVisibleIndividually = table.Column<bool>(type: "boolean", nullable: false),
-                    Price = table.Column<decimal>(type: "numeric", nullable: false),
-                    OldPrice = table.Column<decimal>(type: "numeric", nullable: true),
-                    SpecialPrice = table.Column<decimal>(type: "numeric", nullable: true),
-                    SpecialPriceEndsUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    SpecialPriceStartsUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    RatingAverage = table.Column<double>(type: "double precision", nullable: true),
-                    ReviewsCount = table.Column<int>(type: "integer", nullable: false),
-                    StockQuantity = table.Column<int>(type: "integer", nullable: false),
-                    Height = table.Column<decimal>(type: "numeric", nullable: false),
-                    Weight = table.Column<decimal>(type: "numeric", nullable: false),
-                    Width = table.Column<decimal>(type: "numeric", nullable: false),
-                    Length = table.Column<decimal>(type: "numeric", nullable: false),
-                    BrandId = table.Column<int>(type: "integer", nullable: false),
-                    ThumbnailImageId = table.Column<int>(type: "integer", nullable: false),
-                    VendorId = table.Column<int>(type: "integer", nullable: true),
-                    MetaDescriptions = table.Column<string>(type: "text", nullable: true),
-                    MetaTitle = table.Column<string>(type: "text", nullable: true),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    IsPublished = table.Column<bool>(type: "boolean", nullable: false),
-                    Slug = table.Column<string>(type: "text", nullable: true),
-                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastUpdatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    PublishedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<int>(type: "integer", nullable: false),
-                    LatestUpdatedById = table.Column<int>(type: "integer", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                    AttributeControlTypeId = table.Column<int>(type: "integer", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    IsRequired = table.Column<bool>(type: "boolean", nullable: false),
+                    ProductAttributeId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Catalog_Product", x => x.Id);
+                    table.PrimaryKey("PK_Catalog_ProductAttribute_Mapping", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Catalog_Product_Catalog_Brand_BrandId",
-                        column: x => x.BrandId,
-                        principalTable: "Catalog_Brand",
+                        name: "FK_Catalog_ProductAttribute_Mapping_Catalog_ProductAttribute_P~",
+                        column: x => x.ProductAttributeId,
+                        principalTable: "Catalog_ProductAttribute",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Catalog_Product_Content_Media_ThumbnailImageId",
-                        column: x => x.ThumbnailImageId,
-                        principalTable: "Content_Media",
+                        name: "FK_Catalog_ProductAttribute_Mapping_Catalog_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_ProductCategory",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    DisplayOrder = table.Column<byte>(type: "smallint", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_ProductCategory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductCategory_Catalog_Category_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Catalog_Category",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Catalog_Product_Platform_User_CreatedById",
-                        column: x => x.CreatedById,
+                        name: "FK_Catalog_ProductCategory_Catalog_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_ProductLink",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    LinkedProductId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_ProductLink", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductLink_Catalog_Product_LinkedProductId",
+                        column: x => x.LinkedProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductLink_Catalog_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_ProductSpecificationAttribute",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    SpecificationAttributeOptionId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_ProductSpecificationAttribute", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductSpecificationAttribute_Catalog_Product_Produ~",
+                        column: x => x.ProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductSpecificationAttribute_Catalog_Specification~",
+                        column: x => x.SpecificationAttributeOptionId,
+                        principalTable: "Catalog_SpecificationAttributeOption",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_ProductVariantAttributeCombination",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    BasePriceAmount = table.Column<decimal>(type: "numeric", nullable: true),
+                    BasePriceBaseAmount = table.Column<decimal>(type: "numeric", nullable: true),
+                    DeliveryTimeId = table.Column<int>(type: "integer", nullable: true),
+                    Gtin = table.Column<string>(type: "text", nullable: true),
+                    Height = table.Column<decimal>(type: "numeric", nullable: true),
+                    Weight = table.Column<decimal>(type: "numeric", nullable: true),
+                    Width = table.Column<decimal>(type: "numeric", nullable: true),
+                    Length = table.Column<decimal>(type: "numeric", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    ManufacturerPartNumber = table.Column<string>(type: "text", nullable: true),
+                    Price = table.Column<decimal>(type: "numeric", nullable: true),
+                    OldPrice = table.Column<decimal>(type: "numeric", nullable: true),
+                    SpecialPrice = table.Column<decimal>(type: "numeric", nullable: true),
+                    SpecialPriceEnd = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    SpecialPriceStarts = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    HashCode = table.Column<int>(type: "integer", nullable: false),
+                    RawAttributes = table.Column<string>(type: "text", nullable: true),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    QuantityUnitId = table.Column<int>(type: "integer", nullable: false),
+                    Sku = table.Column<string>(type: "text", nullable: true),
+                    StockQuantity = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_ProductVariantAttributeCombination", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductVariantAttributeCombination_Catalog_Product_~",
+                        column: x => x.ProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductVariantAttributeCombination_Common_DeliveryT~",
+                        column: x => x.DeliveryTimeId,
+                        principalTable: "Common_DeliveryTime",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Content_ProductMedia",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DisplayOrder = table.Column<byte>(type: "smallint", nullable: false),
+                    MediaFileId = table.Column<int>(type: "integer", nullable: true),
+                    MediaId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Content_ProductMedia", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Content_ProductMedia_Catalog_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Content_ProductMedia_Content_MediaFile_MediaFileId",
+                        column: x => x.MediaFileId,
+                        principalTable: "Content_MediaFile",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_ProductReview",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CommentText = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true),
+                    Rating = table.Column<int>(type: "integer", nullable: false),
+                    ReviewerName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    ReviewStatus = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_ProductReview", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductReview_Catalog_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductReview_Platform_User_UserId",
+                        column: x => x.UserId,
                         principalTable: "Platform_User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Catalog_Product_Platform_User_LatestUpdatedById",
-                        column: x => x.LatestUpdatedById,
-                        principalTable: "Platform_User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -686,221 +916,6 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Catalog_ProductAttribute_Mapping",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    AttributeControlTypeId = table.Column<int>(type: "integer", nullable: false),
-                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
-                    IsRequired = table.Column<bool>(type: "boolean", nullable: false),
-                    ProductAttributeId = table.Column<int>(type: "integer", nullable: false),
-                    ProductId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Catalog_ProductAttribute_Mapping", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductAttribute_Mapping_Catalog_ProductAttribute_P~",
-                        column: x => x.ProductAttributeId,
-                        principalTable: "Catalog_ProductAttribute",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductAttribute_Mapping_Catalog_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Catalog_Product",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Catalog_ProductCategory",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    DisplayOrder = table.Column<byte>(type: "smallint", nullable: false),
-                    ProductId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Catalog_ProductCategory", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductCategory_Catalog_Category_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Catalog_Category",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductCategory_Catalog_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Catalog_Product",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Catalog_ProductLink",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
-                    LinkedProductId = table.Column<int>(type: "integer", nullable: false),
-                    ProductId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Catalog_ProductLink", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductLink_Catalog_Product_LinkedProductId",
-                        column: x => x.LinkedProductId,
-                        principalTable: "Catalog_Product",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductLink_Catalog_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Catalog_Product",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Catalog_ProductReview",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Title = table.Column<string>(type: "text", nullable: true),
-                    CommentText = table.Column<string>(type: "text", nullable: true),
-                    Rating = table.Column<int>(type: "integer", nullable: false),
-                    ReviewerName = table.Column<string>(type: "text", nullable: true),
-                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    EditedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ReviewStatus = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    ProductId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Catalog_ProductReview", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductReview_Catalog_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Catalog_Product",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductReview_Platform_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Platform_User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Catalog_ProductSpecificationAttribute",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
-                    ProductId = table.Column<int>(type: "integer", nullable: false),
-                    SpecificationAttributeOptionId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Catalog_ProductSpecificationAttribute", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductSpecificationAttribute_Catalog_Product_Produ~",
-                        column: x => x.ProductId,
-                        principalTable: "Catalog_Product",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductSpecificationAttribute_Catalog_Specification~",
-                        column: x => x.SpecificationAttributeOptionId,
-                        principalTable: "Catalog_SpecificationAttributeOption",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Catalog_ProductVariantAttributeCombination",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    BasePriceAmount = table.Column<decimal>(type: "numeric", nullable: true),
-                    BasePriceBaseAmount = table.Column<decimal>(type: "numeric", nullable: true),
-                    DeliveryTimeId = table.Column<int>(type: "integer", nullable: true),
-                    Gtin = table.Column<string>(type: "text", nullable: true),
-                    Height = table.Column<decimal>(type: "numeric", nullable: true),
-                    Weight = table.Column<decimal>(type: "numeric", nullable: true),
-                    Width = table.Column<decimal>(type: "numeric", nullable: true),
-                    Length = table.Column<decimal>(type: "numeric", nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    ManufacturerPartNumber = table.Column<string>(type: "text", nullable: true),
-                    Price = table.Column<decimal>(type: "numeric", nullable: true),
-                    OldPrice = table.Column<decimal>(type: "numeric", nullable: true),
-                    SpecialPrice = table.Column<decimal>(type: "numeric", nullable: true),
-                    SpecialPriceEnd = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    SpecialPriceStarts = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    HashCode = table.Column<int>(type: "integer", nullable: false),
-                    RawAttributes = table.Column<string>(type: "text", nullable: true),
-                    ProductId = table.Column<int>(type: "integer", nullable: false),
-                    QuantityUnitId = table.Column<int>(type: "integer", nullable: false),
-                    Sku = table.Column<string>(type: "text", nullable: true),
-                    StockQuantity = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Catalog_ProductVariantAttributeCombination", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductVariantAttributeCombination_Catalog_Product_~",
-                        column: x => x.ProductId,
-                        principalTable: "Catalog_Product",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductVariantAttributeCombination_Common_DeliveryT~",
-                        column: x => x.DeliveryTimeId,
-                        principalTable: "Common_DeliveryTime",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Content_ProductMedia",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    DisplayOrder = table.Column<byte>(type: "smallint", nullable: false),
-                    MediaId = table.Column<int>(type: "integer", nullable: false),
-                    ProductId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Content_ProductMedia", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Content_ProductMedia_Catalog_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Catalog_Product",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Content_ProductMedia_Content_Media_MediaId",
-                        column: x => x.MediaId,
-                        principalTable: "Content_Media",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Catalog_ProductVariantAttributeValue",
                 columns: table => new
                 {
@@ -932,11 +947,12 @@ namespace EShop.Web.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ReplyText = table.Column<string>(type: "text", nullable: true),
-                    ReplierName = table.Column<string>(type: "text", nullable: true),
+                    ReplierName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ReplyText = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true),
+                    Deleted = table.Column<bool>(type: "boolean", nullable: false),
                     ReplyStatus = table.Column<int>(type: "integer", nullable: false),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    EditedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     ProductReviewId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -948,14 +964,24 @@ namespace EShop.Web.Migrations
                         column: x => x.ProductReviewId,
                         principalTable: "Catalog_ProductReview",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Catalog_Reply_Platform_User_UserId",
                         column: x => x.UserId,
                         principalTable: "Platform_User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Catalog_Brand_MediaFileId",
+                table: "Catalog_Brand",
+                column: "MediaFileId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Catalog_Category_MediaFileId",
+                table: "Catalog_Category",
+                column: "MediaFileId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Catalog_Category_ParentId",
@@ -966,21 +992,6 @@ namespace EShop.Web.Migrations
                 name: "IX_Catalog_Product_BrandId",
                 table: "Catalog_Product",
                 column: "BrandId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Catalog_Product_CreatedById",
-                table: "Catalog_Product",
-                column: "CreatedById");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Catalog_Product_LatestUpdatedById",
-                table: "Catalog_Product",
-                column: "LatestUpdatedById");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Catalog_Product_ThumbnailImageId",
-                table: "Catalog_Product",
-                column: "ThumbnailImageId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Catalog_ProductAttribute_Mapping_ProductAttributeId",
@@ -1098,9 +1109,9 @@ namespace EShop.Web.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Content_ProductMedia_MediaId",
+                name: "IX_Content_ProductMedia_MediaFileId",
                 table: "Content_ProductMedia",
-                column: "MediaId");
+                column: "MediaFileId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Content_ProductMedia_ProductId",
@@ -1270,16 +1281,16 @@ namespace EShop.Web.Migrations
                 name: "Catalog_Product");
 
             migrationBuilder.DropTable(
-                name: "Catalog_Brand");
-
-            migrationBuilder.DropTable(
-                name: "Content_Media");
-
-            migrationBuilder.DropTable(
                 name: "Platform_User");
 
             migrationBuilder.DropTable(
+                name: "Catalog_Brand");
+
+            migrationBuilder.DropTable(
                 name: "Common_Address");
+
+            migrationBuilder.DropTable(
+                name: "Content_MediaFile");
 
             migrationBuilder.DropTable(
                 name: "Common_District");

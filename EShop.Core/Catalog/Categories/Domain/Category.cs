@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using EShop.Core.Content.Media.Domain;
 using EShop.Infrastructure.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -15,26 +16,29 @@ internal class BrandMap : IEntityTypeConfiguration<Category>
             .WithMany(x => x.Children)
             .HasForeignKey(x => x.ParentId)
             .OnDelete(DeleteBehavior.Restrict); //TODO: what about 'No action'? Should look into it. 
+        
+        //If an image has already been uploaded for another entity - we will reuse it.
+        //If the image gets removed - set the NP to null.
+        builder
+            .HasOne(x => x.MediaFile)
+            .WithMany()
+            .HasForeignKey(x => x.MediaFileId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
 
 public class Category : BaseEntity, IAuditableEntity, ISoftDeletedEntity, IDisplayOrder
 {
-    [Required,StringLength(200)]
-    public string Name { get; set; }
+    [Required, StringLength(200)] public string Name { get; set; }
 
-    [StringLength(500)]
-    public string Description { get; set; }
-    
+    [StringLength(500)] public string Description { get; set; }
+
     //TODO: Do we need to keep it?
     public string Slug { get; set; }
-    
-    [StringLength(400)]
-    public string MetaTitle { get; set; }
-    [StringLength(400)]
-    public string MetaDescription { get; set; }
-    [StringLength(400)]
-    public string MetaKeywords { get; set; }
+
+    [StringLength(400)] public string MetaTitle { get; set; }
+    [StringLength(400)] public string MetaDescription { get; set; }
+    [StringLength(400)] public string MetaKeywords { get; set; }
     public DateTime CreatedOnUtc { get; set; }
     public DateTime ModifiedOnUtc { get; set; }
     public bool ShowOnHomePage { get; set; }
@@ -48,4 +52,8 @@ public class Category : BaseEntity, IAuditableEntity, ISoftDeletedEntity, IDispl
     public int? ParentId { get; set; }
 
     public List<Category> Children { get; set; }
+
+    public int? MediaFileId { get; set; }
+
+    public MediaFile MediaFile { get; set; }
 }

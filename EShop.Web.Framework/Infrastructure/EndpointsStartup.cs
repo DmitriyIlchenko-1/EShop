@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EShop.Web.Common.Infrustructure;
+namespace EShop.Web.Common.Infrastructure;
 
 public class EndpointsStartup : IEStartup
 {

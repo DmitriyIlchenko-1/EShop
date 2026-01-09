@@ -6,7 +6,7 @@ public interface IMediaStorageProvider : IProvider
 {
     Task DeleteMediaAsync(string fileName);
 
-    string GetMediaUrl(string fileName);
+    Task<string> GetMediaUrlAsync(string fileName);
 
     Task SaveMediaAsync(Stream mediaBinaryStream, string fileName, string mimeType = null);
 }

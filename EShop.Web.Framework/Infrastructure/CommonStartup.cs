@@ -1,16 +1,13 @@
 using System.Text.Json.Serialization;
-using EShop.Infrastructure;
 using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Http;
 using EShop.Infrastructure.Modules;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
-namespace EShop.Web.Common.Infrustructure;
+namespace EShop.Web.Common.Infrastructure;
 
 public class CommonStartup : IEStartup
 {

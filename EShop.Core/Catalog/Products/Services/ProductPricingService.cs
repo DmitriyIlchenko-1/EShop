@@ -41,11 +41,13 @@ public class ProductPricingService : IProductPricingService
             percentOfSaving = (int)(100 - Math.Ceiling((calculatedPrice / oldPrice.Value) * 100));
         }
 
-        return new CalculatedProductPrice(_currencyService)
+        return new CalculatedProductPrice
         {
             Price = calculatedPrice,
             OldPrice = oldPrice,
-            PercentOfSaving = percentOfSaving
+            PercentOfSaving = percentOfSaving,
+            PriceString = _currencyService.FormatCurrency(calculatedPrice),
+            OldPriceString = oldPrice.HasValue ? _currencyService.FormatCurrency(oldPrice.Value) : string.Empty
         };
     }
 }

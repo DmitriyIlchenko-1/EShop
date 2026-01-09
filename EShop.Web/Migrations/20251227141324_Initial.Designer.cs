@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EShop.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251115090609_Initial")]
+    [Migration("20251227141324_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -356,19 +356,35 @@ namespace EShop.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsDeleted")
+                    b.Property<bool>("Deleted")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(3000)
+                        .HasColumnType("character varying(3000)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
 
+                    b.Property<int?>("MediaFileId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MediaFileId");
 
                     b.ToTable("Catalog_Brand", (string)null);
                 });
@@ -381,13 +397,20 @@ namespace EShop.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IncludeInMenu")
+                    b.Property<bool>("Deleted")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsDeleted")
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IncludeInMenu")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsPublished")
@@ -396,22 +419,41 @@ namespace EShop.Web.Migrations
                     b.Property<bool>("IsRootParent")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("MetaDescriptions")
-                        .HasColumnType("text");
+                    b.Property<int?>("MediaFileId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MetaDescription")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<string>("MetaKeywords")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
 
                     b.Property<string>("MetaTitle")
-                        .HasColumnType("text");
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<DateTime>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<int?>("ParentId")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("ShowOnHomePage")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Slug")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MediaFileId");
 
                     b.HasIndex("ParentId");
 
@@ -452,21 +494,28 @@ namespace EShop.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BrandId")
+                    b.Property<int>("ApprovedRatingSum")
                         .HasColumnType("integer");
 
-                    b.Property<int>("CreatedById")
+                    b.Property<int>("ApprovedReviewCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("BrandId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Description")
-                        .HasMaxLength(400)
-                        .HasColumnType("character varying(400)");
+                        .HasMaxLength(5000)
+                        .HasColumnType("character varying(5000)");
 
                     b.Property<string>("Gtin")
-                        .HasColumnType("text");
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
 
                     b.Property<bool>("HasOptions")
                         .HasColumnType("boolean");
@@ -474,38 +523,43 @@ namespace EShop.Web.Migrations
                     b.Property<decimal>("Height")
                         .HasColumnType("numeric");
 
+                    b.Property<bool>("HomePageDisplayOrder")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsAllowToOrder")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsFeatured")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsVisibleIndividually")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime?>("LastUpdatedOnUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("LatestUpdatedById")
-                        .HasColumnType("integer");
-
                     b.Property<decimal>("Length")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("MetaDescriptions")
-                        .HasColumnType("text");
+                    b.Property<string>("MetaDescription")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<string>("MetaKeywords")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
 
                     b.Property<string>("MetaTitle")
-                        .HasColumnType("text");
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<DateTime>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("NotApprovedRatingSum")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("NotApprovedReviewCount")
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("OldPrice")
                         .HasColumnType("numeric");
@@ -513,24 +567,19 @@ namespace EShop.Web.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
-                    b.Property<DateTime?>("PublishedOnUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<double?>("RatingAverage")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("ReviewsCount")
-                        .HasColumnType("integer");
+                    b.Property<bool>("Published")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("ShortDescription")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("ShowOnHomePage")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Sku")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Slug")
-                        .HasColumnType("text");
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
 
                     b.Property<decimal?>("SpecialPrice")
                         .HasColumnType("numeric");
@@ -544,12 +593,6 @@ namespace EShop.Web.Migrations
                     b.Property<int>("StockQuantity")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ThumbnailImageId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("VendorId")
-                        .HasColumnType("integer");
-
                     b.Property<decimal>("Weight")
                         .HasColumnType("numeric");
 
@@ -559,12 +602,6 @@ namespace EShop.Web.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BrandId");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("LatestUpdatedById");
-
-                    b.HasIndex("ThumbnailImageId");
 
                     b.ToTable("Catalog_Product", (string)null);
                 });
@@ -604,12 +641,16 @@ namespace EShop.Web.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CommentText")
-                        .HasColumnType("text");
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
 
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("EditedOnUtc")
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("ProductId")
@@ -622,10 +663,12 @@ namespace EShop.Web.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("ReviewerName")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Title")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -650,20 +693,25 @@ namespace EShop.Web.Migrations
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("EditedOnUtc")
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("ProductReviewId")
                         .HasColumnType("integer");
 
                     b.Property<string>("ReplierName")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("ReplyStatus")
                         .HasColumnType("integer");
 
                     b.Property<string>("ReplyText")
-                        .HasColumnType("text");
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -686,10 +734,12 @@ namespace EShop.Web.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AddressLine1")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("AddressLine2")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<int?>("CityId")
                         .HasColumnType("integer");
@@ -701,19 +751,20 @@ namespace EShop.Web.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("FirstName")
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("LastName")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ModifiedOnUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("ZipCode")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
@@ -732,6 +783,9 @@ namespace EShop.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsBillingEnabled")
                         .HasColumnType("boolean");
 
@@ -745,7 +799,8 @@ namespace EShop.Web.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
 
                     b.HasKey("Id");
 
@@ -761,10 +816,14 @@ namespace EShop.Web.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ColorHexValue")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("DisplayLocate")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
@@ -779,7 +838,9 @@ namespace EShop.Web.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
 
@@ -797,8 +858,12 @@ namespace EShop.Web.Migrations
                     b.Property<int>("CityId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
 
@@ -833,7 +898,7 @@ namespace EShop.Web.Migrations
                     b.ToTable("Common_UserAddress", (string)null);
                 });
 
-            modelBuilder.Entity("EShop.Core.Content.Media.Domain.Media", b =>
+            modelBuilder.Entity("EShop.Core.Content.Media.Domain.MediaFile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -841,15 +906,39 @@ namespace EShop.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Filename")
+                    b.Property<string>("Alt")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UploadedAtUtc")
+                    b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MediaType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MimeType")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Size")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Content_Media", (string)null);
+                    b.ToTable("Content_MediaFile", (string)null);
                 });
 
             modelBuilder.Entity("EShop.Core.Content.Media.Domain.ProductMedia", b =>
@@ -863,6 +952,9 @@ namespace EShop.Web.Migrations
                     b.Property<byte>("DisplayOrder")
                         .HasColumnType("smallint");
 
+                    b.Property<int?>("MediaFileId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("MediaId")
                         .HasColumnType("integer");
 
@@ -871,7 +963,7 @@ namespace EShop.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MediaId");
+                    b.HasIndex("MediaFileId");
 
                     b.HasIndex("ProductId");
 
@@ -1252,8 +1344,14 @@ namespace EShop.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("EntityId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("EntityName")
+                        .HasColumnType("text");
 
                     b.Property<string>("EntityTypeId")
                         .HasColumnType("text");
@@ -1459,12 +1557,29 @@ namespace EShop.Web.Migrations
                     b.Navigation("SpecificationAttribute");
                 });
 
+            modelBuilder.Entity("EShop.Core.Catalog.Brands.Domain.Brand", b =>
+                {
+                    b.HasOne("EShop.Core.Content.Media.Domain.MediaFile", "MediaFile")
+                        .WithMany()
+                        .HasForeignKey("MediaFileId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("MediaFile");
+                });
+
             modelBuilder.Entity("EShop.Core.Catalog.Categories.Domain.Category", b =>
                 {
+                    b.HasOne("EShop.Core.Content.Media.Domain.MediaFile", "MediaFile")
+                        .WithMany()
+                        .HasForeignKey("MediaFileId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("EShop.Core.Catalog.Categories.Domain.Category", "Parent")
                         .WithMany("Children")
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("MediaFile");
 
                     b.Navigation("Parent");
                 });
@@ -1493,33 +1608,9 @@ namespace EShop.Web.Migrations
                     b.HasOne("EShop.Core.Catalog.Brands.Domain.Brand", "Brand")
                         .WithMany()
                         .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", "LatestUpdatedBy")
-                        .WithMany()
-                        .HasForeignKey("LatestUpdatedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("EShop.Core.Content.Media.Domain.Media", "ThumbnailImage")
-                        .WithMany()
-                        .HasForeignKey("ThumbnailImageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Brand");
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("LatestUpdatedBy");
-
-                    b.Navigation("ThumbnailImage");
                 });
 
             modelBuilder.Entity("EShop.Core.Catalog.Products.Domain.ProductLink", b =>
@@ -1552,7 +1643,7 @@ namespace EShop.Web.Migrations
                     b.HasOne("EShop.Core.Platform.Identity.Domain.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Product");
@@ -1565,13 +1656,13 @@ namespace EShop.Web.Migrations
                     b.HasOne("EShop.Core.Catalog.Products.Domain.ProductReview", "ProductReview")
                         .WithMany("Replies")
                         .HasForeignKey("ProductReviewId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("EShop.Core.Platform.Identity.Domain.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ProductReview");
@@ -1601,7 +1692,7 @@ namespace EShop.Web.Migrations
                     b.HasOne("EShop.Core.Common.Domain.City", "City")
                         .WithMany("Districts")
                         .HasForeignKey("CityId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("City");
@@ -1628,11 +1719,10 @@ namespace EShop.Web.Migrations
 
             modelBuilder.Entity("EShop.Core.Content.Media.Domain.ProductMedia", b =>
                 {
-                    b.HasOne("EShop.Core.Content.Media.Domain.Media", "Media")
+                    b.HasOne("EShop.Core.Content.Media.Domain.MediaFile", "MediaFile")
                         .WithMany()
-                        .HasForeignKey("MediaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("MediaFileId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("EShop.Core.Catalog.Products.Domain.Product", "Product")
                         .WithMany("ProductMedias")
@@ -1640,7 +1730,7 @@ namespace EShop.Web.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Media");
+                    b.Navigation("MediaFile");
 
                     b.Navigation("Product");
                 });

@@ -1,26 +1,27 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-    </PropertyGroup>
+    <UserSecretsId>4ff4e5c3-3891-4461-a13a-95c915b2c4dc</UserSecretsId>
+  </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Views\Home\Partials\"/>
+        <Folder Include="Views\Home\Partials\" />
         <Folder Include="wwwroot\images\" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\EShop.Core\EShop.Core.csproj"/>
-        <ProjectReference Include="..\EShop.Infrastructure\EShop.Infrastructure.csproj"/>
-        <ProjectReference Include="..\EShop.Web.Framework\EShop.Web.Framework.csproj"/>
-        <ProjectReference Include="..\EShop.AzureBlobStorage\EShop.AzureBlobStorage.csproj"/>
-        <ProjectReference Include="..\EShop.ExternalAuth.Google\EShop.ExternalAuth.Google.csproj"/>
+        <ProjectReference Include="..\EShop.Core\EShop.Core.csproj" />
+        <ProjectReference Include="..\EShop.Infrastructure\EShop.Infrastructure.csproj" />
+        <ProjectReference Include="..\EShop.Web.Framework\EShop.Web.Framework.csproj" />
+        <ProjectReference Include="..\EShop.AzureBlobStorage\EShop.AzureBlobStorage.csproj" />
+        <ProjectReference Include="..\EShop.ExternalAuth.Google\EShop.ExternalAuth.Google.csproj" />
 
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bogus" Version="35.6.3"/>
+        <PackageReference Include="Bogus" Version="35.6.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

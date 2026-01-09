@@ -9,7 +9,7 @@ public class FileMediaStorageProvider : IMediaStorageProvider
         throw new NotImplementedException();
     }
 
-    public string GetMediaUrl(string fileName)
+    public async Task<string> GetMediaUrlAsync(string fileName)
     {
         throw new NotImplementedException();
     }

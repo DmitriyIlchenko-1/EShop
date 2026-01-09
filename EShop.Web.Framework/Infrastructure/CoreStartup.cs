@@ -2,6 +2,7 @@ using EShop.Core.Catalog.Attributes.Modeling;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Products.Services;
 using EShop.Core.Common.Services;
+using EShop.Core.Content.Media.Services;
 using EShop.Core.Content.Widgets.Services;
 using EShop.Core.Data;
 using EShop.Core.Platform.Common;
@@ -13,16 +14,13 @@ using EShop.Core.Platform.Logging.Services;
 using EShop.Core.Platform.Routing;
 using EShop.Core.Platform.Web;
 using EShop.Infrastructure.Modules;
-using EShop.Infrastructure.Types;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EShop.Web.Common.Infrustructure;
+namespace EShop.Web.Common.Infrastructure;
 
 public class CoreStartup : IEStartup
 {
@@ -34,6 +32,7 @@ public class CoreStartup : IEStartup
 
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingleton<IJsonSerializer, NewtonsoftJsonSerializer>();
         services.AddScoped<IWidgetInstanceService, WidgetInstanceService>();
         services.AddScoped<IMediaService, MediaService>();
         services.AddSingleton<IProductPricingService, ProductPricingService>();
@@ -50,6 +49,14 @@ public class CoreStartup : IEStartup
         services.AddScoped<IDeliveryTimeService, DeliveryTimeService>();
         services.AddScoped<ISettingFactory, SettingFactory>();
         services.AddScoped<INotificationManager, NotificationManager>();
+        services.AddScoped<IUrlService, UrlService>();
+        
+        
+        /*
+         * Caching
+         */
+         services.AddCaching(configuration);
+          
 
         services.AddDbContextPool<ApplicationDbContext>(options =>
         {
@@ -59,7 +66,7 @@ public class CoreStartup : IEStartup
 
 
         services.AddScoped<IProductVariantQueryFactory, ProductVariantQueryFactory>();
-
+ 
         var settings = Singleton<ITypeScanner>.Instance.FindClassesOfType<ISettings>();
         foreach (var setting in settings)
         {

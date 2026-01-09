@@ -1,11 +1,17 @@
 using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Attributes.Services;
+using EShop.Core.Catalog.Brands.Domain;
+using EShop.Core.Catalog.Configuration;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Catalog.Products.Services;
 using EShop.Core.Common.Services;
+using EShop.Core.Content.Media.Services;
 using EShop.Core.Data;
+using EShop.Core.Platform.Routing;
+using EShop.Infrastructure.Extensions;
 using EShop.Web.Common.Models.Choices;
 using EShop.Web.Models.Catalog;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Web.Controllers;
@@ -18,11 +24,14 @@ public partial class CatalogHelper
     private readonly IProductAttributeMaterializer _productAttributeMaterializer;
     private readonly IDeliveryTimeService _deliveryTimeService;
     private readonly IDateTimeService _dateTimeService;
+    private readonly IUrlService _urlService;
     private readonly ApplicationDbContext _db;
+    private readonly CatalogSettings _catalogSettings;
 
     public CatalogHelper(IMediaService mediaService, IProductPricingService productPricingService,
         IProductService productService, IProductAttributeMaterializer productAttributeMaterializer,
-        IDeliveryTimeService deliveryTimeService, ApplicationDbContext db, IDateTimeService dateTimeService)
+        IDeliveryTimeService deliveryTimeService, ApplicationDbContext db, IDateTimeService dateTimeService,
+        IUrlService urlService, CatalogSettings catalogSettings)
     {
         _mediaService = mediaService;
         _productPricingService = productPricingService;
@@ -31,6 +40,8 @@ public partial class CatalogHelper
         _deliveryTimeService = deliveryTimeService;
         _db = db;
         _dateTimeService = dateTimeService;
+        _urlService = urlService;
+        _catalogSettings = catalogSettings;
     }
 
     public ProductDetailsModelContext CreateModelContext(Product product, ProductVariantQuery query)
@@ -76,6 +87,50 @@ public partial class CatalogHelper
         await PrepareProductPropertiesModelAsync(context, model);
     }
 
+
+    public async Task<IList<BrandSummaryModel>> PrepareBrandModelAsync(IList<Brand> brands)
+    {
+        ArgumentNullException.ThrowIfNull(brands);
+        var fileIds = brands
+            .Select(x => x.MediaFileId ?? 0)
+            .Where(x => x != 0)
+            .Distinct()
+            .ToArray();
+        var allImages = (await _mediaService
+                .GetMediaFilesByIdsAsync(fileIds, false))
+            .ToDictionary(x => x.Id);
+
+        //TODO: add caching.
+        var brandModels = await brands
+            .SelectAsync(async b =>
+            {
+                allImages.TryGetValue(b.MediaFileId ?? 0, out var image);
+                return new BrandSummaryModel
+                {
+                    Id = b.Id,
+                    Name = b.Name,
+                    Image = new MediaModel()
+                    {
+                        Id = b.Id,
+                        Alt = image?.Alt,
+                        Height = image?.Height,
+                        Width = image?.Width,
+                        Url = await _urlService.GetActiveSlugAsync(b.Id, b.Name)
+                    }
+                };
+            })
+            .ToListAsync();
+
+        return brandModels;
+    }
+
+    protected virtual async Task<MediaModel> PrepareBrandImageModelAsync(Brand brand)
+    {
+        throw new NotImplementedException();
+    }
+
+
+    #region Model Mapping
 
     private async Task PrepareProductReviewModelAsync(ProductReviewsModel model, Product product, int take = 10)
     {
@@ -254,8 +309,8 @@ public partial class CatalogHelper
         model.ShortDescription = product.ShortDescription;
         model.IsAllowToOrder = product.IsAllowToOrder;
         model.StockQuantity = product.StockQuantity;
-        model.RatingAverage = product.RatingAverage;
-        model.ReviewsCount = product.ReviewsCount;
+        model.RatingAverage = product.ApprovedRatingSum;
+        model.ReviewsCount = product.ApprovedReviewCount;
         model.WeightValue = product.Weight;
 
 
@@ -306,7 +361,7 @@ public partial class CatalogHelper
         {
             var relProduct = productLink.LinkedProduct;
             var relProductVm = ProductThumbnail.FromProduct(relProduct);
-            relProductVm.ThumbnailUrl = _mediaService.GetMediaUrl(relProduct.ThumbnailImage);
+            //relProductVm.ThumbnailUrl = _mediaService.GetMediaUrl(relProduct.ThumbnailImage);
             relProductVm.CalculatedProductPrice = _productPricingService.CalculateProductPrice(relProduct);
             model.RelatedProducts.Add(relProductVm);
         }
@@ -329,4 +384,6 @@ public partial class CatalogHelper
             })
             .ToList();
     }
+
+    #endregion
 }

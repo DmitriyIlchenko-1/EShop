@@ -7,7 +7,7 @@ public class ProductMedia : BaseEntity
 {
     public byte DisplayOrder { get; set; }
 
-    public Media Media { get; set; }
+    public MediaFile MediaFile { get; set; }
 
     public int MediaId { get; set; }
 

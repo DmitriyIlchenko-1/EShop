@@ -35,7 +35,7 @@ public class ProductController : Controller
             .AsSplitQuery()
             .Include(x => x.Brand)
             .Include(x => x.ProductMedias)
-            .ThenInclude(x => x.Media)
+            .ThenInclude(x => x.MediaFile)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (product == null)

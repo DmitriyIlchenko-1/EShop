@@ -14,7 +14,7 @@ public class NotificationFilterAttribute : TypeFilterAttribute
     {
     }
 
-    class NotificationFilter : IResultFilter
+    class NotificationFilter : IAsyncResultFilter
     {
         private readonly INotificationManager _notificationManager;
 
@@ -23,10 +23,15 @@ public class NotificationFilterAttribute : TypeFilterAttribute
             _notificationManager = notificationManager;
         }
 
-        public void OnResultExecuting(ResultExecutingContext context)
+
+        public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
             if (_notificationManager.Notifications.Count == 0)
+            {
+                await next();
                 return;
+            }
+
 
             if (context.Controller is Controller controller)
             {
@@ -36,6 +41,8 @@ public class NotificationFilterAttribute : TypeFilterAttribute
             }
 
             _notificationManager.Notifications.Clear();
+
+            await next();
         }
 
         protected virtual void Persist(IDictionary<string, object> dictionary,
@@ -55,10 +62,6 @@ public class NotificationFilterAttribute : TypeFilterAttribute
             }
 
             dictionary[NotificationKey] = JsonConvert.SerializeObject(list);
-        }
-
-        public void OnResultExecuted(ResultExecutedContext context)
-        {
         }
     }
 }

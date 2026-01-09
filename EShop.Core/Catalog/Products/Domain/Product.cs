@@ -67,9 +67,11 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletedEntity
 
     public DateTime? SpecialPriceStartsUtc { get; set; }
 
-    public double? RatingAverage { get; set; }
+    public int ApprovedRatingSum { get; set; }
+    public int NotApprovedRatingSum { get; set; }
 
-    public int ReviewsCount { get; set; }
+    public int ApprovedReviewCount { get; set; }
+    public int NotApprovedReviewCount { get; set; }
 
     public int StockQuantity { get; set; }
     public decimal Height { get; set; }
@@ -81,10 +83,6 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletedEntity
     public Brand Brand { get; set; }
 
     public int? BrandId { get; set; }
-
-    public Media ThumbnailImage { get; set; }
-
-    public int ThumbnailImageId { get; set; }
     
 
     public ICollection<ProductReview> ProductReviews { get; set; }
@@ -92,6 +90,7 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletedEntity
 
     public ICollection<ProductLink> ProductLinks { get; set; }
 
+    
     public ICollection<ProductMedia> ProductMedias { get; set; }
 
     public ICollection<ProductSpecificationAttribute> ProductSpecificationAttributes { get; set; }

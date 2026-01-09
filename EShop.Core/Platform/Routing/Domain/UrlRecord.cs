@@ -8,6 +8,8 @@ namespace EShop.Core.Platform.Routing.Domain
 
         public string Slug { get; set; }
         public int EntityId { get; set; }
+        public string EntityName { get; set; }
+        public bool Active { get; set; }
 
         public EntityType EntityType { get; set; }
 

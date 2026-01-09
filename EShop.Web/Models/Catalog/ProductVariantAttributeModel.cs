@@ -21,6 +21,4 @@ public class ProductVariantAttributeModel : ChoiceModel
     public List<ChoiceItemModel> Values { get; set; }
 
     public ProductVariantAttribute ProductVariantAttribute { get; set; }
-
-    public string TextPrompt { get; set; }
 }

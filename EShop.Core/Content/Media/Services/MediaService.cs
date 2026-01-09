@@ -1,12 +1,14 @@
 using EShop.Core.Content.Media.Domain;
+using EShop.Core.Content.Media.Services;
 using EShop.Core.Data;
+using EShop.Infrastructure.Data;
 using EShop.Infrastructure.Storage;
+using Microsoft.EntityFrameworkCore;
 
 
 public class MediaService : IMediaService
 {
     private readonly ApplicationDbContext _db;
-
     private readonly IMediaStorageProvider _mediaStorageService;
 
 
@@ -26,19 +28,61 @@ public class MediaService : IMediaService
         return DeleteMediaAsync(fileName);
     }
 
-    public Task DeleteMediaFullAsync(Media media)
+    public Task DeleteMediaFullAsync(MediaFile mediaFile)
     {
-        _db.Medias.Remove(media);
-        return DeleteMediaAsync(media.Filename);
+        _db.MediaFiles.Remove(mediaFile);
+        return DeleteMediaAsync(mediaFile.FileName);
     }
 
-    public string GetMediaUrl(Media media) =>
-        media != null ? GetMediaUrl(media.Filename) : GetMediaUrl("not-found-image.png");
-
-
-    public string GetMediaUrl(string fileName)
+    public async Task<IList<MediaFile>> GetMediaFilesByIdsAsync(int[] ids, bool track = false)
     {
-        return _mediaStorageService.GetMediaUrl(fileName);
+        ArgumentNullException.ThrowIfNull(ids);
+        if (ids.Length == 0)
+        {
+            return [];
+        }
+
+        var result = await _db
+            .MediaFiles.ApplyTracking(track)
+            .Where(x => ids.Contains(x.Id))
+            .ToListAsync();
+
+        return (from id in ids
+                join entity in result on id equals entity.Id
+                select entity).ToList();
+    }
+
+    public async Task<List<MediaFile>> GetFilesByProductIdAsync(int productId, int count, bool track = false)
+    {
+        if (productId == 0 || count <= 0)
+        {
+            return [];
+        }
+
+        var query = _db.MediaFiles.AsQueryable();
+        if (!track)
+            query = query.AsNoTracking();
+
+        query = from p in query
+            join pm in _db.ProductMedias on p.Id equals pm.MediaId
+            orderby pm.DisplayOrder, pm.Id
+            where pm.ProductId == productId
+            select p;
+
+        var images = await query
+            .Take(count)
+            .ToListAsync();
+
+        return images;
+    }
+
+    public async Task<string> GetMediaUrlAsync(MediaFile mediaFile) =>
+        mediaFile != null ? await GetMediaUrlAsync(mediaFile.FileName) : await GetMediaUrlAsync("not-found-image.png");
+
+
+    public async Task<string> GetMediaUrlAsync(string fileName)
+    {
+        return await _mediaStorageService.GetMediaUrlAsync(fileName);
     }
 
     public Task SaveMediaAsync(Stream mediaBinaryStream, string fileName, string mimeType = null)

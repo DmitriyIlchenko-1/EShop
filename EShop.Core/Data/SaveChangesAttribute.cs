@@ -16,14 +16,14 @@ public class SaveChangesAttribute<TContext>(bool saveChanges = true) : ActionFil
         if (actionExecuted.Exception != null)
             return;
 
-        var cancel = context
+        var actionScopedFilter = context
             .ActionDescriptor.FilterDescriptors
             .Where(x => x.Scope == FilterScope.Action)
             .Select(x => x.Filter)
             .OfType<SaveChangesAttribute<TContext>>()
             .FirstOrDefault();
 
-        if (cancel?.SaveChanges == false)
+        if (actionScopedFilter?.SaveChanges == false)
             return;
 
         var dbContext = context.HttpContext.RequestServices.GetRequiredService<TContext>();

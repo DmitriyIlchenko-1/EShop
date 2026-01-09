@@ -26,8 +26,8 @@ namespace EShop.AzureBlobStorage.Providers
             await blobClient.DeleteIfExistsAsync();
         }
 
-        public string GetMediaUrl(string fileName)
-            => $"{_CdnEndpoint}/{_blobContainerClient.Name}/{fileName}";
+        public Task<string> GetMediaUrlAsync(string fileName)
+            => Task.FromResult($"{_CdnEndpoint}/{_blobContainerClient.Name}/{fileName}");
 
 
         public async Task SaveMediaAsync(Stream mediaBinaryStream, string fileName, string mimeType = null)
