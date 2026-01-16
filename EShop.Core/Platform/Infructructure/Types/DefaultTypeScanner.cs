@@ -64,6 +64,17 @@ public class DefaultTypeScanner : ITypeScanner
                         continue;
                     }
 
+                    var isOpenGeneric = lookupType.IsGenericTypeDefinition;
+
+                    if (isOpenGeneric)
+                    {
+                        if (!GetClosedGenericTypesOf(type, lookupType)
+                                .Any())
+                        {
+                            continue;
+                        }
+                    }
+                    
                     if (onlyConcreteClasses)
                     {
                         if (type.IsClass && !type.IsAbstract)
@@ -122,6 +133,7 @@ public class DefaultTypeScanner : ITypeScanner
             {
                 Console.WriteLine();
             }
+
             if (!Matches(assembly.FullName))
             {
                 continue;
@@ -139,5 +151,31 @@ public class DefaultTypeScanner : ITypeScanner
         return !Regex.IsMatch(assemblyFullName,
             AssemblySkipLoadingPattern,
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    }
+
+    private static IEnumerable<Type> GetClosedGenericTypesOf(Type source, Type openGeneric)
+    {
+        if (!openGeneric.IsGenericTypeDefinition)
+        {
+            return Enumerable.Empty<Type>();
+        }
+
+        return GetTypesAssignableFrom(source)
+            .Where(t => !t.ContainsGenericParameters && t.IsGenericType && t.GetGenericTypeDefinition() == openGeneric);
+    }
+
+    private static IEnumerable<Type> GetTypesAssignableFrom(Type source)
+    {
+        var interfaces = source.GetInterfaces();
+        foreach (var _interface in interfaces)
+        {
+            yield return _interface;
+        }
+
+        while (source != null && source != typeof(object))
+        {
+            yield return source;
+            source = source.BaseType;
+        }
     }
 }
