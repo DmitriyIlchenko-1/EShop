@@ -3,6 +3,7 @@ namespace EShop.Infrastructure.Utilities;
 public struct ActionDisposable : IDisposable
 {
     private readonly Action _execute;
+    public static readonly ActionDisposable Empty = new ActionDisposable(() => {});
 
     public ActionDisposable(Action action)
     {

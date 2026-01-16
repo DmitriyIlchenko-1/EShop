@@ -11,11 +11,10 @@ namespace EShop.Infrastructure.Engine;
 
 public class EShopEngine : IEngine
 {
-    private IServiceProvider _rootServiceProvider;
+    public IScopedProviderAccessor ScopeAccessor { get; set; }
 
     public void ConfigureRequestPipeline(IApplicationBuilder appBuilder)
     {
-        _rootServiceProvider = appBuilder.ApplicationServices;
         var typeScanner = Singleton<ITypeScanner>.Instance;
         var startups = typeScanner.FindClassesOfType<IEStartup>();
 
@@ -63,8 +62,9 @@ public class EShopEngine : IEngine
         if (scope != null)
             return scope.ServiceProvider;
 
-        var accessor = _rootServiceProvider.GetService<IHttpContextAccessor>();
-        var context = accessor?.HttpContext;
-        return context?.RequestServices ?? _rootServiceProvider;
+        // var accessor = _rootServiceProvider.GetService<IHttpContextAccessor>();
+        // var context = accessor?.HttpContext;
+        // return context?.RequestServices ?? _rootServiceProvider;
+        return ScopeAccessor.GetScopedProvider;
     }
 }
