@@ -3,7 +3,7 @@ using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure;
 using EShop.Infrastructure.Domain;
-using EShop.Infrastructure.Types;
+
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
