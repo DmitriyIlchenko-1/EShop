@@ -6,7 +6,6 @@ using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Http;
 using EShop.Infrastructure.Modules;
-using EShop.Infrastructure.Types;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;

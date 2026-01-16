@@ -1,6 +1,5 @@
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Modules;
-using EShop.Infrastructure.Types;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
