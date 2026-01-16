@@ -1,9 +1,8 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using EShop.Core.Platform.Infructructure.Types;
-
-namespace EShop.Infrastructure.Types;
+using EShop.Infrastructure.Extensions;
+namespace EShop.Core.Platform.Infructructure.Types;
 
 public class DefaultTypeScanner : ITypeScanner
 {
@@ -27,6 +26,11 @@ public class DefaultTypeScanner : ITypeScanner
     public IEnumerable<Type> FindClassesOfType<T>(bool onlyConcreteClasses = true)
     {
         return FindClassesOfType(typeof(T), GetAssemblies(), onlyConcreteClasses);
+    }
+    
+    public IEnumerable<Type> FindClassesOfType(Type type, bool onlyConcreteClasses = true)
+    {
+        return FindClassesOfType(type, GetAssemblies(), onlyConcreteClasses);
     }
 
     protected IEnumerable<Type> FindClassesOfType(Type lookupType, IEnumerable<Assembly> assemblies,
@@ -68,11 +72,14 @@ public class DefaultTypeScanner : ITypeScanner
 
                     if (isOpenGeneric)
                     {
-                        if (!GetClosedGenericTypesOf(type, lookupType)
+                        
+                        if (!type.GetClosedGenericTypesOf(lookupType)
                                 .Any())
                         {
                             continue;
                         }
+
+                        
                     }
                     
                     if (onlyConcreteClasses)
@@ -153,29 +160,5 @@ public class DefaultTypeScanner : ITypeScanner
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
     }
 
-    private static IEnumerable<Type> GetClosedGenericTypesOf(Type source, Type openGeneric)
-    {
-        if (!openGeneric.IsGenericTypeDefinition)
-        {
-            return Enumerable.Empty<Type>();
-        }
-
-        return GetTypesAssignableFrom(source)
-            .Where(t => !t.ContainsGenericParameters && t.IsGenericType && t.GetGenericTypeDefinition() == openGeneric);
-    }
-
-    private static IEnumerable<Type> GetTypesAssignableFrom(Type source)
-    {
-        var interfaces = source.GetInterfaces();
-        foreach (var _interface in interfaces)
-        {
-            yield return _interface;
-        }
-
-        while (source != null && source != typeof(object))
-        {
-            yield return source;
-            source = source.BaseType;
-        }
-    }
+    
 }

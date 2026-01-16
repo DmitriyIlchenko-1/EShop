@@ -38,4 +38,30 @@ public static class TypeExtensions
                || t == typeof(Guid)
                || t == typeof(byte[]);
     }
+    
+    public static IEnumerable<Type> GetClosedGenericTypesOf(this Type source, Type openGeneric)
+    {
+        if (!openGeneric.IsGenericTypeDefinition)
+        {
+            return Enumerable.Empty<Type>();
+        }
+
+        return GetTypesAssignableFrom(source)
+            .Where(t => !t.ContainsGenericParameters && t.IsGenericType && t.GetGenericTypeDefinition() == openGeneric);
+    }
+
+    public static IEnumerable<Type> GetTypesAssignableFrom(this Type source)
+    {
+        var interfaces = source.GetInterfaces();
+        foreach (var _interface in interfaces)
+        {
+            yield return _interface;
+        }
+
+        while (source != null && source != typeof(object))
+        {
+            yield return source;
+            source = source.BaseType;
+        }
+    }
 }
