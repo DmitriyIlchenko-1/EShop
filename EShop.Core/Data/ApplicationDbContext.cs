@@ -1,9 +1,10 @@
 using System.Reflection;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Infructructure.Types;
+ 
 using EShop.Infrastructure;
 using EShop.Infrastructure.Domain;
-
+ 
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -17,6 +18,8 @@ public partial class ApplicationDbContext : IdentityDbContext<User, Role, int, I
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
+
+    
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

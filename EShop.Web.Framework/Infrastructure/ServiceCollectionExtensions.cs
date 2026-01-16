@@ -1,10 +1,12 @@
 using System.Reflection;
+using EShop.Core.Data.DbHandlers;
 using EShop.Core.Platform.Caching;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Caching.Adapters.Fusion;
 using EShop.Infrastructure.Engine;
+using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Modules;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Serialization;
+using TypeExtensions = System.Reflection.TypeExtensions;
 
 namespace EShop.Web.Common.Infrastructure;
 
@@ -91,5 +94,32 @@ public static class ServiceCollectionExtensions
             .WithRegisteredSerializer()
             .WithRegisteredMemoryCache()
             .WithoutDistributedCache();
+    }
+
+    public static void AddDbHandlers(this IServiceCollection services)
+    {
+        //other services..
+
+
+        var handlers = Singleton<ITypeScanner>.Instance.FindClassesOfType(typeof(IDbHandler<>));
+
+        foreach (var handlerT in handlers)
+        {
+            var closedGeneric = handlerT
+                .GetClosedGenericTypesOf(typeof(IDbHandler<>))
+                .Single();
+            var entityType = closedGeneric
+                .GetGenericArguments()
+                .Single();
+            
+            var handlerMeta = new DbHandlerMetadata()
+            {
+                HandlerType = handlerT,
+                EntityType = entityType
+            };
+
+            services.AddSingleton(handlerMeta);
+            services.AddTransient(handlerT);
+        }
     }
 }
