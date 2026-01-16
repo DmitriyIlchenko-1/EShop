@@ -6,7 +6,7 @@ using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Caching.Adapters.Fusion;
 using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Modules;
-using EShop.Infrastructure.Types;
+
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;

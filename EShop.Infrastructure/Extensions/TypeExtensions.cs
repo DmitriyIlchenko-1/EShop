@@ -38,7 +38,7 @@ public static class TypeExtensions
                || t == typeof(Guid)
                || t == typeof(byte[]);
     }
-    
+
     public static IEnumerable<Type> GetClosedGenericTypesOf(this Type source, Type openGeneric)
     {
         if (!openGeneric.IsGenericTypeDefinition)
@@ -48,6 +48,71 @@ public static class TypeExtensions
 
         return GetTypesAssignableFrom(source)
             .Where(t => !t.ContainsGenericParameters && t.IsGenericType && t.GetGenericTypeDefinition() == openGeneric);
+    }
+
+    public static bool IsOpenGeneric(this Type type)
+    {
+        return type.IsGenericTypeDefinition || type.ContainsGenericParameters;
+    }
+
+    
+
+
+    public static IEnumerable<Type> FindCloseInterfacesOf(this Type source, Type openGeneric)
+    {
+        return source
+            .FindCloseInterfacesOfCore(openGeneric)
+            .Distinct();
+    }
+
+    /// <param name="source">Must be a concrete type</param>
+    /// <returns>Returns all the types the source implements/inherits that are closed generics of the open one passed as the second argument and that have no generic parameters (closed generics)</returns>
+    private static IEnumerable<Type> FindCloseInterfacesOfCore(this Type source, Type openGeneric)
+    {
+        if (openGeneric == null)
+        {
+            yield break;
+        }
+
+        if (!source.IsConcrete())
+        {
+            yield break;
+        }
+
+        if (openGeneric.IsInterface)
+        {
+            foreach (var sourceInterfaceType in source
+                         .GetInterfaces()
+                         .Where(t => t.ClosedGenericOf(openGeneric)))
+            {
+                yield return sourceInterfaceType;
+            }
+        }
+        else if (source.BaseType!.ClosedGenericOf(openGeneric))
+        {
+            yield return source.BaseType;
+        }
+
+        if (source.BaseType == typeof(object))
+        {
+            yield break;
+        }
+
+        foreach (var interfaceType in FindCloseInterfacesOf(source.BaseType, openGeneric))
+        {
+            yield return interfaceType;
+        }
+    }
+
+    public static bool ClosedGenericOf(this Type source, Type openGeneric)
+    {
+        return source.IsGenericType && !source.ContainsGenericParameters &&
+               source.GetGenericTypeDefinition() == openGeneric;
+    }
+
+    public static bool IsConcrete(this Type type)
+    {
+        return !type.IsAbstract && !type.IsInterface;
     }
 
     public static IEnumerable<Type> GetTypesAssignableFrom(this Type source)
