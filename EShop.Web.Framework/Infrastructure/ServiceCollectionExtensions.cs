@@ -1,5 +1,6 @@
 using System.Reflection;
 using EShop.Core.Data.DbHandlers;
+using EShop.Core.Data.DbHandlers.Configuration;
 using EShop.Core.Platform.Caching;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure;
@@ -96,30 +97,10 @@ public static class ServiceCollectionExtensions
             .WithoutDistributedCache();
     }
 
-    public static void AddDbHandlers(this IServiceCollection services)
+    public static void AddDbHandlers(this IServiceCollection services, Action<DbHandlerServiceConfiguration> configurationAction)
     {
-        //other services..
-
-
-        var handlers = Singleton<ITypeScanner>.Instance.FindClassesOfType(typeof(IDbHandler<>));
-
-        foreach (var handlerT in handlers)
-        {
-            var closedGeneric = handlerT
-                .GetClosedGenericTypesOf(typeof(IDbHandler<>))
-                .Single();
-            var entityType = closedGeneric
-                .GetGenericArguments()
-                .Single();
-            
-            var handlerMeta = new DbHandlerMetadata()
-            {
-                HandlerType = handlerT,
-                EntityType = entityType
-            };
-
-            services.AddSingleton(handlerMeta);
-            services.AddTransient(handlerT);
-        }
+        var config = new DbHandlerServiceConfiguration();
+        configurationAction(config);
+        ServiceRegister.AddDbHandlerClasses(services, config);
     }
 }
