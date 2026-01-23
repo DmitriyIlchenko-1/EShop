@@ -1,18 +1,22 @@
 namespace EShop.Infrastructure.Utilities;
 
+/// <summary>
+/// Based on the anonymous disposal pattern.
+/// </summary>
 public struct ActionDisposable : IDisposable
 {
-    private readonly Action _execute;
-    public static readonly ActionDisposable Empty = new ActionDisposable(() => {});
+    private Action _onDispose;
+    public static readonly ActionDisposable Empty = new ActionDisposable();
 
-    public ActionDisposable(Action action)
+    public ActionDisposable(Action onDispose)
     {
-        ArgumentNullException.ThrowIfNull(action);
-        _execute = action;
+        ArgumentNullException.ThrowIfNull(onDispose);
+        _onDispose = onDispose;
     }
 
     public void Dispose()
     {
-        _execute();
+        _onDispose?.Invoke();
+        _onDispose = null; // Ensure it can't execute a second time.
     }
 }
