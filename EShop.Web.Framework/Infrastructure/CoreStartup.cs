@@ -22,15 +22,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EShop.Web.Common.Infrastructure;
 
-public class CoreStartup : IEStartup
+public class CoreStartup : BaseStartup
 {
-    public int Order { get; }
-
-    public void ConfigureApplication(IApplicationBuilder app)
-    {
-    }
-
-    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    
+    public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IJsonSerializer, NewtonsoftJsonSerializer>();
         services.AddScoped<IWidgetInstanceService, WidgetInstanceService>();

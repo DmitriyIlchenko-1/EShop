@@ -1,3 +1,4 @@
+using Autofac;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Modules;
 using EShop.Infrastructure.Utilities;
@@ -10,19 +11,27 @@ namespace EShop.Infrastructure.Engine;
 
 public class EShopEngine : IEngine
 {
+    private IEStartup[] _startups;
     public IScopedProviderAccessor ScopeAccessor { get; set; }
+
+    public EShopEngine()
+    {
+        LocateStartups();
+    }
+
+    public void ConfigureContainer(ContainerBuilder builder)
+    {
+        // Modules ...
+
+        foreach (var containerSetup in _startups.OfType<IContainerSetup>())
+        {
+            containerSetup.ConfigureContainer(builder);
+        }
+    }
 
     public void ConfigureRequestPipeline(IApplicationBuilder appBuilder)
     {
-        var typeScanner = Singleton<ITypeScanner>.Instance;
-        var startups = typeScanner.FindClassesOfType<IEStartup>();
-
-        var instances = startups
-            .Select(s => (IEStartup)Activator.CreateInstance(s))
-            .Where(s => s != null)
-            .OrderBy(s => s.Order);
-
-        foreach (var instance in instances)
+        foreach (var instance in _startups.OrderBy(s => s.Order))
         {
             instance.ConfigureApplication(appBuilder);
         }
@@ -31,15 +40,8 @@ public class EShopEngine : IEngine
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IEngine>(this);
-
-        var typeScanner = Singleton<ITypeScanner>.Instance;
-        var startups = typeScanner.FindClassesOfType<IEStartup>();
-
-        var instances = startups
-            .Select(s => (IEStartup)Activator.CreateInstance(s))
-            .Where(s => s != null);
-
-        foreach (var instance in instances)
+        
+        foreach (var instance in _startups)
         {
             instance.ConfigureServices(services, configuration);
         }
@@ -52,7 +54,8 @@ public class EShopEngine : IEngine
 
     public object? Resolve(Type type, IServiceScope? scope = null)
     {
-        return GetServiceProvider(scope)?
+        return GetServiceProvider(scope)
+            ?
             .GetService(type);
     }
 
@@ -65,5 +68,17 @@ public class EShopEngine : IEngine
         // var context = accessor?.HttpContext;
         // return context?.RequestServices ?? _rootServiceProvider;
         return ScopeAccessor.GetScopedProvider;
+    }
+
+    private void LocateStartups()
+    {
+        var typeScanner = Singleton<ITypeScanner>.Instance;
+        var startups = typeScanner.FindClassesOfType<IEStartup>();
+
+        var instances = startups
+            .Select(s => (IEStartup)Activator.CreateInstance(s))
+            .Where(s => s != null);
+
+        _startups = instances.ToArray();
     }
 }

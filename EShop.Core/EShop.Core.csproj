@@ -9,6 +9,7 @@
         <Folder Include="Checkout\Shipping\" />
         <Folder Include="Content\Menus\" />
         <Folder Include="Platform\Identity\External\" />
+        <Folder Include="Platform\Infructructure\" />
     </ItemGroup>
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />

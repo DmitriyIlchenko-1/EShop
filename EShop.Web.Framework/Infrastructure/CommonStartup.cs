@@ -9,16 +9,16 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EShop.Web.Common.Infrastructure;
 
-public class CommonStartup : IEStartup
+public class CommonStartup : BaseStartup
 {
-    public int Order => PipelineOrder.AfterAuthMiddleware;
+    public override int Order { get; } = PipelineOrder.AfterAuthMiddleware;
 
-    public void ConfigureApplication(IApplicationBuilder app)
+    public override void ConfigureApplication(IApplicationBuilder app)
     {
         app.UseSession();
     }
 
-    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         var mvcBuilder = services
             .AddControllersWithViews();

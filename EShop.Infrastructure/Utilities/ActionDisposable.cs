@@ -1,3 +1,5 @@
+using Microsoft.Win32.SafeHandles;
+
 namespace EShop.Infrastructure.Utilities;
 
 /// <summary>
@@ -16,7 +18,9 @@ public struct ActionDisposable : IDisposable
 
     public void Dispose()
     {
+ 
         _onDispose?.Invoke();
         _onDispose = null; // Ensure it can't execute a second time.
+ 
     }
 }

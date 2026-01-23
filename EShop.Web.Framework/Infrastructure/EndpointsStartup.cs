@@ -7,11 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EShop.Web.Common.Infrastructure;
 
-public class EndpointsStartup : IEStartup
+public class EndpointsStartup : BaseStartup
 {
-    public int Order => PipelineOrder.Late;
+    public override int Order => PipelineOrder.Late;
 
-    public void ConfigureApplication(IApplicationBuilder app)
+    public override void ConfigureApplication(IApplicationBuilder app)
     {
         app.UseEndpoints(p =>
         {
@@ -21,7 +21,5 @@ public class EndpointsStartup : IEStartup
         });
     }
 
-    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-    {
-    }
+    
 }
