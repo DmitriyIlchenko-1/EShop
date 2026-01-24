@@ -38,7 +38,6 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
     protected EngineStartup(IEngine engine)
     {
         _engine = engine;
-
         ConfigureModules();
         _startups = LocateStartups()
             .OrderBy(x => x.Order)
@@ -84,10 +83,8 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
 
     private void ConfigureModules()
     {
-        GlobalConfiguration.ContentRootPath = _engine.Environment.ContentRootPath;
         var typeScanner = new DefaultTypeScanner();
         Singleton<ITypeScanner>.Instance = typeScanner;
-
         RegisterModules();
     }
 
@@ -130,6 +127,8 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
 
     protected override void RegisterModules()
     {
+        GlobalConfiguration.ContentRootPath = _engine.Environment.ContentRootPath;
+        
         foreach (ModuleInfo moduleInfo in ModuleManager.LoadModules())
         {
             moduleInfo.Assembly = Assembly.Load(new AssemblyName(moduleInfo.Name));
