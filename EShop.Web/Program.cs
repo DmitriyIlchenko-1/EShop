@@ -17,12 +17,20 @@ var startup = EngineContext
 //Add services to Microsoft's IServiceCollection. The services will still end up in the same container, which is likely to be Autofac's container, though it depends on the settings.
 startup.ConfigureServices(builder.Services, builder.Configuration);
 
+
 //Add services directly through Autofac.
 builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);
 var app = builder.Build();
-EngineContext.Current.ScopeAccessor = new DefaultScopedProviderAccessor(
-    app.Services.GetRequiredService<IHttpContextAccessor>(),
-    app.Services.GetRequiredService<IServiceScopeFactory>());
+
+// EngineContext.Current.ScopeAccessor = new DefaultScopedProviderAccessor(
+//     app.Services.GetRequiredService<IHttpContextAccessor>(),
+//     app.Services.GetRequiredService<IServiceScopeFactory>());
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    startup.Dispose();
+    startup = null;
+});
 
 startup.ConfigureApplicationPipeline(app);
 

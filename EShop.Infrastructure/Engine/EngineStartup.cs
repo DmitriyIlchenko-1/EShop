@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EShop.Infrastructure.Engine;
 
-public interface IEngineStartup
+public interface IEngineStartup : IDisposable
 {
     /// <summary>
     /// Register services directly using Autofac.
@@ -30,7 +30,7 @@ public interface IEngineStartup
 /// The GC will release the memory taken up by them and this object later on. 
 /// </summary>
 /// <typeparam name="TEngine"></typeparam>
-public abstract class EngineStartup<TEngine> : IEngineStartup, IDisposable where TEngine : IEngine
+public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IEngine
 {
     protected IEStartup[] _startups;
     protected IEngine _engine;
@@ -38,6 +38,7 @@ public abstract class EngineStartup<TEngine> : IEngineStartup, IDisposable where
     protected EngineStartup(IEngine engine)
     {
         _engine = engine;
+
         ConfigureModules();
         _startups = LocateStartups()
             .OrderBy(x => x.Order)
@@ -57,11 +58,7 @@ public abstract class EngineStartup<TEngine> : IEngineStartup, IDisposable where
     public virtual void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IEngine>(_engine);
-
-        var typeScanner = new DefaultTypeScanner();
-        Singleton<ITypeScanner>.Instance = typeScanner;
-        services.AddSingleton<ITypeScanner>(typeScanner);
-
+        services.AddSingleton<ITypeScanner>(Singleton<ITypeScanner>.Instance);
         foreach (var instance in _startups)
         {
             instance.ConfigureServices(services, configuration);
@@ -88,6 +85,9 @@ public abstract class EngineStartup<TEngine> : IEngineStartup, IDisposable where
     private void ConfigureModules()
     {
         GlobalConfiguration.ContentRootPath = _engine.Environment.ContentRootPath;
+        var typeScanner = new DefaultTypeScanner();
+        Singleton<ITypeScanner>.Instance = typeScanner;
+
         RegisterModules();
     }
 

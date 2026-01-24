@@ -19,6 +19,7 @@ namespace EShop.Web.Common.Infrastructure;
 public static class ServiceCollectionExtensions
 {
     
+
     public static void AddCaching(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddMemoryCache();
