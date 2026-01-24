@@ -16,17 +16,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EShop.Web.Common.Infrustructure;
 
-public class AuthenticationStartup : IEStartup
+public class AuthenticationStartup : BaseStartup
 {
-    public int Order => PipelineOrder.AuthMiddleware;
+    public override int Order => PipelineOrder.AuthMiddleware;
 
-    public void ConfigureApplication(IApplicationBuilder app)
+    public override void ConfigureApplication(IApplicationBuilder app)
     {
        app.UseAuthentication();
        app.UseAuthorization();
     }
 
-    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services
             .AddIdentity<User, Role>(options =>

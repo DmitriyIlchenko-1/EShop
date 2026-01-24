@@ -10,4 +10,5 @@ public interface IEStartup
     int Order { get; }
     void ConfigureApplication(IApplicationBuilder app);
     void ConfigureServices(IServiceCollection services, IConfiguration configuration);
+    void ConfigureMvc(IMvcBuilder mvcBuilder, IServiceCollection services);
 }

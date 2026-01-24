@@ -8,18 +8,16 @@ using Microsoft.Extensions.Hosting;
 
 namespace EShop.Web.Common.Infrustructure;
 
-public class ExceptionHandlerStartup : IEStartup
+public class ExceptionHandlerStartup : BaseStartup
 {
-    public int Order => PipelineOrder.ExceptionHandlerMiddleware;
+    public override int Order => PipelineOrder.ExceptionHandlerMiddleware;
 
-    public void ConfigureApplication(IApplicationBuilder app)
+    public override void ConfigureApplication(IApplicationBuilder app)
     {
         IWebHostEnvironment environment = EngineContext.Current.Resolve<IWebHostEnvironment>();
         if (environment.IsDevelopment())
             app.UseDeveloperExceptionPage();
     }
 
-    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-    {
-    }
+    
 }

@@ -6,16 +6,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EShop.Web.Common.Infrustructure;
 
-public class StaticFilesStartup : IEStartup
+public class StaticFilesStartup : BaseStartup
 {
-    public int Order => PipelineOrder.StaticFilesMiddleware;
-    public void ConfigureApplication(IApplicationBuilder app)
+    public override int Order => PipelineOrder.StaticFilesMiddleware;
+
+    public override void ConfigureApplication(IApplicationBuilder app)
     {
         app.UseStaticFiles();
-    }
-
-    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-    {
-         
     }
 }

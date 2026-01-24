@@ -4,15 +4,12 @@ using EShop.Web.Controllers;
 
 namespace EShop.Web.Infrastructure;
 
-public class WebStartup : IEStartup
+public class WebStartup : BaseStartup
 {
-    public int Order => PipelineOrder.Default;
-    public void ConfigureApplication(IApplicationBuilder app)
-    {
-        
-    }
+    public override int Order => PipelineOrder.Default;
+    
 
-    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<CatalogHelper>();
     }

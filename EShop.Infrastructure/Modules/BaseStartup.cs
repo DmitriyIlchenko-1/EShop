@@ -8,7 +8,7 @@ namespace EShop.Infrastructure.Modules;
 
 public abstract class BaseStartup : IEStartup, IContainerSetup
 {
-    public virtual int Order { get; } = PipelineOrder.Default;
+    public virtual int Order => PipelineOrder.Default;
 
     public virtual void ConfigureApplication(IApplicationBuilder app)
     {
@@ -16,6 +16,11 @@ public abstract class BaseStartup : IEStartup, IContainerSetup
 
     public virtual void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
+    }
+
+    public virtual void ConfigureMvc(IMvcBuilder mvcBuilder, IServiceCollection services)
+    {
+        
     }
 
     public virtual void ConfigureContainer(ContainerBuilder builder)

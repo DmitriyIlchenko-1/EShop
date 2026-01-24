@@ -10,17 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EShop.AzureBlobStorage;
 
-public class Startup : IEStartup
+public class Startup : BaseStartup
 {
-    public int Order => PipelineOrder.Default;
-
-    public void ConfigureApplication(IApplicationBuilder app)
-    {
-        
-    }
-
-    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-    {
-        
-    }
+    
 }

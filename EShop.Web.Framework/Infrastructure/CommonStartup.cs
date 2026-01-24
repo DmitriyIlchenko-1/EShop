@@ -18,18 +18,16 @@ public class CommonStartup : BaseStartup
         app.UseSession();
     }
 
-    public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    public override void ConfigureMvc(IMvcBuilder builder, IServiceCollection services)
     {
-        var mvcBuilder = services
-            .AddControllersWithViews();
-        mvcBuilder.AddJsonOptions(options =>
+        
+        builder.AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         });
-        mvcBuilder.AddSessionStateTempDataProvider();
-        services.AddDistributedMemoryCache();
-        services.AddHttpContextAccessor();
-
+        
+        builder.AddSessionStateTempDataProvider();
+        
         services.AddSession(configure =>
         {
             configure.Cookie.Name = CookieNames.SessionCookie;
@@ -37,5 +35,11 @@ public class CommonStartup : BaseStartup
             configure.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
             configure.Cookie.IsEssential = true;
         });
+    }
+
+    public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHttpContextAccessor();
+        services.AddDistributedMemoryCache();
     }
 }

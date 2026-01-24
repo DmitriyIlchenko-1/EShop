@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace EShop.Infrastructure.Engine;
 
@@ -13,38 +14,13 @@ public class EShopEngine : IEngine
 {
     private IEStartup[] _startups;
     public IScopedProviderAccessor ScopeAccessor { get; set; }
+    public IHostEnvironment Environment { get; set; }
 
-    public EShopEngine()
+    public IEngineStartup Startup(IHostEnvironment environment)
     {
-        LocateStartups();
-    }
-
-    public void ConfigureContainer(ContainerBuilder builder)
-    {
-        // Modules ...
-
-        foreach (var containerSetup in _startups.OfType<IContainerSetup>())
-        {
-            containerSetup.ConfigureContainer(builder);
-        }
-    }
-
-    public void ConfigureRequestPipeline(IApplicationBuilder appBuilder)
-    {
-        foreach (var instance in _startups.OrderBy(s => s.Order))
-        {
-            instance.ConfigureApplication(appBuilder);
-        }
-    }
-
-    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddSingleton<IEngine>(this);
+        Environment = environment;
+        return new EShopEngineStartup(this);
         
-        foreach (var instance in _startups)
-        {
-            instance.ConfigureServices(services, configuration);
-        }
     }
 
     public T? Resolve<T>(IServiceScope? scope = null) where T : class
@@ -70,15 +46,5 @@ public class EShopEngine : IEngine
         return ScopeAccessor.GetScopedProvider;
     }
 
-    private void LocateStartups()
-    {
-        var typeScanner = Singleton<ITypeScanner>.Instance;
-        var startups = typeScanner.FindClassesOfType<IEStartup>();
-
-        var instances = startups
-            .Select(s => (IEStartup)Activator.CreateInstance(s))
-            .Where(s => s != null);
-
-        _startups = instances.ToArray();
-    }
+    
 }

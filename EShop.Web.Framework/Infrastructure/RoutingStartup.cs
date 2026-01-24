@@ -6,16 +6,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EShop.Web.Common.Infrastructure;
 
-public class RoutingStartup : IEStartup
+public class RoutingStartup : BaseStartup
 {
-    public int Order => PipelineOrder.RoutingMiddleware;
-    public void ConfigureApplication(IApplicationBuilder app)
+    public override int Order => PipelineOrder.RoutingMiddleware;
+    public override void ConfigureApplication(IApplicationBuilder app)
     {
         app.UseRouting();
     }
 
-    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-    {
-      
-    }
+    
 }
