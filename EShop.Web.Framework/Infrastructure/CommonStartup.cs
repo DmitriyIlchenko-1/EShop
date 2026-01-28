@@ -41,5 +41,6 @@ public class CommonStartup : BaseStartup
     {
         services.AddHttpContextAccessor();
         services.AddDistributedMemoryCache();
+        services.AddSingleton<IChildLifetimeScopeAccessor, DefaultChildLifetimeScopeAccessor>();
     }
 }

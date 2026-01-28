@@ -1,15 +1,18 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using EShop.Core.Common.Services;
 using EShop.Core.Platform.Caching;
+using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Engine;
 using EShop.Web.Common.Infrastructure;
 using EShop.Web.Common.Infrustructure;
+using EShop.Web.Common.Models;
+using EShop.Web.Common.Models.Choices;
 using Microsoft.AspNetCore.Mvc;
 using ZiggyCreatures.Caching.Fusion;
 
 var builder = WebApplication.CreateBuilder(args);
-//TODO: make it up to the user. 
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 var startup = EngineContext
     .Create()
@@ -22,9 +25,9 @@ startup.ConfigureServices(builder.Services, builder.Configuration);
 builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);
 var app = builder.Build();
 
-// EngineContext.Current.ScopeAccessor = new DefaultScopedProviderAccessor(
-//     app.Services.GetRequiredService<IHttpContextAccessor>(),
-//     app.Services.GetRequiredService<IServiceScopeFactory>());
+ 
+EngineContext.Current.ChildLifetimeScopeAccessor
+    = app.Services.GetRequiredService<IChildLifetimeScopeAccessor>();
 
 app.Lifetime.ApplicationStarted.Register(() =>
 {

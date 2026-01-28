@@ -14,9 +14,9 @@
     <ItemGroup>
         <ProjectReference Include="..\EShop.Core\EShop.Core.csproj" />
         <ProjectReference Include="..\EShop.Infrastructure\EShop.Infrastructure.csproj" />
-        <ProjectReference Include="..\EShop.Web.Framework\EShop.Web.Framework.csproj" />
         <ProjectReference Include="..\EShop.AzureBlobStorage\EShop.AzureBlobStorage.csproj" />
         <ProjectReference Include="..\EShop.ExternalAuth.Google\EShop.ExternalAuth.Google.csproj" />
+     
 
     </ItemGroup>
 

@@ -18,7 +18,7 @@ public interface IEngineStartup : IDisposable
     void ConfigureContainer(ContainerBuilder builder);
 
     /// <summary>
-    /// Add services to the <see cref="IServiceCollection"/> service collection.
+    /// Add services to the <see cref="IServiceCollection"/>  
     /// </summary>
     void ConfigureServices(IServiceCollection services, IConfiguration configuration);
 
@@ -58,6 +58,8 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
     {
         services.AddSingleton<IEngine>(_engine);
         services.AddSingleton<ITypeScanner>(Singleton<ITypeScanner>.Instance);
+        
+        
         foreach (var instance in _startups)
         {
             instance.ConfigureServices(services, configuration);

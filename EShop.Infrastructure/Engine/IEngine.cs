@@ -8,9 +8,9 @@ namespace EShop.Infrastructure.Engine;
 
 public interface IEngine
 {
-    IScopedProviderAccessor ScopeAccessor { get; set; }
+    IChildLifetimeScopeAccessor ChildLifetimeScopeAccessor { get; set; }
     public IHostEnvironment Environment { get; set; }
     IEngineStartup Startup(IHostEnvironment environment);
-    T? Resolve<T>(IServiceScope? scope = null) where T : class;
-    object? Resolve(Type type, IServiceScope? scope = null);
+    T? Resolve<T>() where T : class;
+    object? Resolve(Type type);
 }

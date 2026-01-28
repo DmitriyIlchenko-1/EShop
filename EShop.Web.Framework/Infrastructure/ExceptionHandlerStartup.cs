@@ -14,7 +14,7 @@ public class ExceptionHandlerStartup : BaseStartup
 
     public override void ConfigureApplication(IApplicationBuilder app)
     {
-        IWebHostEnvironment environment = EngineContext.Current.Resolve<IWebHostEnvironment>();
+        IHostEnvironment environment = EngineContext.Current.Environment;
         if (environment.IsDevelopment())
             app.UseDeveloperExceptionPage();
     }

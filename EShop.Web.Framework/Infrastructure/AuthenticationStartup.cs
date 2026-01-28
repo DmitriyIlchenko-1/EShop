@@ -1,4 +1,3 @@
-using EShop.Core.Data;
 using EShop.Core.Platform.Identity.Bootstraping;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Identity.Services;
@@ -14,7 +13,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EShop.Web.Common.Infrustructure;
+namespace EShop.Web.Common.Infrastructure;
 
 public class AuthenticationStartup : BaseStartup
 {

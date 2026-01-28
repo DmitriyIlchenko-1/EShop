@@ -12,39 +12,18 @@ namespace EShop.Infrastructure.Engine;
 
 public class EShopEngine : IEngine
 {
-    private IEStartup[] _startups;
-    public IScopedProviderAccessor ScopeAccessor { get; set; }
+    public IChildLifetimeScopeAccessor ChildLifetimeScopeAccessor { get; set; }
     public IHostEnvironment Environment { get; set; }
 
     public IEngineStartup Startup(IHostEnvironment environment)
     {
         Environment = environment;
         return new EShopEngineStartup(this);
-        
     }
 
-    public T? Resolve<T>(IServiceScope? scope = null) where T : class
-    {
-        return (T?)Resolve(typeof(T), scope);
-    }
+    public T? Resolve<T>() where T : class
+        => ChildLifetimeScopeAccessor.GetChildLifetimeScope.Resolve<T>();
 
-    public object? Resolve(Type type, IServiceScope? scope = null)
-    {
-        return GetServiceProvider(scope)
-            ?
-            .GetService(type);
-    }
-
-    protected IServiceProvider GetServiceProvider(IServiceScope? scope = null)
-    {
-        if (scope != null)
-            return scope.ServiceProvider;
-
-        // var accessor = _rootServiceProvider.GetService<IHttpContextAccessor>();
-        // var context = accessor?.HttpContext;
-        // return context?.RequestServices ?? _rootServiceProvider;
-        return ScopeAccessor.GetScopedProvider;
-    }
-
-    
+    public object? Resolve(Type type)
+        => ChildLifetimeScopeAccessor.GetChildLifetimeScope.Resolve(type);
 }
