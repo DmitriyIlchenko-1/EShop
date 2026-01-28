@@ -1,7 +1,11 @@
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.Loader;
+using System.Security.Policy;
 using System.Text.RegularExpressions;
 using EShop.Infrastructure.Extensions;
+using Microsoft.Extensions.DependencyModel;
+
 namespace EShop.Core.Platform.Infructructure.Types;
 
 public class DefaultTypeScanner : ITypeScanner
@@ -10,8 +14,10 @@ public class DefaultTypeScanner : ITypeScanner
     protected static readonly Dictionary<string, Assembly> _assemblies = new Dictionary<string, Assembly>();
     protected static readonly object _locker = new object();
 
-    protected const string AssemblySkipLoadingPattern =
-        "^System|^Anonymous|^ef|^mscorlib|^Microsoft|^AjaxControlToolkit|^Antrl3|^Autofac|^AutoMapper|^Castle|^ComponentArt|^CppCodeProvider|^DotNetOpenAuth|^EntityFramework|^EPPlus|^FluentValidation|^ImageResizer|^itextsharp|^log4net|^MaxMind|^MbUnit|^MiniProfiler|^Mono.Math|^MvcContrib|^Newtonsoft|^NHibernate|^nunit|^Org.Mentalis|^PerlRegex|^QuickGraph|^Recaptcha|^Remotion|^RestSharp|^Rhino|^Telerik|^Iesi|^TestDriven|^TestFu|^UserAgentStringLibrary|^VJSharpCodeProvider|^WebActivator|^WebDev|^WebGrease";
+    // protected const string AssemblySkipLoadingPattern =
+    //     "^System|^Anonymous|^ef|^mscorlib|^Microsoft|^AjaxControlToolkit|^Npgsql|^ZiggyCreatures|^StackExchange|^Pipelines|^Antrl3|^Autofac|^AutoMapper|^Castle|^ComponentArt|^CppCodeProvider|^DotNetOpenAuth|^EntityFramework|^EPPlus|^FluentValidation|^ImageResizer|^itextsharp|^log4net|^MaxMind|^MbUnit|^MiniProfiler|^Mono.Math|^MvcContrib|^Newtonsoft|^NHibernate|^nunit|^Org.Mentalis|^PerlRegex|^QuickGraph|^Recaptcha|^Remotion|^RestSharp|^Rhino|^Telerik|^Iesi|^TestDriven|^TestFu|^UserAgentStringLibrary|^VJSharpCodeProvider|^WebActivator|^WebDev|^WebGrease";
+
+    protected const string AssemblyPrefix = "EShop";
 
     public IList<Assembly> GetAssemblies()
     {
@@ -27,7 +33,7 @@ public class DefaultTypeScanner : ITypeScanner
     {
         return FindClassesOfType(typeof(T), GetAssemblies(), onlyConcreteClasses);
     }
-    
+
     public IEnumerable<Type> FindClassesOfType(Type type, bool onlyConcreteClasses = true)
     {
         return FindClassesOfType(type, GetAssemblies(), onlyConcreteClasses);
@@ -72,16 +78,14 @@ public class DefaultTypeScanner : ITypeScanner
 
                     if (isOpenGeneric)
                     {
-                        
-                        if (!type.GetClosedGenericTypesOf(lookupType)
+                        if (!type
+                                .GetClosedGenericTypesOf(lookupType)
                                 .Any())
                         {
                             continue;
                         }
-
-                        
                     }
-                    
+
                     if (onlyConcreteClasses)
                     {
                         if (type.IsClass && !type.IsAbstract)
@@ -129,36 +133,43 @@ public class DefaultTypeScanner : ITypeScanner
             }
         }
 
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            if (assembly.FullName == null)
-            {
-                continue;
-            }
+        // var rootAssembly = Assembly.GetEntryAssembly();
+        // var visited = new HashSet<string>();
+        // var queue = new Queue<Assembly>();
+        // queue.Enqueue(rootAssembly);
+        // while (queue.Count > 0)
+        // {
+        //     var assembly = queue.Dequeue();
+        //     visited.Add(assembly.FullName);
+        //     var references = assembly.GetReferencedAssemblies();
+        //
+        //     foreach (var reference in references)
+        //     {
+        //         var fullName = reference.FullName;
+        //         if (fullName == null || visited.Contains(fullName) || !IsCoreAssembly(fullName))
+        //         {
+        //             continue;
+        //         }
+        //
+        //         var assemblyObj = Assembly.Load(reference.FullName);
+        //         queue.Enqueue(assemblyObj);
+        //         _assemblies.TryAdd(fullName, assemblyObj);
+        //     }
+        // }
 
-            if (assembly.FullName.Contains("EShop"))
-            {
-                Console.WriteLine();
-            }
+        var coreAssemblies = DependencyContext
+            .Default.CompileLibraries.Where(x => IsCoreAssembly(x.Name))
+            .ToList();
 
-            if (!Matches(assembly.FullName))
-            {
-                continue;
-            }
+        coreAssemblies.ForEach(x => { _assemblies.TryAdd(x.Name, Assembly.Load(x.Name)); });
 
-            _assemblies.TryAdd(assembly.FullName, assembly);
-        }
 
         _assembliesLoaded = true;
     }
 
 
-    protected static bool Matches(string assemblyFullName)
+    protected static bool IsCoreAssembly(string name)
     {
-        return !Regex.IsMatch(assemblyFullName,
-            AssemblySkipLoadingPattern,
-            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        return name == AssemblyPrefix || name.StartsWith(AssemblyPrefix);
     }
-
-    
 }
