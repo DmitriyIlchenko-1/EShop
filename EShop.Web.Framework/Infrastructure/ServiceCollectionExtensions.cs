@@ -97,10 +97,5 @@ public static class ServiceCollectionExtensions
             .WithoutDistributedCache();
     }
 
-    public static void AddDbHandlers(this IServiceCollection services, Action<DbHandlerServiceConfiguration> configurationAction)
-    {
-        var config = new DbHandlerServiceConfiguration();
-        configurationAction(config);
-        ServiceRegister.AddDbHandlerClasses(services, config);
-    }
+    
 }

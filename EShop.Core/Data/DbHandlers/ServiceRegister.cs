@@ -93,5 +93,7 @@ public static class ServiceRegister
                 }
             }
         }
+
+        throw new NotImplementedException();
     }
 }
