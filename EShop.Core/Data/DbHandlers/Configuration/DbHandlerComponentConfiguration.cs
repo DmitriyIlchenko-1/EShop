@@ -1,6 +1,6 @@
 namespace EShop.Core.Data.DbHandlers.Configuration;
 
-public class DbHandlerServiceConfiguration
+public class DbHandlerComponentConfiguration
 {
     public int Timeout { get; set; } = 0;
 }
