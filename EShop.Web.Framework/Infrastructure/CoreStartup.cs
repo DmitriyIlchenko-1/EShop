@@ -1,3 +1,4 @@
+using Autofac;
 using EShop.Core.Catalog.Attributes.Modeling;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Products.Services;
@@ -5,6 +6,7 @@ using EShop.Core.Common.Services;
 using EShop.Core.Content.Media.Services;
 using EShop.Core.Content.Widgets.Services;
 using EShop.Core.Data;
+using EShop.Core.Data.DbHandlers;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Configuration.Domain;
 using EShop.Core.Platform.Configuration.Services;
@@ -76,5 +78,10 @@ public class CoreStartup : BaseStartup
 
 
         services.AddScoped<SlugRouteValueTransformer>();
+    }
+
+    public override void ConfigureContainer(ContainerBuilder builder)
+    {
+        builder.RegisterModule(new DbHandlerModule());
     }
 }

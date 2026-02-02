@@ -64,7 +64,7 @@ public static class TypeExtensions
                 .GetCustomAttributes(typeof(TAttribute), inherits);
 
             if (attributes.Length > 1)
-            { 
+            {
                 throw new InvalidOperationException(
                     $"Entity type has more than one instance of the attribute {typeof(TAttribute).FullName}");
             }
@@ -82,6 +82,29 @@ public static class TypeExtensions
             .FindCloseInterfacesOfCore(openGeneric)
             .Distinct();
     }
+
+    // public static IEnumerable<Type> FindImplementedType<T>(this Type source, bool concreteOnly)
+    // {
+    //     return FindImplementedType(source, typeof(T), concreteOnly);
+    // }
+
+    // public static IEnumerable<Type> FindImplementedType(this Type source, Type lookUp, bool concreteOnly)
+    // {
+    //     if (source.BaseType == typeof(object))
+    //     {
+    //         yield break;
+    //     }
+    //
+    //     if (source.BaseType.IsConcrete() || concreteOnly && source.BaseType == lookUp)
+    //     {
+    //         yield return source.BaseType;
+    //     }
+    //
+    //     foreach (var result in source.BaseType.FindImplementedType(lookUp, concreteOnly))
+    //     {
+    //         yield return result;
+    //     }
+    // }
 
     /// <param name="source">Must be a concrete type</param>
     /// <returns>Returns all the types the source implements/inherits that are closed generics of the open one passed as the second argument and that have no generic parameters (closed generics)</returns>
@@ -121,6 +144,7 @@ public static class TypeExtensions
             yield return interfaceType;
         }
     }
+
 
     public static bool ClosedGenericOf(this Type source, Type openGeneric)
     {

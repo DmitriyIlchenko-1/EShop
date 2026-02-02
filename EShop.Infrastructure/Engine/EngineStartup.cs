@@ -46,8 +46,6 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
 
     public virtual void ConfigureContainer(ContainerBuilder builder)
     {
-        // Modules ...
-
         foreach (var containerSetup in _startups.OfType<IContainerSetup>())
         {
             containerSetup.ConfigureContainer(builder);

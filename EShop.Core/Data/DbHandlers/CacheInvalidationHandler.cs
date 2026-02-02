@@ -1,26 +1,22 @@
 using EShop.Core.Catalog.Products.Domain;
+using EShop.Core.Data.DbHandlers.Abstractions;
 
 namespace EShop.Core.Data.DbHandlers;
 
-public class CacheInvalidationHandler : IDbHandler<Product>
+public class CacheInvalidationHandler : DbHandler<Product>
 {
-    public async Task OnSaveChangesExecuting(Product entity, CancellationToken cancellationToken = default)
+    protected override async Task OnSaveChangesExecuting(Product entity, IHandleEntityContext entityContext,
+        CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        await Task.Delay(9999);
     }
+}
 
-    public async Task OnSaveChangesExecuted(Product entity, CancellationToken cancellationToken = default)
+public class CacheInvalidationHandler2 : CacheInvalidationHandler
+{
+    protected override async Task OnSaveChangesExecuting(Product entity, IHandleEntityContext entityContext,
+        CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-    }
-
-    public async Task OnAllCompletedSaveChangesExecuting(IEnumerable<Product> entities, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task OnAllCompletedSaveChangesExecuted(IEnumerable<Product> entities, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
+        await Task.Delay(9999);
     }
 }
