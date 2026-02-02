@@ -55,7 +55,25 @@ public static class TypeExtensions
         return type.IsGenericTypeDefinition || type.ContainsGenericParameters;
     }
 
-    
+
+    public static TAttribute GetSingleAttribute<TAttribute>(this Type type, bool inherits) where TAttribute : Attribute
+    {
+        if (type.IsDefined(typeof(TAttribute), inherits))
+        {
+            var attributes = type
+                .GetCustomAttributes(typeof(TAttribute), inherits);
+
+            if (attributes.Length > 1)
+            { 
+                throw new InvalidOperationException(
+                    $"Entity type has more than one instance of the attribute {typeof(TAttribute).FullName}");
+            }
+
+            return (TAttribute)attributes[0];
+        }
+
+        return null;
+    }
 
 
     public static IEnumerable<Type> FindCloseInterfacesOf(this Type source, Type openGeneric)
