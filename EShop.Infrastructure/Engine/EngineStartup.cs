@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Reflection;
 using Autofac;
 using EShop.Core.Platform.Infructructure.Types;
@@ -26,15 +27,22 @@ public interface IEngineStartup : IDisposable
 }
 
 /// <summary>
-/// The purpose of this engine startup is to run all the startups without keeping them in the memory afterwards.
-/// The GC will release the memory taken up by them and this object later on. 
+/// Abstract base class also engages the template pattern to facilitate code reuse. 
 /// </summary>
-/// <typeparam name="TEngine"></typeparam>
+/// <remarks>
+/// The purpose of this engine startup is to run all the startups without keeping them in the memory afterwards.
+/// The GC will release the memory taken up by them and this object later on.
+/// </remarks>
 public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IEngine
 {
-    protected IEStartup[] _startups;
-    protected IEngine _engine;
+    // Protected members used to expose advanced customization options (in case of subclassing) without unnecessarily complication the main public interface.
+    protected IEStartup[] Startups => _startups;
+    protected IEngine Engine => _engine;
 
+    private IEngine _engine;
+    private IEStartup[] _startups;
+ 
+    // The ctor acts as a template method.
     protected EngineStartup(IEngine engine)
     {
         _engine = engine;
@@ -44,7 +52,7 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
             .ToArray();
     }
 
-    public virtual void ConfigureContainer(ContainerBuilder builder)
+    public void ConfigureContainer(ContainerBuilder builder)
     {
         // Modules ...
 
@@ -52,21 +60,39 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
         {
             containerSetup.ConfigureContainer(builder);
         }
+
+        ConfigureContainerCore(builder);
     }
 
-    public virtual void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    protected virtual void ConfigureContainerCore(ContainerBuilder builder)
+    {
+    }
+
+    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IEngine>(_engine);
         services.AddSingleton<ITypeScanner>(Singleton<ITypeScanner>.Instance);
-        
-        
+
         foreach (var instance in _startups)
         {
             instance.ConfigureServices(services, configuration);
         }
+
+        ConfigureServicesCore(services, configuration);
     }
 
-    public virtual void ConfigureApplicationPipeline(IApplicationBuilder appBuilder)
+    protected virtual void ConfigureServicesCore(IServiceCollection services, IConfiguration configuration)
+    {
+    }
+
+    // We still follow the template pattern in case we ever need to do something to the base class method.
+    // Not every EngineStartup implementation needs or have anything to register in the pipeline. The standard HTTP pipeline will do for them.
+    // ConfigureApplicationPipelineCore is a hook subclasses that do need to configure the pipeline can override to do that.
+    // It means: 'It case a subclass cares about configuring the pipeline - they can override the hook, though it's optional.
+    public void ConfigureApplicationPipeline(IApplicationBuilder appBuilder)
+        => ConfigureApplicationPipelineCore(appBuilder);
+
+    protected virtual void ConfigureApplicationPipelineCore(IApplicationBuilder appBuilder)
     {
     }
 
@@ -82,6 +108,7 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
 
         return instances;
     }
+
 
     private void ConfigureModules()
     {
@@ -107,21 +134,19 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
     {
     }
 
-    public override void ConfigureApplicationPipeline(IApplicationBuilder appBuilder)
+    protected override void ConfigureApplicationPipelineCore(IApplicationBuilder appBuilder)
     {
-        foreach (var instance in _startups)
+        foreach (var instance in Startups)
         {
             instance.ConfigureApplication(appBuilder);
         }
     }
 
-    public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    protected override void ConfigureServicesCore(IServiceCollection services, IConfiguration configuration)
     {
-        base.ConfigureServices(services, configuration);
-
         var mvcBuilder = services.AddControllersWithViews();
 
-        foreach (var startup in _startups)
+        foreach (var startup in Startups)
         {
             startup.ConfigureMvc(mvcBuilder, services);
         }
@@ -129,8 +154,8 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
 
     protected override void RegisterModules()
     {
-        GlobalConfiguration.ContentRootPath = _engine.Environment.ContentRootPath;
-        
+        GlobalConfiguration.ContentRootPath = Engine.Environment.ContentRootPath;
+
         foreach (ModuleInfo moduleInfo in ModuleManager.LoadModules())
         {
             moduleInfo.Assembly = Assembly.Load(new AssemblyName(moduleInfo.Name));
@@ -138,3 +163,5 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
         }
     }
 }
+
+ 
