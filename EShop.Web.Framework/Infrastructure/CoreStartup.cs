@@ -16,6 +16,7 @@ using EShop.Core.Platform.Logging.Services;
 using EShop.Core.Platform.Routing;
 using EShop.Core.Platform.Web;
 using EShop.Infrastructure.Modules;
+using EShop.Infrastructure.Storage;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,7 @@ public class CoreStartup : BaseStartup
     {
         services.AddSingleton<IJsonSerializer, NewtonsoftJsonSerializer>();
         services.AddScoped<IWidgetInstanceService, WidgetInstanceService>();
+        services.AddScoped<IMediaStorageProvider, MockMediaStorageProvider>();
         services.AddScoped<IMediaService, MediaService>();
         services.AddSingleton<IProductPricingService, ProductPricingService>();
         services.AddSingleton<ICurrencyService, CurrencyService>();
@@ -57,7 +59,7 @@ public class CoreStartup : BaseStartup
 
         services.AddDbContextPool<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql(configuration["DefaultConnection"],
+            options.UseNpgsql(configuration["DbConnections:DefaultDbConnection"],
                 x => x.MigrationsAssembly("EShop.Web"));
         });
 

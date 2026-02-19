@@ -1,10 +1,8 @@
 using System.Reflection;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Infructructure.Types;
- 
 using EShop.Infrastructure;
 using EShop.Infrastructure.Domain;
- 
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -12,15 +10,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Core.Data;
 
-public partial class ApplicationDbContext : IdentityDbContext<User, Role, int, IdentityUserClaim<int>, UserRole,
-    IdentityUserLogin<int>, IdentityRoleClaim<int>, IdentityUserToken<int>>
+public partial class ApplicationDbContext : DbHandlerContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
-
-    
-
+ 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

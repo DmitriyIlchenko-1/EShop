@@ -1,6 +1,9 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using EShop.Core.Catalog.Categories.Domain;
+using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Common.Services;
+using EShop.Core.Data;
 using EShop.Core.Platform.Caching;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Caching;
@@ -10,6 +13,7 @@ using EShop.Web.Common.Infrustructure;
 using EShop.Web.Common.Models;
 using EShop.Web.Common.Models.Choices;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ZiggyCreatures.Caching.Fusion;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,7 +29,7 @@ startup.ConfigureServices(builder.Services, builder.Configuration);
 builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);
 var app = builder.Build();
 
- 
+
 EngineContext.Current.ChildLifetimeScopeAccessor
     = app.Services.GetRequiredService<IChildLifetimeScopeAccessor>();
 
@@ -37,5 +41,54 @@ app.Lifetime.ApplicationStarted.Register(() =>
 
 startup.ConfigureApplicationPipeline(app);
 
+app.MapGet("/",
+    async (HttpContext context, ApplicationDbContext db) =>
+    {
+        // var newProduct = new Product();
+        // newProduct.Name = "AddedProduct's name";
+        // db.Products.Add(newProduct);
+        var editProduct = await db
+            .Products.Include(x => x.ProductCategories)
+            .FirstOrDefaultAsync(x => x.Name == "TestProductName");
+        await db.SaveChangesAsync();
+        context.Response.Redirect("setup");
+    });
 
+app.MapGet("/setup",
+    async (HttpContext context, ApplicationDbContext db) =>
+    {
+        var category = await db.Categories.FirstOrDefaultAsync(x => x.Name == "TestCategoryName");
+        if (category == null)
+        {
+            category = new Category()
+            {
+                Name = "TestCategoryName",
+            };
+            await db.AddAsync(category);
+        }
+        else
+        {
+            category.Name = "TestCategoryName";
+        }
+
+        var product = await db.Products.FirstOrDefaultAsync(x => x.Name == "TestProductName");
+        if (product == null)
+        {
+            product = new Product()
+            {
+                Name = "TestProductName",
+                Description = "TestProductDescription",
+            };
+            await db.AddAsync(product);
+        }
+        else
+        {
+            product.Name = "TestProductName";
+        }
+
+        product.ProductCategories.Add(new ProductCategory() { Category = category });
+
+
+        await db.SaveChangesAsync();
+    });
 app.Run();

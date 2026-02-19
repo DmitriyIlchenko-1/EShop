@@ -28,7 +28,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddMemoryCache();
 
-        services.AddRedisCache(configuration);
+       // services.AddRedisCache(configuration);
 
         services.AddFusionCacheServices(configuration);
 
@@ -38,7 +38,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICacheManager>(sp =>
         {
             var factory = sp.GetRequiredService<ICacheFactory>();
-            return factory.GetHybridCache();
+            return factory.GetMemoryCache();
         });
     }
 

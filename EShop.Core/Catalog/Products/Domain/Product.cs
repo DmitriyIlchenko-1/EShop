@@ -86,7 +86,7 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletedEntity
     
 
     public ICollection<ProductReview> ProductReviews { get; set; }
-    public ICollection<ProductCategory> ProductCategories { get; set; }
+    public ICollection<ProductCategory> ProductCategories { get; set; } = [];
 
     public ICollection<ProductLink> ProductLinks { get; set; }
 

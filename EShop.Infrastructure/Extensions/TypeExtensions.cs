@@ -76,10 +76,10 @@ public static class TypeExtensions
     }
 
 
-    public static IEnumerable<Type> FindCloseInterfacesOf(this Type source, Type openGeneric)
+    public static IEnumerable<Type> FindClosedInterfacesOf(this Type source, Type openGeneric)
     {
         return source
-            .FindCloseInterfacesOfCore(openGeneric)
+            .FindClosedInterfacesOfCore(openGeneric)
             .Distinct();
     }
 
@@ -108,7 +108,7 @@ public static class TypeExtensions
 
     /// <param name="source">Must be a concrete type</param>
     /// <returns>Returns all the types the source implements/inherits that are closed generics of the open one passed as the second argument and that have no generic parameters (closed generics)</returns>
-    private static IEnumerable<Type> FindCloseInterfacesOfCore(this Type source, Type openGeneric)
+    private static IEnumerable<Type> FindClosedInterfacesOfCore(this Type source, Type openGeneric)
     {
         if (openGeneric == null)
         {
@@ -139,7 +139,7 @@ public static class TypeExtensions
             yield break;
         }
 
-        foreach (var interfaceType in FindCloseInterfacesOf(source.BaseType, openGeneric))
+        foreach (var interfaceType in FindClosedInterfacesOf(source.BaseType, openGeneric))
         {
             yield return interfaceType;
         }

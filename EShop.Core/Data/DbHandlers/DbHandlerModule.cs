@@ -14,8 +14,8 @@ namespace EShop.Core.Data.DbHandlers;
 public class DbHandlerModule : Autofac.Module
 {
     private readonly DbHandlerComponentConfiguration _componentConfiguration;
-    private static readonly Type HandlerType = typeof(IDbHandler);
-    private static readonly Type BaseDbHandlerType = typeof(DbHandler<>);
+    private static readonly Type[] HandlerTypes = [typeof(IDbHandler), typeof(IDbHandler<>)];
+    private static readonly Type Marker = typeof(IDbHandler);
 
     public DbHandlerModule(Action<DbHandlerComponentConfiguration> configAction = null)
     {
@@ -26,7 +26,24 @@ public class DbHandlerModule : Autofac.Module
 
     protected override void Load(ContainerBuilder builder)
     {
+        AddRequiredDependencies(builder);
         AddDbHandlerClassesWithTimeout(builder, _componentConfiguration);
+    }
+
+    private static void AddRequiredDependencies(ContainerBuilder builder)
+    {
+        builder
+            .RegisterType<DefaultDbHandlerActivator>()
+            .As<IDbHandlerActivator>()
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<DefaultDbHandlerDispatcher>()
+            .As<IDbHandlerDispatcher>()
+            .InstancePerLifetimeScope();
+        builder
+            .RegisterType<DefaultDbHandlerRegistry>()
+            .As<IDbHandlerRegistry>()
+            .SingleInstance();
     }
 
     public static void AddDbHandlerClassesWithTimeout(ContainerBuilder builder,
@@ -66,54 +83,93 @@ public class DbHandlerModule : Autofac.Module
         foreach (var handlerT in foundHandlers)
         {
             // Find out which entity type the handler works with.
-            var entityT = GetHandlerEntityType(handlerT);
+            var (entityT, contextT) = GetHandlerEntityType(handlerT);
 
-            // Register the handler as the service types it implements.
-            //For example, if ProductService is also a db handler,
-            //we want to register the service so that it is exposed through its service interface IProductService and through the IDbHandler interface.
+            // serviceInterfaces are the interfaces that are going to be used to try to instantiate the db handler. 
+            // If a service is also a db handler and is already registered as the impl of its service, then this is one of the ways of resolving the handler from the DI container.
+            // If a type just implements the handler interface (IDbHandler) and isn't a service, we add the actual type to the collection to be able to instantiate it later on in the activator class.
+
+            // We want to register this type that implements the IDBHandler interface,
+            // but we also wanna expose it as any other service interface it implements
+            // The thing is we do not want to have multiple registrations of the same type,
+            // because it doesn't make much sense even if it seems harmful (except for memory consumption) and
+            // so we want to have one registration that exposes this type as all the interfaces it implements*.
+            // And so what lets us achieve that is that the initial registrations happen in the ConfigureServices() method of the engine startup type
+            // and after that, the ConfigureContainer() method gets called, which is where this module is called from
+            // and all the registrations that happen in here override the registrations made in the ConfigureServices().
+            // So unlike what we have if we, for example, register the same type multiple times in a row in the ConfigureServices(),
+            // in which case we would still have multiple registrations, and the last one would win when we want to resolve the component,
+            // in this case, Autofac actually overrides the registrations so we only end up with one registration for this type (component).
             var serviceInterfaces = handlerT
                 .GetInterfaces()
-                .Where(t => t != HandlerType)
+                .Where(t => !HandlerTypes.Any(x => x == t || (x.IsGenericType && t.IsClosedTypeOf(x)))) //*
                 .ToArray();
-
-            foreach (var serviceInterface in serviceInterfaces)
-            {
-                builder
-                    .RegisterType(handlerT)
-                    .As(serviceInterface)
-                    .InstanceScopeFromAttribute(fallback: Lifetime.InstancePerLifetimeScope);
-            }
+            if (!serviceInterfaces.Any())
+                serviceInterfaces = new Type[] { handlerT };
 
             // Register the handler as IDbHandler along with its metadata.
             //In Autofac, implementation type is activated once and could be returned as different service types, whereas for MS DI,
             //implementation could be activated for each service type. This is because RegisterType != Add*
-            builder
+            var registration = builder
                 .RegisterType(handlerT)
-                .As(HandlerType)
+                .As(Marker) // we register a handler as HandlerType purely to retrieve the related metadata later on in DbHandlerRegistry's ctor. 
                 .WithMetadata<DbHandlerMetadata>(md =>
                 {
                     md.For(x => x.EntityType, entityT);
-                    md.For(x => x.ServiceTypes, serviceInterfaces);
+                    md.For(x => x.ExposedServiceTypes, serviceInterfaces);
                     md.For(x => x.HandlerType, handlerT);
+                    md.For(x => x.DbContextType, contextT);
                 })
-                .InstancePerDependency();
+                .InstanceScopeFromAttribute(fallback: Lifetime.InstancePerLifetimeScope);
+
+            if (serviceInterfaces.Any())
+            {
+                registration.As(serviceInterfaces);
+            }
+            else
+            {
+                // do not need to do that unless this is the only way to resolve the type (the type implements no other interfaces)
+                registration.AsSelf();
+            }
         }
     }
 
-    private static Type GetHandlerEntityType(Type dbHandlerType)
+    private static (Type Entity, Type DbContext) GetHandlerEntityType(Type dbHandlerType)
     {
-        var baseTypes = dbHandlerType.FindCloseInterfacesOf(BaseDbHandlerType);
-        foreach (var baseType in baseTypes)
+        var baseType = dbHandlerType.BaseType;
+        while (baseType != null && baseType != typeof(object))
         {
-            var typeArgument = baseType
-                .GetGenericArguments()[0];
-            if (typeArgument.IsAssignableTo(typeof(BaseEntity)))
+            if (baseType.IsGenericType)
             {
-                return typeArgument;
+                var openGenericType = baseType.GetGenericTypeDefinition();
+
+                if (openGenericType == typeof(DbHandler<>))
+                {
+                    return (baseType
+                        .GetGenericArguments()[0], typeof(ApplicationDbContext));
+                }
+
+                if (openGenericType == typeof(DbHandler<,>))
+                {
+                    return (baseType
+                        .GetGenericArguments()[0], baseType
+                        .GetGenericArguments()[1]);
+                }
             }
+
+            baseType = baseType.BaseType;
         }
 
-        throw new InvalidOperationException(
-            $"DbHandler type {dbHandlerType.FullName} doesn't implement {HandlerType.FullName}.");
+        
+        var @interface = dbHandlerType
+            .GetInterfaces()
+            .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDbHandler<>));
+        if (@interface != null)
+        {
+            return (typeof(BaseEntity), @interface
+                .GetGenericArguments()[0]);
+        }
+
+        return (typeof(BaseEntity), typeof(ApplicationDbContext));
     }
 }
