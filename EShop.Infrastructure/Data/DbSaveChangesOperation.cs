@@ -1,3 +1,4 @@
+using EShop.Infrastructure.Data;
 using EShop.Infrastructure.Domain;
 using EShop.Infrastructure.Utilities;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -8,9 +9,9 @@ namespace EShop.Core.Data.DbHandlers;
 ///     A class-wrapper representing a single (including the parent if exists SaveChanges()) operation that can be performed against a database.
 ///     A new operation gets constructed for each SaveChanges() call.
 /// </summary>
-internal class DbSaveChangesOperation
+internal class DbSaveChangesOperation : IDisposable 
 {
-    private readonly DbHandlerContext _dbContext;
+    private DbHandlerContext _dbContext;
     private EntityEntry[] _changedEntries;
     private readonly IDbHandlerDispatcher _dispatcher;
     private readonly bool _isNested;
@@ -103,10 +104,14 @@ internal class DbSaveChangesOperation
                 Stage = DbHandlerStage.BeforeSaving;
                 result = await _dispatcher.SavingChangesInvokeAsync(entries, cancellationToken);
 
+                // if there's at least one entity whose state is modified, we trigger a change detection. May seem unintuitive, though,
+                // there's no way for an entity to pass this check through if the entity or one of its entities it's in relation with have any state but Unchanged.
+                // In other words, if there's at least one entity whose state is modified, we automatically assume something might have changes so we call DetectChanges().
                 if (result.InvokedDbHandlers.Any() && entries.Any(x => x.EntityState == EntityState.Modified))
                 {
-                    // todo Why do we detect changes only of the state is modified? If I remove an entity, will it be detected? And if so, why call DetectChanges() in here then?
-                    // todo Does EntityState return the accurate value even if automatic change detection is off?? 
+                    // we detect changes in here because we want to make sure we step into the SaveChangesAsync() method with up-to-date entries,
+                    // because inside the SaveChangesAsync(), the ChangeTracker will not be called and if there's been changes made to the entities in db handlers,
+                    // this is the place to discover them.
                     _dbContext.ChangeTracker.DetectChanges();
                 }
             }
@@ -115,8 +120,8 @@ internal class DbSaveChangesOperation
         //the inner piece of code executes only if you manually modify the entityState property inside one of the db handlers.
         if (result.AnyStateChanged)
         {
-            // todo keep narrowing down the number of entries to only the ones that have been changed in some ways
-            // by the db handlers so that we pass to the 'after' methods only the processed entries. 
+            // keep narrowing down the number of entries to only the ones that have been changed in some ways
+            // by the db handlers so that we pass to the 'after' methods only the entities that had their changes persisted to the db. 
             result.Entries = result
                 .Entries.Where(x => x.EntityState > EntityState.Unchanged)
                 .ToArray();
@@ -158,5 +163,13 @@ internal class DbSaveChangesOperation
         }
     }
 
-    //todo: dispose? 
+ 
+    public void Dispose()
+    {
+        // Assign large managed object references to null to make them more likely to be unreachable. 
+        _dbContext = null;
+        _changedEntries = null;
+    }
+
+    
 }

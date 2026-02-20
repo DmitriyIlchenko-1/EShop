@@ -1,4 +1,5 @@
 using System.Reflection;
+using EShop.Core.Data.DbHandlers.Abstractions;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure;
@@ -10,11 +11,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Core.Data;
 
+/// <summary>
+/// Abstract base class to inherit for db handler types when the db handler type needs to implement only a subset of the interface methods.
+/// Db handler can also inherit this class to receive typed entity references it can then work with. 
+/// </summary>
+/// <typeparam name="TEntity">The entity type the db handler works with</typeparam>
+public abstract class AsyncDbHandler<TEntity> : AsyncDbHandler<TEntity, ApplicationDbContext> where TEntity : BaseEntity
+{
+}
+
 public partial class ApplicationDbContext : DbHandlerContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
+        
     }
+    
+    
  
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

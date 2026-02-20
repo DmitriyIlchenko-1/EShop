@@ -50,6 +50,7 @@ app.MapGet("/",
         var editProduct = await db
             .Products.Include(x => x.ProductCategories)
             .FirstOrDefaultAsync(x => x.Name == "TestProductName");
+        editProduct.Name = "editedTestProductName";
         await db.SaveChangesAsync();
         context.Response.Redirect("setup");
     });

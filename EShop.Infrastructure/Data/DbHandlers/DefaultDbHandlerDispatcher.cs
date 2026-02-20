@@ -32,7 +32,6 @@ public class SaveChangesExecutedResult
     public IEnumerable<IDbHandler> InvokedDbHandlers { get; }
 }
 
- 
 public class DefaultDbHandlerDispatcher : IDbHandlerDispatcher
 {
     private readonly IDbHandlerRegistry _registry;
@@ -40,13 +39,13 @@ public class DefaultDbHandlerDispatcher : IDbHandlerDispatcher
     private readonly bool _hasHooks;
 
     public DefaultDbHandlerDispatcher(IDbHandlerRegistry registry, IDbHandlerActivator activator)
-    { 
+    {
         _registry = registry;
         _activator = activator;
         _hasHooks = registry.AllMetadata.Length > 0;
     }
 
-    
+
     //todo 
     public ILogger Logger { get; set; } = NullLogger.Instance;
 
@@ -54,7 +53,9 @@ public class DefaultDbHandlerDispatcher : IDbHandlerDispatcher
     public async Task<SaveChangesExecutingResult> SavingChangesInvokeAsync(IHandleEntityContext[] entities,
         CancellationToken cancellationToken = default)
     {
-        return (SaveChangesExecutingResult) await InvokeInternal(entities, DbHandlerStage.BeforeSaving, cancellationToken);
+        return (SaveChangesExecutingResult)await InvokeInternal(entities,
+            DbHandlerStage.BeforeSaving,
+            cancellationToken);
     }
 
     public async Task<SaveChangesExecutedResult> SavedChangesInvokeAsync(IHandleEntityContext[] entities,
@@ -129,7 +130,7 @@ public class DefaultDbHandlerDispatcher : IDbHandlerDispatcher
                 }
             }
         }
-        
+
         foreach (var pair in invokedDbHandlers)
         {
             if (before)
@@ -145,8 +146,7 @@ public class DefaultDbHandlerDispatcher : IDbHandlerDispatcher
         return before
             ? new SaveChangesExecutingResult(invokedDbHandlers.Keys, anyStateChanged)
             {
-                // we down pass in 'entities' because not all of them may have been handled in case there's no appropriate db handlers that handle those types of entities.
-                Entries = invokedDbHandlers.SelectMany(x => x.Value).ToArray()
+                Entries = entities
             }
             : new SaveChangesExecutedResult(invokedDbHandlers.Keys);
     }
@@ -160,7 +160,7 @@ public class DefaultDbHandlerDispatcher : IDbHandlerDispatcher
     {
         ArgumentNullException.ThrowIfNull(entities);
         result = null;
-        
+
         // > 3
         if (!(entities.Length > 1))
             return false;

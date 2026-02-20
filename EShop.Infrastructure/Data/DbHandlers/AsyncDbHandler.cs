@@ -1,18 +1,13 @@
 using EShop.Infrastructure.Domain;
 using Microsoft.EntityFrameworkCore;
+using EntityState = EShop.Infrastructure.Data.EntityState;
+
 
 namespace EShop.Core.Data.DbHandlers.Abstractions;
 
-/// <summary>
-/// Abstract base class to inherit for db handler types when the db handler type needs to implement only a subset of the interface methods.
-/// Db handler can also inherit this class to receive typed entity references to work with. 
-/// </summary>
-/// <typeparam name="TEntity">The entity type the db handler works with</typeparam>
-public abstract class DbHandler<TEntity> : DbHandler<TEntity, ApplicationDbContext> where TEntity : BaseEntity
-{
-}
+ 
 
-public abstract class DbHandler<TEntity, TContext> : IDbHandler<TContext>
+public abstract class AsyncDbHandler<TEntity, TContext> : IDbHandler<TContext>
     where TEntity : BaseEntity where TContext : DbContext
 {
     private static readonly Type EntityType = typeof(TEntity);

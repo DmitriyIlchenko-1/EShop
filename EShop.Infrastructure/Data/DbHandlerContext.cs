@@ -60,12 +60,19 @@ public abstract class DbHandlerContext : DbContext
         }
         finally
         {
-            // todo currentOperation.Dispose ???
+            //we've got to take operations off the stack to let non-nested ones execute normally
+            //without limiting their method calls to avoid recursion.
+            _saveOperations.TryPop(out currentSaveOperation);
+            currentSaveOperation?.Dispose();
         }
     }
-    
-    
-/// <summary>
+
+    public override void Dispose()
+    {
+        base.Dispose();
+    }
+
+    /// <summary>
 /// Makes a call to the actual (base) DbContext.SaveChangesAsync() 
 /// </summary>
     protected internal Task<int> SaveChangesCoreAsync(bool acceptAllChangesOnSuccess,

@@ -1,3 +1,4 @@
+using EShop.Infrastructure.Data;
 using EShop.Infrastructure.Domain;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
@@ -56,11 +57,4 @@ public class HandleEntityContext : IHandleEntityContext
     public bool HasStateChanged => EntityState != InitialEntityState;
 }
 
-public enum EntityState
-{
-    Detached,
-    Unchanged,
-    Deleted,
-    Modified,
-    Added,
-}
+ 

@@ -143,13 +143,13 @@ public class DbHandlerModule : Autofac.Module
             {
                 var openGenericType = baseType.GetGenericTypeDefinition();
 
-                if (openGenericType == typeof(DbHandler<>))
+                if (openGenericType == typeof(AsyncDbHandler<>))
                 {
                     return (baseType
                         .GetGenericArguments()[0], typeof(ApplicationDbContext));
                 }
 
-                if (openGenericType == typeof(DbHandler<,>))
+                if (openGenericType == typeof(AsyncDbHandler<,>))
                 {
                     return (baseType
                         .GetGenericArguments()[0], baseType
