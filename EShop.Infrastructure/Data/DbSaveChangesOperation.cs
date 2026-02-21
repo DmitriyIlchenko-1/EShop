@@ -18,7 +18,7 @@ internal class DbSaveChangesOperation : IDisposable
     private EntityEntry[] _changedEntries;
 
     private static readonly ConcurrentDictionary<Type, bool>
-        _dbHandledEntities = new ConcurrentDictionary<Type, bool>();
+        DbHandledEntities = new ConcurrentDictionary<Type, bool>();
 
     private readonly IDbHandlerDispatcher _dispatcher;
     private readonly bool _isNested;
@@ -37,16 +37,34 @@ internal class DbSaveChangesOperation : IDisposable
         _isNested = true;
     }
 
-    public virtual async Task<int> ExecuteAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+    public int Execute(bool acceptAllChangesOnSuccess)
+        => ExecuteInternal(acceptAllChangesOnSuccess, false)
+            .GetAwaiter()
+            .GetResult();
+
+    public virtual Task<int> ExecuteAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+        => ExecuteInternal(acceptAllChangesOnSuccess, true,cancellationToken);
+
+    private async Task<int> ExecuteInternal(bool acceptAllChangesOnSuccess, bool async, CancellationToken cancellationToken = default)
     {
-        Exception? exception = null;
+        Exception exception = null;
 
         await using (await DoExecute())
         {
             try
             {
-                // Make a call to the DbContext.SaveChangesAsync() to actually save changes.
-                return await _dbContext.SaveChangesCoreAsync(acceptAllChangesOnSuccess, cancellationToken);
+                if (async)
+                {
+                    // Make a call to the DbContext.SaveChangesAsync() to actually save changes.
+                    return await _dbContext.SaveChangesCoreAsync(acceptAllChangesOnSuccess, cancellationToken);
+                }
+                else
+                {
+                    
+                    // ReSharper disable once MethodHasAsyncOverloadWithCancellation
+                    return _dbContext.SaveChangesCore(acceptAllChangesOnSuccess);
+                }
+                
             }
             catch (Exception ex)
             {
@@ -81,6 +99,7 @@ internal class DbSaveChangesOperation : IDisposable
 
                 try
                 {
+                    // ReSharper disable once AccessToModifiedClosure
                     if (exception == null)
                     {
                         await AfterSavingExecuteAsync(beforeResult.Entries, cancellationToken);
@@ -147,7 +166,7 @@ internal class DbSaveChangesOperation : IDisposable
 
         Stage = DbHandlerStage.AfterSaving;
 
-        //todo: change the state instance variable & do the cache invalidation
+        //todo: do the cache invalidation
 
         return await _dispatcher.SavedChangesInvokeAsync(entries, cancellationToken);
     }
@@ -159,7 +178,7 @@ internal class DbSaveChangesOperation : IDisposable
             return false;
         }
 
-        var isHandled = _dbHandledEntities.GetOrAdd(instance.GetType(),
+        var isHandled = DbHandledEntities.GetOrAdd(instance.GetType(),
             t =>
             {
                 var attr = t.GetSingleAttribute<DbHandledAttribute>(true);

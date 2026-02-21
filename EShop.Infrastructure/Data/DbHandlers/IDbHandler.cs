@@ -13,23 +13,23 @@ public interface IDbHandler
     /// <summary>
     /// This method is called before a call to SaveChanges(Async) for every entity found as the result of a call to EF Core's Change Tracker. 
     /// </summary>
-    Task<DbHandlerResult> OnSaveChangesExecuting(IHandleEntityContext entity, CancellationToken cancellationToken = default);
+    Task<DbHandlerResult> OnSaveChangesExecutingAsync(IHandleEntityContext entity, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// This method is called after a call to SaveChanges(Async) happens for every entity found as the result of a call to EF Core's Change Tracker. 
     /// </summary>
-    Task<DbHandlerResult> OnSaveChangesExecuted(IHandleEntityContext entity, CancellationToken cancellationToken = default);
+    Task<DbHandlerResult> OnSaveChangesExecutedAsync(IHandleEntityContext entity, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// This method is called before a call to SaveChanges(Async) for every entity found as the result of a call to EF Core's Change Tracker. 
     /// </summary>
-    Task OnAllCompletedSaveChangesExecuting(IEnumerable<IHandleEntityContext> entities,
+    Task OnAllCompletedSaveChangesExecutingAsync(IEnumerable<IHandleEntityContext> entities,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// This method is called before a call to SaveChanges(Async) for every entity found as the result of a call to EF Core's Change Tracker. 
     /// </summary>
-    Task OnAllCompletedSaveChangesExecuted(IEnumerable<IHandleEntityContext> entities,
+    Task OnAllCompletedSaveChangesExecutedAsync(IEnumerable<IHandleEntityContext> entities,
         CancellationToken cancellationToken = default);
 }
 

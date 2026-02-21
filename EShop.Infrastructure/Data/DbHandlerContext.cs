@@ -4,8 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Core.Data;
 
- 
-
 public abstract class DbHandlerContext : DbContext
 {
     private readonly Stack<DbSaveChangesOperation> _saveOperations = new Stack<DbSaveChangesOperation>();
@@ -13,7 +11,7 @@ public abstract class DbHandlerContext : DbContext
     public DbHandlerContext(DbContextOptions options) : base(options)
     {
     }
-    
+
     //todo
     private IDbHandlerDispatcher ActivateDbHandlerDispatcher()
     {
@@ -28,7 +26,16 @@ public abstract class DbHandlerContext : DbContext
         }
     }
 
-    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        => SaveChangesInternal(acceptAllChangesOnSuccess, false)
+            .GetAwaiter()
+            .GetResult();
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = new CancellationToken())
+        => SaveChangesInternal(acceptAllChangesOnSuccess, true, cancellationToken);
+
+    private async Task<int> SaveChangesInternal(bool acceptAllChangesOnSuccess, bool async,
         CancellationToken cancellationToken = new CancellationToken())
     {
         _saveOperations.TryPeek(out var currentSaveOperation);
@@ -56,7 +63,14 @@ public abstract class DbHandlerContext : DbContext
 
         try
         {
-            return await currentSaveOperation.ExecuteAsync(acceptAllChangesOnSuccess, cancellationToken);
+            if (async)
+            {
+                return await currentSaveOperation.ExecuteAsync(acceptAllChangesOnSuccess, cancellationToken);
+            }
+            else
+            {
+                return currentSaveOperation.Execute(acceptAllChangesOnSuccess);
+            }
         }
         finally
         {
@@ -80,16 +94,19 @@ public abstract class DbHandlerContext : DbContext
             operation.Dispose();
         }
     }
-    
+
+
+    protected internal int SaveChangesCore(bool acceptAllChangesOnSuccess)
+    {
+        return base.SaveChanges();
+    }
 
     /// <summary>
-/// Makes a call to the actual (base) DbContext.SaveChangesAsync() 
-/// </summary>
+    /// Makes a call to the actual (base) DbContext.SaveChangesAsync() 
+    /// </summary>
     protected internal Task<int> SaveChangesCoreAsync(bool acceptAllChangesOnSuccess,
         CancellationToken cancellationToken = default)
     {
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
-    
-    
 }

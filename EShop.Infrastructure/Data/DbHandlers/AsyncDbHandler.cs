@@ -10,10 +10,7 @@ namespace EShop.Core.Data.DbHandlers.Abstractions;
 public abstract class AsyncDbHandler<TEntity, TContext> : IDbHandler<TContext>
     where TEntity : BaseEntity where TContext : DbContext
 {
-    private static readonly Type EntityType = typeof(TEntity);
-
-    // a template method
-    public async Task<DbHandlerResult> OnSaveChangesExecuting(IHandleEntityContext entityContext,
+    public virtual async Task<DbHandlerResult> OnSaveChangesExecutingAsync(IHandleEntityContext entityContext,
         CancellationToken cancellationToken = default)
     {
         var typedEntity = (TEntity)entityContext.Entity;
@@ -31,7 +28,7 @@ public abstract class AsyncDbHandler<TEntity, TContext> : IDbHandler<TContext>
         }
     }
 
-    public async Task<DbHandlerResult> OnSaveChangesExecuted(IHandleEntityContext entityContext,
+    public virtual async Task<DbHandlerResult> OnSaveChangesExecutedAsync(IHandleEntityContext entityContext,
         CancellationToken cancellationToken = default)
     {
         var typedEntity = entityContext.Entity as TEntity;
@@ -48,12 +45,12 @@ public abstract class AsyncDbHandler<TEntity, TContext> : IDbHandler<TContext>
         }
     }
 
-    public async Task OnAllCompletedSaveChangesExecuting(IEnumerable<IHandleEntityContext> entityContexts,
+    public virtual async Task OnAllCompletedSaveChangesExecutingAsync(IEnumerable<IHandleEntityContext> entityContexts,
         CancellationToken cancellationToken = default)
     {
         // arrays return a new instance of their enumerator every time to avoid traversing the same one more than once.
         var handleEntityContexts = entityContexts as IHandleEntityContext[] ?? entityContexts.ToArray();
-        await OnAllCompletedSaveChangesExecuting(
+        await OnAllCompletedSaveChangesExecutingAsync(
             handleEntityContexts
                 .Select(x => x.Entity)
                 .OfType<TEntity>(),
@@ -61,12 +58,12 @@ public abstract class AsyncDbHandler<TEntity, TContext> : IDbHandler<TContext>
             cancellationToken);
     }
 
-    public async Task OnAllCompletedSaveChangesExecuted(IEnumerable<IHandleEntityContext> entityContexts,
+    public virtual async Task OnAllCompletedSaveChangesExecutedAsync(IEnumerable<IHandleEntityContext> entityContexts,
         CancellationToken cancellationToken = default)
     {
         // arrays return a new instance of their enumerator every time to avoid traversing the same one more than once.
         var handleEntityContexts = entityContexts as IHandleEntityContext[] ?? entityContexts.ToArray();
-        await OnAllCompletedSaveChangesExecuted(
+        await OnAllCompletedSaveChangesExecutedAsync(
             handleEntityContexts
                 .Select(x => x.Entity)
                 .OfType<TEntity>(),
@@ -102,7 +99,7 @@ public abstract class AsyncDbHandler<TEntity, TContext> : IDbHandler<TContext>
     /// This is a hook operation, which does nothing by default.
     /// It may be overriden by a subclass to provide concrete behaviour in case the subclass is interested in handling entity at this stage.
     /// </summary>
-    protected virtual Task OnAllCompletedSaveChangesExecuting(IEnumerable<TEntity> entities,
+    protected virtual Task OnAllCompletedSaveChangesExecutingAsync(IEnumerable<TEntity> entities,
         IEnumerable<IHandleEntityContext> entityContexts,
         CancellationToken cancellationToken = default) => Task.CompletedTask;
 
@@ -110,7 +107,7 @@ public abstract class AsyncDbHandler<TEntity, TContext> : IDbHandler<TContext>
     /// This is a hook operation, which does nothing by default.
     /// It may be overriden by a subclass to provide concrete behaviour in case the subclass is interested in handling entity at this stage.
     /// </summary>
-    protected virtual Task OnAllCompletedSaveChangesExecuted(IEnumerable<TEntity> entities,
+    protected virtual Task OnAllCompletedSaveChangesExecutedAsync(IEnumerable<TEntity> entities,
         IEnumerable<IHandleEntityContext> entityContexts,
         CancellationToken cancellationToken = default) => Task.CompletedTask;
 }

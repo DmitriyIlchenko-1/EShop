@@ -100,8 +100,8 @@ public class DefaultDbHandlerDispatcher : IDbHandlerDispatcher
                     var instance = _activator.Activate(dbHandler);
                     //If the result is Void, it means that the handler isn't interested in handling with the given type of Entity (entity.EntityType) and so its OnAll...() isn't called later on.
                     DbHandlerResult result = before
-                        ? await instance.OnSaveChangesExecuting(entity, cancellationToken)
-                        : await instance.OnSaveChangesExecuted(entity, cancellationToken);
+                        ? await instance.OnSaveChangesExecutingAsync(entity, cancellationToken)
+                        : await instance.OnSaveChangesExecutedAsync(entity, cancellationToken);
 
                     if (result == DbHandlerResult.Ok)
                     {
@@ -135,11 +135,11 @@ public class DefaultDbHandlerDispatcher : IDbHandlerDispatcher
         {
             if (before)
             {
-                await pair.Key.OnAllCompletedSaveChangesExecuting(pair.Value, cancellationToken);
+                await pair.Key.OnAllCompletedSaveChangesExecutingAsync(pair.Value, cancellationToken);
             }
             else
             {
-                await pair.Key.OnAllCompletedSaveChangesExecuted(pair.Value, cancellationToken);
+                await pair.Key.OnAllCompletedSaveChangesExecutedAsync(pair.Value, cancellationToken);
             }
         }
 

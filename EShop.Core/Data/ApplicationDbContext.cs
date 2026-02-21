@@ -3,6 +3,7 @@ using EShop.Core.Data.DbHandlers.Abstractions;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure;
+using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Domain;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Identity;
@@ -17,6 +18,10 @@ namespace EShop.Core.Data;
 /// </summary>
 /// <typeparam name="TEntity">The entity type the db handler works with</typeparam>
 public abstract class AsyncDbHandler<TEntity> : AsyncDbHandler<TEntity, ApplicationDbContext> where TEntity : BaseEntity
+{
+}
+
+public abstract class DbHandler<TEntity> : DbHandler<TEntity, ApplicationDbContext> where TEntity : BaseEntity
 {
 }
 
