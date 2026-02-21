@@ -1,5 +1,8 @@
+using System.Collections.Concurrent;
 using EShop.Infrastructure.Data;
+using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Domain;
+using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
@@ -9,10 +12,14 @@ namespace EShop.Core.Data.DbHandlers;
 ///     A class-wrapper representing a single (including the parent if exists SaveChanges()) operation that can be performed against a database.
 ///     A new operation gets constructed for each SaveChanges() call.
 /// </summary>
-internal class DbSaveChangesOperation : IDisposable 
+internal class DbSaveChangesOperation : IDisposable
 {
     private DbHandlerContext _dbContext;
     private EntityEntry[] _changedEntries;
+
+    private static readonly ConcurrentDictionary<Type, bool>
+        _dbHandledEntities = new ConcurrentDictionary<Type, bool>();
+
     private readonly IDbHandlerDispatcher _dispatcher;
     private readonly bool _isNested;
     public DbHandlerStage Stage { get; private set; }
@@ -147,7 +154,19 @@ internal class DbSaveChangesOperation : IDisposable
 
     private static bool CanBeHandled(object instance)
     {
-        return instance is BaseEntity;
+        if (instance is not BaseEntity)
+        {
+            return false;
+        }
+
+        var isHandled = _dbHandledEntities.GetOrAdd(instance.GetType(),
+            t =>
+            {
+                var attr = t.GetSingleAttribute<DbHandledAttribute>(true);
+                return attr != null ? attr.CanBeHandled : true;
+            });
+
+        return isHandled;
     }
 
 
@@ -163,13 +182,11 @@ internal class DbSaveChangesOperation : IDisposable
         }
     }
 
- 
+
     public void Dispose()
     {
         // Assign large managed object references to null to make them more likely to be unreachable. 
         _dbContext = null;
         _changedEntries = null;
     }
-
-    
 }

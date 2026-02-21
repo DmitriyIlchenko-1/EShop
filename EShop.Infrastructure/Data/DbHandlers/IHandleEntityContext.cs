@@ -13,18 +13,15 @@ public interface IHandleEntityContext
     public Type EntityType { get; }
 
     /// <summary>
-    /// The state an entity was in right before the call to the actual SaveChanges() to persist the changes to the db.
-    /// This is the state taken into account by the EF Framework when it thinks which operation to execute (add, remove, edit etc) against the database.
-    ///
-    /// The value is updated, if necessary, to match <see cref="EntityState"/> every time it comes out of a db handler before going into the next one.
+    /// Useful for after hook methods to see which state an entity was before it got saved to the db. 
     /// </summary>
     public EntityState InitialEntityState { get; set; }
 
     /// <summary>
-    /// Represent the current, up-to-date state of an entity.
+    /// Always represent the current, up-to-date state of an entity.
     /// You can change the state using the getter if you know what you're doing, and you're aware of the result of this action,
     /// though, most of the time it should be just read or not written.
-    /// You can change the state of an entity to prevent it from getting removed from the db, for example. So when DetectChanges() is run
+    /// You can change the state of an entity to suppress save or prevent it from getting removed from the db, for example.
     /// </summary>
     public EntityState EntityState { get; set; }
 

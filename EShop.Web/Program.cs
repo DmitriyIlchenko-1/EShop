@@ -48,9 +48,9 @@ app.MapGet("/",
         // newProduct.Name = "AddedProduct's name";
         // db.Products.Add(newProduct);
         var editProduct = await db
-            .Products.Include(x => x.ProductCategories)
+            .Products
             .FirstOrDefaultAsync(x => x.Name == "TestProductName");
-        editProduct.Name = "editedTestProductName";
+        db.Remove(editProduct);
         await db.SaveChangesAsync();
         context.Response.Redirect("setup");
     });
@@ -85,6 +85,7 @@ app.MapGet("/setup",
         else
         {
             product.Name = "TestProductName";
+            product.Deleted = false;
         }
 
         product.ProductCategories.Add(new ProductCategory() { Category = category });
