@@ -30,7 +30,7 @@ public interface IEngineStartup : IDisposable
 /// The GC will release the memory taken up by them and this object later on. 
 /// </summary>
 /// <typeparam name="TEngine"></typeparam>
-public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IEngine
+public abstract class EngineStartup<TEngine> : Disposable, IEngineStartup where TEngine : IEngine
 {
     protected IEStartup[] _startups;
     protected IEngine _engine;
@@ -56,8 +56,8 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
     {
         services.AddSingleton<IEngine>(_engine);
         services.AddSingleton<ITypeScanner>(Singleton<ITypeScanner>.Instance);
-        
-        
+
+
         foreach (var instance in _startups)
         {
             instance.ConfigureServices(services, configuration);
@@ -92,47 +92,50 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
     {
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        _engine = null;
-        _startups = null;
+        if (disposing)
+        {
+            _engine = null;
+            _startups = null;
+        }
     }
 }
 
 public class EShopEngineStartup : EngineStartup<EShopEngine>
-{
-    public EShopEngineStartup(IEngine engine) : base(engine)
     {
-    }
-
-    public override void ConfigureApplicationPipeline(IApplicationBuilder appBuilder)
-    {
-        foreach (var instance in _startups)
+        public EShopEngineStartup(IEngine engine) : base(engine)
         {
-            instance.ConfigureApplication(appBuilder);
+        }
+
+        public override void ConfigureApplicationPipeline(IApplicationBuilder appBuilder)
+        {
+            foreach (var instance in _startups)
+            {
+                instance.ConfigureApplication(appBuilder);
+            }
+        }
+
+        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+        {
+            base.ConfigureServices(services, configuration);
+
+            var mvcBuilder = services.AddControllersWithViews();
+
+            foreach (var startup in _startups)
+            {
+                startup.ConfigureMvc(mvcBuilder, services);
+            }
+        }
+
+        protected override void RegisterModules()
+        {
+            GlobalConfiguration.ContentRootPath = _engine.Environment.ContentRootPath;
+
+            foreach (ModuleInfo moduleInfo in ModuleManager.LoadModules())
+            {
+                moduleInfo.Assembly = Assembly.Load(new AssemblyName(moduleInfo.Name));
+                GlobalConfiguration.Modules.Add(moduleInfo);
+            }
         }
     }
-
-    public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-    {
-        base.ConfigureServices(services, configuration);
-
-        var mvcBuilder = services.AddControllersWithViews();
-
-        foreach (var startup in _startups)
-        {
-            startup.ConfigureMvc(mvcBuilder, services);
-        }
-    }
-
-    protected override void RegisterModules()
-    {
-        GlobalConfiguration.ContentRootPath = _engine.Environment.ContentRootPath;
-        
-        foreach (ModuleInfo moduleInfo in ModuleManager.LoadModules())
-        {
-            moduleInfo.Assembly = Assembly.Load(new AssemblyName(moduleInfo.Name));
-            GlobalConfiguration.Modules.Add(moduleInfo);
-        }
-    }
-}

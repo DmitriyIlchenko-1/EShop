@@ -12,7 +12,7 @@ namespace EShop.Infrastructure.Utilities;
 /// 1. https://stackoverflow.com/a/46692381/
 /// 2. https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose#implement-the-dispose-pattern-for-a-derived-class
 /// </remarks>
-public class Disposable : IDisposable, IAsyncDisposable
+public abstract class Disposable : IDisposable, IAsyncDisposable
 {
     private const int DisposedFlag = 1;
     private int _isDisposed;
@@ -47,7 +47,7 @@ public class Disposable : IDisposable, IAsyncDisposable
     }
 
     // ReSharper disable once MemberCanBePrivate.Global
-    protected internal bool IsDisposed
+    protected bool IsDisposed
     {
         get
         {
@@ -56,10 +56,10 @@ public class Disposable : IDisposable, IAsyncDisposable
         }
     }
     
-    protected internal void CheckDisposed()
+    protected void CheckDisposed()
     {
-        if (IsDisposed)
-            throw new ObjectDisposedException(this.GetType().ShortDisplayName());
+        if (IsDisposed) 
+            throw new ObjectDisposedException (this.GetType().ShortDisplayName());
     }
     
     

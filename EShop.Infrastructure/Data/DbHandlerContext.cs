@@ -69,8 +69,18 @@ public abstract class DbHandlerContext : DbContext
 
     public override void Dispose()
     {
+        ResetState();
         base.Dispose();
     }
+
+    private void ResetState()
+    {
+        while (_saveOperations.TryPop(out var operation))
+        {
+            operation.Dispose();
+        }
+    }
+    
 
     /// <summary>
 /// Makes a call to the actual (base) DbContext.SaveChangesAsync() 
