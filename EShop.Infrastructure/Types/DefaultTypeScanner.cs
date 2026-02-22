@@ -1,42 +1,32 @@
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.Loader;
-using System.Security.Policy;
-using System.Text.RegularExpressions;
+using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Extensions;
-using Microsoft.Extensions.DependencyModel;
 
-namespace EShop.Core.Platform.Infructructure.Types;
+namespace EShop.Infrastructure.Types;
 
 public class DefaultTypeScanner : ITypeScanner
 {
-    protected static bool _assembliesLoaded;
-    protected static readonly Dictionary<string, Assembly> _assemblies = new Dictionary<string, Assembly>();
-    protected static readonly object _locker = new object();
-
-    // protected const string AssemblySkipLoadingPattern =
-    //     "^System|^Anonymous|^ef|^mscorlib|^Microsoft|^AjaxControlToolkit|^Npgsql|^ZiggyCreatures|^StackExchange|^Pipelines|^Antrl3|^Autofac|^AutoMapper|^Castle|^ComponentArt|^CppCodeProvider|^DotNetOpenAuth|^EntityFramework|^EPPlus|^FluentValidation|^ImageResizer|^itextsharp|^log4net|^MaxMind|^MbUnit|^MiniProfiler|^Mono.Math|^MvcContrib|^Newtonsoft|^NHibernate|^nunit|^Org.Mentalis|^PerlRegex|^QuickGraph|^Recaptcha|^Remotion|^RestSharp|^Rhino|^Telerik|^Iesi|^TestDriven|^TestFu|^UserAgentStringLibrary|^VJSharpCodeProvider|^WebActivator|^WebDev|^WebGrease";
-
+    
     protected const string AssemblyPrefix = "EShop";
 
-    public IList<Assembly> GetAssemblies()
+    public DefaultTypeScanner(IEnumerable<Assembly> assemblies)
     {
-        if (!_assembliesLoaded)
-        {
-            Initialize();
-        }
-
-        return _assemblies.Values.ToList();
+        ArgumentNullException.ThrowIfNull(assemblies);
+        var coreAssemblies = new HashSet<Assembly>(assemblies);
+        Assemblies = coreAssemblies.AsReadOnly();
     }
+
+    public IEnumerable<Assembly> Assemblies { get; private set; }
 
     public IEnumerable<Type> FindClassesOfType<T>(bool onlyConcreteClasses = true)
     {
-        return FindClassesOfType(typeof(T), GetAssemblies(), onlyConcreteClasses);
+        return FindClassesOfType(typeof(T), Assemblies, onlyConcreteClasses);
     }
 
     public IEnumerable<Type> FindClassesOfType(Type type, bool onlyConcreteClasses = true)
     {
-        return FindClassesOfType(type, GetAssemblies(), onlyConcreteClasses);
+        return FindClassesOfType(type, Assemblies, onlyConcreteClasses);
     }
 
     protected IEnumerable<Type> FindClassesOfType(Type lookupType, IEnumerable<Assembly> assemblies,
@@ -117,57 +107,7 @@ public class DefaultTypeScanner : ITypeScanner
 
         return discoveredTypes;
     }
-
-    private void Initialize()
-    {
-        if (_assembliesLoaded)
-        {
-            return;
-        }
-
-        lock (_locker)
-        {
-            if (_assembliesLoaded)
-            {
-                return;
-            }
-        }
-
-        // var rootAssembly = Assembly.GetEntryAssembly();
-        // var visited = new HashSet<string>();
-        // var queue = new Queue<Assembly>();
-        // queue.Enqueue(rootAssembly);
-        // while (queue.Count > 0)
-        // {
-        //     var assembly = queue.Dequeue();
-        //     visited.Add(assembly.FullName);
-        //     var references = assembly.GetReferencedAssemblies();
-        //
-        //     foreach (var reference in references)
-        //     {
-        //         var fullName = reference.FullName;
-        //         if (fullName == null || visited.Contains(fullName) || !IsCoreAssembly(fullName))
-        //         {
-        //             continue;
-        //         }
-        //
-        //         var assemblyObj = Assembly.Load(reference.FullName);
-        //         queue.Enqueue(assemblyObj);
-        //         _assemblies.TryAdd(fullName, assemblyObj);
-        //     }
-        // }
-
-        var coreAssemblies = DependencyContext
-            .Default.CompileLibraries.Where(x => IsCoreAssembly(x.Name))
-            .ToList();
-
-        coreAssemblies.ForEach(x => { _assemblies.TryAdd(x.Name, Assembly.Load(x.Name)); });
-
-
-        _assembliesLoaded = true;
-    }
-
-
+    
     protected static bool IsCoreAssembly(string name)
     {
         return name == AssemblyPrefix || name.StartsWith(AssemblyPrefix);
