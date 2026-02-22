@@ -37,7 +37,7 @@ public partial class ApplicationDbContext : DbHandlerContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var assemblies = Singleton<ITypeScanner>.Instance.GetAssemblies();
+        var assemblies = Singleton<ITypeScanner>.Instance.Assemblies;
         base.OnModelCreating(modelBuilder);
 
         RegisterConvention(modelBuilder);

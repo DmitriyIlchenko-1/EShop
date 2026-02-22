@@ -66,7 +66,7 @@ public class DbHandlerModule : Autofac.Module
         CancellationToken cancellationToken = default)
     {
         var typeScanner = Singleton<ITypeScanner>.Instance;
-        var assemblies = typeScanner.GetAssemblies();
+        var assemblies = typeScanner.Assemblies;
         ConnectImplementationsWithMetadata(builder, assemblies, cancellationToken);
     }
 

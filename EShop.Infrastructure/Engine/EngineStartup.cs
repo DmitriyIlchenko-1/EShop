@@ -1,12 +1,15 @@
 using System.Reflection;
+using System.Runtime.Loader;
 using Autofac;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Modules;
+using EShop.Infrastructure.Types;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyModel;
 
 namespace EShop.Infrastructure.Engine;
 
@@ -81,9 +84,13 @@ public abstract class EngineStartup<TEngine> : Disposable, IEngineStartup where 
         return instances;
     }
 
+
+    protected abstract IEnumerable<Assembly> ResolveCoreAssemblies();
+
     private void ConfigureModules()
     {
-        var typeScanner = new DefaultTypeScanner();
+        var coreAssemblies = ResolveCoreAssemblies();
+        var typeScanner = new DefaultTypeScanner(coreAssemblies);
         Singleton<ITypeScanner>.Instance = typeScanner;
         RegisterModules();
     }
@@ -103,39 +110,96 @@ public abstract class EngineStartup<TEngine> : Disposable, IEngineStartup where 
 }
 
 public class EShopEngineStartup : EngineStartup<EShopEngine>
+{
+    private const string AssemblyPrefix = "EShop";
+
+    public EShopEngineStartup(IEngine engine) : base(engine)
     {
-        public EShopEngineStartup(IEngine engine) : base(engine)
+    }
+
+    public override void ConfigureApplicationPipeline(IApplicationBuilder appBuilder)
+    {
+        foreach (var instance in _startups)
         {
-        }
-
-        public override void ConfigureApplicationPipeline(IApplicationBuilder appBuilder)
-        {
-            foreach (var instance in _startups)
-            {
-                instance.ConfigureApplication(appBuilder);
-            }
-        }
-
-        public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-        {
-            base.ConfigureServices(services, configuration);
-
-            var mvcBuilder = services.AddControllersWithViews();
-
-            foreach (var startup in _startups)
-            {
-                startup.ConfigureMvc(mvcBuilder, services);
-            }
-        }
-
-        protected override void RegisterModules()
-        {
-            GlobalConfiguration.ContentRootPath = _engine.Environment.ContentRootPath;
-
-            foreach (ModuleInfo moduleInfo in ModuleManager.LoadModules())
-            {
-                moduleInfo.Assembly = Assembly.Load(new AssemblyName(moduleInfo.Name));
-                GlobalConfiguration.Modules.Add(moduleInfo);
-            }
+            instance.ConfigureApplication(appBuilder);
         }
     }
+
+    protected override IEnumerable<Assembly> ResolveCoreAssemblies()
+    {
+        var assemblies = new HashSet<Assembly>();
+
+        //This is what lets us access the dependencies used to compile the app without relying on lazy assembly loading. 
+        var libraries = DependencyContext
+            .Default
+            .CompileLibraries
+            .Where(x => IsCoreAssembly(x.Name))
+            .Select(x => new
+            {
+                Name = new AssemblyName(x.Name),
+            });
+
+        // Retrieve the assemblies that have already been loaded so we don't have to do that again.
+        var appAssemblies = AssemblyLoadContext
+            .Default.Assemblies
+            .Where(x => x.FullName.StartsWith(AssemblyPrefix) && IsCoreAssembly(x.GetName()
+                .Name))
+            .Select(x => new
+            {
+                Name = x.GetName(),
+                Assembly = x
+            });
+        foreach (var lib in libraries)
+        {
+            try
+            {
+                var loadedAssembly = appAssemblies.FirstOrDefault(x => x.Name.Name == lib.Name.Name)
+                    ?.Assembly;
+                if (loadedAssembly is null)
+                {
+                    loadedAssembly = AssemblyLoadContext.Default.LoadFromAssemblyName(lib.Name);
+                }
+
+                if (loadedAssembly is not null)
+                {
+                    assemblies.Add(loadedAssembly);
+                }
+            }
+            catch (Exception e)
+            {
+                //todo: log exceptions in here
+            }
+        }
+
+        return assemblies;
+
+        bool IsCoreAssembly(string name)
+        {
+            return name == AssemblyPrefix || name.StartsWith(AssemblyPrefix);
+        }
+    }
+
+
+    public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    {
+        base.ConfigureServices(services, configuration);
+
+        var mvcBuilder = services.AddControllersWithViews();
+
+        foreach (var startup in _startups)
+        {
+            startup.ConfigureMvc(mvcBuilder, services);
+        }
+    }
+
+    protected override void RegisterModules()
+    {
+        GlobalConfiguration.ContentRootPath = _engine.Environment.ContentRootPath;
+
+        foreach (ModuleInfo moduleInfo in ModuleManager.LoadModules())
+        {
+            moduleInfo.Assembly = Assembly.Load(new AssemblyName(moduleInfo.Name));
+            GlobalConfiguration.Modules.Add(moduleInfo);
+        }
+    }
+}

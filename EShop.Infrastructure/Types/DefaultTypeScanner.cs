@@ -2,14 +2,13 @@ using System.Diagnostics;
 using System.Reflection;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace EShop.Infrastructure.Types;
 
 public class DefaultTypeScanner : ITypeScanner
 {
-    
-    protected const string AssemblyPrefix = "EShop";
-
     public DefaultTypeScanner(IEnumerable<Assembly> assemblies)
     {
         ArgumentNullException.ThrowIfNull(assemblies);
@@ -18,98 +17,70 @@ public class DefaultTypeScanner : ITypeScanner
     }
 
     public IEnumerable<Assembly> Assemblies { get; private set; }
+    public ILogger Logger { get; set; } = NullLogger.Instance;
 
     public IEnumerable<Type> FindClassesOfType<T>(bool onlyConcreteClasses = true)
     {
-        return FindClassesOfType(typeof(T), Assemblies, onlyConcreteClasses);
+        return FindClassesOfTypeInternal(typeof(T), Assemblies, onlyConcreteClasses);
     }
 
     public IEnumerable<Type> FindClassesOfType(Type type, bool onlyConcreteClasses = true)
     {
-        return FindClassesOfType(type, Assemblies, onlyConcreteClasses);
+        return FindClassesOfTypeInternal(type, Assemblies, onlyConcreteClasses);
     }
 
-    protected IEnumerable<Type> FindClassesOfType(Type lookupType, IEnumerable<Assembly> assemblies,
+    private IEnumerable<Type> FindClassesOfTypeInternal(Type lookupType, IEnumerable<Assembly> assemblies,
         bool onlyConcreteClasses = true)
     {
         var discoveredTypes = new List<Type>();
 
-        try
+        foreach (var a in assemblies)
         {
-            foreach (var a in assemblies)
-            {
-                Type[] types = null;
-                try
-                {
-                    types = a.GetTypes();
-                }
-                catch (Exception e)
-                {
-                }
+            IEnumerable<Type> types = a.GetLoadableTypes();
 
-                if (types == null)
+            if (types == null)
+            {
+                continue;
+            }
+
+            foreach (var type in types)
+            {
+                if (!lookupType.IsAssignableFrom(type))
                 {
                     continue;
                 }
 
-                foreach (var type in types)
+                if (type.IsInterface)
                 {
-                    if (!lookupType.IsAssignableFrom(type))
+                    continue;
+                }
+
+                var isOpenGeneric = lookupType.IsGenericTypeDefinition;
+
+                if (isOpenGeneric)
+                {
+                    if (!type
+                            .GetClosedGenericTypesOf(lookupType)
+                            .Any())
                     {
                         continue;
                     }
+                }
 
-                    if (type.IsInterface)
-                    {
-                        continue;
-                    }
-
-                    var isOpenGeneric = lookupType.IsGenericTypeDefinition;
-
-                    if (isOpenGeneric)
-                    {
-                        if (!type
-                                .GetClosedGenericTypesOf(lookupType)
-                                .Any())
-                        {
-                            continue;
-                        }
-                    }
-
-                    if (onlyConcreteClasses)
-                    {
-                        if (type.IsClass && !type.IsAbstract)
-                        {
-                            discoveredTypes.Add(type);
-                        }
-                    }
-                    else
+                if (onlyConcreteClasses)
+                {
+                    if (type.IsClass && !type.IsAbstract)
                     {
                         discoveredTypes.Add(type);
                     }
                 }
+                else
+                {
+                    discoveredTypes.Add(type);
+                }
             }
-        }
-        catch (ReflectionTypeLoadException e)
-        {
-            var msg = string.Empty;
-            if (e.LoaderExceptions.Any())
-            {
-                msg = e
-                    .LoaderExceptions.Where(x => x != null)
-                    .Aggregate(msg, (current, e) => $"{current}{e.Message + Environment.NewLine}");
-            }
-
-            var rethrow = new Exception(msg, e);
-            Debug.WriteLine(rethrow.Message, rethrow);
-            throw rethrow;
         }
 
         return discoveredTypes;
-    }
-    
-    protected static bool IsCoreAssembly(string name)
-    {
-        return name == AssemblyPrefix || name.StartsWith(AssemblyPrefix);
     }
 }
