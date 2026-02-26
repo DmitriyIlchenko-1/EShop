@@ -5,7 +5,7 @@ namespace EShop.Core.Content.Media.Domain;
 /// <summary>
 /// This type represents the metadata of a file.
 /// </summary>
-public class MediaFile : BaseEntity, IAuditableEntity, ISoftDeletedEntity
+public class MediaFile : BaseEntity, IAuditableEntity, ISoftDeletableEntity
 {
     public string FileName { get; set; }
     public string Alt { get; set; }

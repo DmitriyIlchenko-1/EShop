@@ -131,9 +131,9 @@ internal class DbSaveChangesOperation : IDisposable
                 result = await _dispatcher.SavingChangesInvokeAsync(entries, cancellationToken);
 
                 // if there's at least one entity whose state is modified, we trigger a change detection. May seem unintuitive, though,
-                // there's no way for an entity to pass this check through if the entity or one of its entities it's in relation with have any state but Unchanged.
+                // there's no way for an entity to pass this check through if the entity or one of its entities it's in relation with is in any state but Unchanged.
                 // In other words, if there's at least one entity whose state is modified, we automatically assume something might have changes so we call DetectChanges().
-                if (result.InvokedDbHandlers.Any() && entries.Any(x => x.EntityState == EntityState.Modified))
+                if (result.ProcessedDbHandlers.Any() && entries.Any(x => x.EntityState == EntityState.Modified))
                 {
                     // we detect changes in here because we want to make sure we step into the SaveChangesAsync() method with up-to-date entries,
                     // because inside the SaveChangesAsync(), the ChangeTracker will not be called and if there's been changes made to the entities in db handlers,

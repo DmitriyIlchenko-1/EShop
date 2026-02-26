@@ -23,7 +23,7 @@ internal class ProductReviewMap : IEntityTypeConfiguration<ProductReview>
     }
 }
 
-public class ProductReview : BaseEntity, IAuditableEntity, ISoftDeletedEntity
+public class ProductReview : BaseEntity, IAuditableEntity, ISoftDeletableEntity
 {
     public ProductReview()
     {

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EShop.Infrastructure.Data.DbHandlers;
 
 public abstract class DbHandler<TEntity, TContext> : IDbHandler<TContext>
-    where TEntity : BaseEntity where TContext : DbContext
+    where TEntity : class where TContext : DbContext
 {
     #region Explicit interface impl
 
@@ -42,7 +42,7 @@ public abstract class DbHandler<TEntity, TContext> : IDbHandler<TContext>
     // a template method
     protected virtual DbHandlerResult OnSaveChangesExecuting(IHandleEntityContext entityContext)
     {
-        var typedEntity = (TEntity)entityContext.Entity;
+        var typedEntity =  entityContext.Entity as TEntity;
 
         switch (entityContext.InitialEntityState)
         {

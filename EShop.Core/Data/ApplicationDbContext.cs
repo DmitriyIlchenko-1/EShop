@@ -17,11 +17,11 @@ namespace EShop.Core.Data;
 /// Db handler can also inherit this class to receive typed entity references it can then work with. 
 /// </summary>
 /// <typeparam name="TEntity">The entity type the db handler works with</typeparam>
-public abstract class AsyncDbHandler<TEntity> : AsyncDbHandler<TEntity, ApplicationDbContext> where TEntity : BaseEntity
+public abstract class AsyncDbHandler<TEntity> : AsyncDbHandler<TEntity, ApplicationDbContext> where TEntity : class
 {
 }
 
-public abstract class DbHandler<TEntity> : DbHandler<TEntity, ApplicationDbContext> where TEntity : BaseEntity
+public abstract class DbHandler<TEntity> : DbHandler<TEntity, ApplicationDbContext> where TEntity : class
 {
 }
 

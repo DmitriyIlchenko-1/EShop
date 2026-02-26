@@ -9,10 +9,10 @@ namespace EShop.Core.Data.DbHandlers;
 public interface IDbHandlerDispatcher
 {
     Task<SaveChangesExecutingResult> SavingChangesInvokeAsync(IHandleEntityContext[] entities,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken = default);
 
     Task<SaveChangesExecutedResult> SavedChangesInvokeAsync(IHandleEntityContext[] entities,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken = default);
 }
 
 

@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace EShop.Infrastructure.Extensions;
 
 public static class DictionaryExtensions
@@ -15,6 +17,26 @@ public static class DictionaryExtensions
 
         value = default(TActual);
         return false;
+    }
+
+    public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
+        Func<TKey, TValue> valueFactory)
+        where TKey : notnull
+    {
+        ArgumentNullException.ThrowIfNull(dictionary);
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(valueFactory);
+
+        if (dictionary is ConcurrentDictionary<TKey, TValue> c)
+        {
+            return c.GetOrAdd(key, valueFactory);
+        }
+
+        if (!dictionary.TryGetValue(key, out TValue value))
+        {
+            dictionary[key] = value = valueFactory(key);
+        }
+        return value;
     }
 
     public static bool TryGetTypedValue<TKey, TValue, TActual>(this IDictionary<TKey, TValue> dictionary, TKey key,

@@ -5,15 +5,13 @@ using EntityState = EShop.Infrastructure.Data.EntityState;
 
 namespace EShop.Core.Data.DbHandlers.Abstractions;
 
- 
-
 public abstract class AsyncDbHandler<TEntity, TContext> : IDbHandler<TContext>
-    where TEntity : BaseEntity where TContext : DbContext
+    where TEntity : class where TContext : DbContext
 {
     public virtual async Task<DbHandlerResult> OnSaveChangesExecutingAsync(IHandleEntityContext entityContext,
         CancellationToken cancellationToken = default)
     {
-        var typedEntity = (TEntity)entityContext.Entity;
+        var typedEntity = entityContext.Entity as TEntity;
 
         switch (entityContext.InitialEntityState)
         {

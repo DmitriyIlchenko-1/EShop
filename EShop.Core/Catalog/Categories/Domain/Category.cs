@@ -27,7 +27,7 @@ internal class BrandMap : IEntityTypeConfiguration<Category>
     }
 }
 
-public class Category : BaseEntity, IAuditableEntity, ISoftDeletedEntity, IDisplayOrder
+public class Category : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IDisplayOrder
 {
     [Required, StringLength(200)] public string Name { get; set; }
 

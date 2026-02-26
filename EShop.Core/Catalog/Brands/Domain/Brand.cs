@@ -19,7 +19,7 @@ internal class BrandMap : IEntityTypeConfiguration<Brand>
             .OnDelete(DeleteBehavior.SetNull);
     }
 }
-public class Brand : BaseEntity, IAuditableEntity, ISoftDeletedEntity, IDisplayOrder
+public class Brand : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IDisplayOrder
 {
     [StringLength(200)]
     public string Name { get; set; }

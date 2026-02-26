@@ -6,8 +6,8 @@ namespace EShop.Core.Data.DbHandlers;
 
 public class SaveChangesExecutingResult : SaveChangesExecutedResult
 {
-    public SaveChangesExecutingResult(IEnumerable<IDbHandler> invokedHandlers, bool anyStateChanged) : base(
-        invokedHandlers)
+    public SaveChangesExecutingResult(IEnumerable<IDbHandler> processedHandlers, bool anyStateChanged) : base(
+        processedHandlers)
     {
         AnyStateChanged = anyStateChanged;
     }
@@ -21,15 +21,15 @@ public class SaveChangesExecutingResult : SaveChangesExecutedResult
 
 public class SaveChangesExecutedResult
 {
-    public SaveChangesExecutedResult(IEnumerable<IDbHandler> invokedDbHandlers)
+    public SaveChangesExecutedResult(IEnumerable<IDbHandler> processedDbHandlers)
     {
-        InvokedDbHandlers = invokedDbHandlers;
+        ProcessedDbHandlers = processedDbHandlers;
     }
 
     public static readonly SaveChangesExecutedResult Empty
         = new SaveChangesExecutedResult(Enumerable.Empty<IDbHandler>());
 
-    public IEnumerable<IDbHandler> InvokedDbHandlers { get; }
+    public IEnumerable<IDbHandler> ProcessedDbHandlers { get; }
 }
 
 public class DefaultDbHandlerDispatcher : IDbHandlerDispatcher
