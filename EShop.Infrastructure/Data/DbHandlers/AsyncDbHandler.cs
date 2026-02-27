@@ -1,9 +1,8 @@
-using EShop.Infrastructure.Domain;
+using EShop.Core.Data.DbHandlers;
 using Microsoft.EntityFrameworkCore;
-using EntityState = EShop.Infrastructure.Data.EntityState;
 
 
-namespace EShop.Core.Data.DbHandlers.Abstractions;
+namespace EShop.Infrastructure.Data.DbHandlers;
 
 public abstract class AsyncDbHandler<TEntity, TContext> : IDbHandler<TContext>
     where TEntity : class where TContext : DbContext

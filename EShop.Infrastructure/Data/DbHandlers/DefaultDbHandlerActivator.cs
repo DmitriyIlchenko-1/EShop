@@ -1,8 +1,9 @@
 using System.Collections.Concurrent;
 using Autofac;
 using Autofac.Core;
+using EShop.Core.Data.DbHandlers;
 
-namespace EShop.Core.Data.DbHandlers;
+namespace EShop.Infrastructure.Data.DbHandlers;
 
 public class DefaultDbHandlerActivator : IDbHandlerActivator
 {
@@ -13,8 +14,8 @@ public class DefaultDbHandlerActivator : IDbHandlerActivator
     {
         _lifetimeScope = lifetimeScope;
     }
-
-
+    
+    // I don't think I should make this one virtual because I see no real scenario for which I would need to be able to extend this method. 
     public IDbHandler Activate(DbHandlerMetadata metadata)
     {
         ArgumentNullException.ThrowIfNull(metadata);
@@ -26,7 +27,7 @@ public class DefaultDbHandlerActivator : IDbHandlerActivator
 
         foreach (var serviceType in metadata.ExposedServiceTypes)
         {
-            if (_lifetimeScope.TryResolve(serviceType, out var result) && result is IDbHandler typed)
+            if (_lifetimeScope.TryResolve(serviceType, out var instance) && instance is IDbHandler typed)
             {
                 dbHandler = _cache[metadata] = typed;
                 break;

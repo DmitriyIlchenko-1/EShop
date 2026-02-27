@@ -1,12 +1,13 @@
 using System.Collections.Concurrent;
-using EShop.Infrastructure.Data;
+using EShop.Core.Data;
+using EShop.Core.Data.DbHandlers;
 using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Domain;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace EShop.Core.Data.DbHandlers;
+namespace EShop.Infrastructure.Data;
 
 /// <summary>
 ///     A class-wrapper representing a single (including the parent if exists SaveChanges()) operation that can be performed against a database.
@@ -14,11 +15,12 @@ namespace EShop.Core.Data.DbHandlers;
 /// </summary>
 internal class DbSaveChangesOperation : IDisposable
 {
+    // not readonly cuz these are set to null when the operation's Dispose() gets called.
     private DbHandlerContext _dbContext;
     private EntityEntry[] _changedEntries;
 
-    private static readonly ConcurrentDictionary<Type, bool>
-        DbHandledEntities = new ConcurrentDictionary<Type, bool>();
+    // entity types that db handlers can work with
+    private static readonly ConcurrentDictionary<Type, bool> DbHandledEntities = new();
 
     private readonly IDbHandlerDispatcher _dispatcher;
     private readonly bool _isNested;
@@ -43,9 +45,10 @@ internal class DbSaveChangesOperation : IDisposable
             .GetResult();
 
     public virtual Task<int> ExecuteAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-        => ExecuteInternal(acceptAllChangesOnSuccess, true,cancellationToken);
+        => ExecuteInternal(acceptAllChangesOnSuccess, true, cancellationToken);
 
-    private async Task<int> ExecuteInternal(bool acceptAllChangesOnSuccess, bool async, CancellationToken cancellationToken = default)
+    private async Task<int> ExecuteInternal(bool acceptAllChangesOnSuccess, bool async,
+        CancellationToken cancellationToken = default)
     {
         Exception exception = null;
 
@@ -60,11 +63,9 @@ internal class DbSaveChangesOperation : IDisposable
                 }
                 else
                 {
-                    
                     // ReSharper disable once MethodHasAsyncOverloadWithCancellation
                     return _dbContext.SaveChangesCore(acceptAllChangesOnSuccess);
                 }
-                
             }
             catch (Exception ex)
             {

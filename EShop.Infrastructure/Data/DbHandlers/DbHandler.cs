@@ -42,6 +42,8 @@ public abstract class DbHandler<TEntity, TContext> : IDbHandler<TContext>
     // a template method
     protected virtual DbHandlerResult OnSaveChangesExecuting(IHandleEntityContext entityContext)
     {
+        // without knowledge of T's actual type, the compiler is concerned that the intent in here is to do a custom conversion.
+        // The simplest solution is to use the as operator.
         var typedEntity =  entityContext.Entity as TEntity;
 
         switch (entityContext.InitialEntityState)

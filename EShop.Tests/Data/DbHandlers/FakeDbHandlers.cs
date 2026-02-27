@@ -5,10 +5,12 @@ using EShop.Core.Data.DbHandlers;
 using EShop.Infrastructure.Data;
 using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Domain;
+// ReSharper disable InconsistentNaming
 
 namespace EShop.Tests.Data.DbHandlers;
 
 // DbHandler_EntityType_OnInserted_OnRemoved_..._OnUpdate(OnUpdating & OnUpdated) 
+
 
 
 internal class DbHandler_Entity_Inserted_Deleted_Update : DbHandler<BaseEntity, ApplicationDbContext>
@@ -35,41 +37,9 @@ internal class DbHandler_Auditable_Inserting_Updating : DbHandler<IAuditableEnti
         => DbHandlerResult.Ok;
 }
 
-internal class DbHandler_Product_OnSaveAfter : IDbHandler
+internal class DbHandler_SoftDeletable_Deleting_ChangingState : DbHandler<ISoftDeletableEntity>
 {
-    public Task<DbHandlerResult> OnSaveChangesExecutingAsync(IHandleEntityContext entity,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<DbHandlerResult> OnSaveChangesExecutedAsync(IHandleEntityContext entity,
-        CancellationToken cancellationToken = default)
-    {
-        if (entity.EntityType != typeof(Product))
-        {
-            return Task.FromResult(DbHandlerResult.Void);
-        }
-
-        return Task.FromResult(DbHandlerResult.Ok);
-    }
-
-    public Task OnAllCompletedSaveChangesExecutingAsync(IEnumerable<IHandleEntityContext> entities,
-        CancellationToken cancellationToken = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    public Task OnAllCompletedSaveChangesExecutedAsync(IEnumerable<IHandleEntityContext> entities,
-        CancellationToken cancellationToken = default)
-    {
-        return Task.CompletedTask;
-    }
-}
-
-internal class DbHandler_SoftDeletable_Updating_ChangingState : DbHandler<ISoftDeletableEntity>
-{
-    protected override DbHandlerResult OnUpdating(ISoftDeletableEntity entity, IHandleEntityContext entityContext)
+    protected override DbHandlerResult OnDeleting(ISoftDeletableEntity entity, IHandleEntityContext entityContext)
     {
         entityContext.EntityState = EntityState.Unchanged;
         return DbHandlerResult.Ok;
@@ -93,6 +63,38 @@ internal class DbHandler_Category_OnSaveBefore : IDbHandler
         CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
+    }
+
+    public Task OnAllCompletedSaveChangesExecutingAsync(IEnumerable<IHandleEntityContext> entities,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task OnAllCompletedSaveChangesExecutedAsync(IEnumerable<IHandleEntityContext> entities,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+}
+
+internal class DbHandler_Product_OnSaveAfter : IDbHandler
+{
+    public Task<DbHandlerResult> OnSaveChangesExecutingAsync(IHandleEntityContext entity,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<DbHandlerResult> OnSaveChangesExecutedAsync(IHandleEntityContext entity,
+        CancellationToken cancellationToken = default)
+    {
+        if (entity.EntityType != typeof(Product))
+        {
+            return Task.FromResult(DbHandlerResult.Void);
+        }
+
+        return Task.FromResult(DbHandlerResult.Ok);
     }
 
     public Task OnAllCompletedSaveChangesExecutingAsync(IEnumerable<IHandleEntityContext> entities,

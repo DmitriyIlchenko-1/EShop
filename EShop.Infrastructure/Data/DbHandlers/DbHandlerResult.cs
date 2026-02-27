@@ -1,4 +1,4 @@
-namespace EShop.Core.Data.DbHandlers;
+namespace EShop.Infrastructure.Data.DbHandlers;
 
 public enum DbHandlerResult
 {

@@ -1,8 +1,7 @@
-using EShop.Infrastructure.Data;
 using EShop.Infrastructure.Domain;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace EShop.Core.Data.DbHandlers;
+namespace EShop.Infrastructure.Data.DbHandlers;
 
 /// <summary>
 /// This is a db entity's context consumed by a db handler to access the entity and the properties describing its state.
@@ -48,10 +47,9 @@ public class HandleEntityContext : IHandleEntityContext
         get => (EntityState)Entry.State;
         set => Entry.State = (Microsoft.EntityFrameworkCore.EntityState)value;
     }
+
     public EntityState InitialEntityState { get; set; }
     public EntityEntry Entry { get; }
 
     public bool HasStateChanged => EntityState != InitialEntityState;
 }
-
- 

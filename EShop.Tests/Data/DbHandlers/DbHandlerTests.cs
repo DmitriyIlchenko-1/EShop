@@ -5,6 +5,7 @@ using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Data;
 using EShop.Core.Data.DbHandlers;
+using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Domain;
 using EShop.Tests.Framework;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,8 @@ public class DbHandlerTests
             CreateDbHandler<DbHandler_Category_OnSaveBefore, Category>(),
             CreateDbHandler<DbHandler_Product_OnSaveAfter, Product>(),
             CreateDbHandler<DbHandler_Entity_Inserted_Deleted_Update, BaseEntity>(),
-            CreateDbHandler<DbHandler_Auditable_Inserting_Updating, IAuditableEntity>()
+            CreateDbHandler<DbHandler_Auditable_Inserting_Updating, IAuditableEntity>(),
+            CreateDbHandler<DbHandler_SoftDeletable_Deleting_ChangingState, IAuditableEntity>()
         ];
         _registry = new DefaultDbHandlerRegistry(_dbHandlers);
         _dispatcher = new DefaultDbHandlerDispatcher(_registry, new SimpleDbHandlerActivator());
@@ -56,13 +58,17 @@ public class DbHandlerTests
             // After: DbHandler_Entity_Inserted_Deleted_Update. 
             CreateContext<ProductAttribute>(EntityState.Deleted),
             
-            // Before: DbHandler_Category_OnSaveBefore.
+            // Before: DbHandler_SoftDeletable_Deleting_ChangingState
+            // After: DbHandler_Entity_Inserted_Deleted_Update. 
+            CreateContext<ProductReview>(EntityState.Deleted),
+            
+            // Before: DbHandler_Category_OnSaveBefore, DbHandler_Auditable_Inserting_Updating
             // After: DbHandler_Entity_Inserted_Deleted_Update. 
             CreateContext<Category>(EntityState.Added),
         };
         
-        var expected = GetExpectedDbHandlers(entries, before: false);
-        var processedHandlers = (await _dispatcher.SavedChangesInvokeAsync(entries)).ProcessedDbHandlers;
+        var expected = GetExpectedDbHandlers(entries, before: true);
+        var processedHandlers = (await _dispatcher.SavingChangesInvokeAsync(entries)).ProcessedDbHandlers;
         
         processedHandlers
             .Count()
@@ -111,26 +117,27 @@ public class DbHandlerTests
         else if (dbHandlerType == typeof(DbHandler_Entity_Inserted_Deleted_Update))
         {
             result = (before && (state == EntityState.Modified))
-                     || (!before && (state == EntityState.Added || state == EntityState.Deleted));
+                     || (!before && (state == EntityState.Added || state == EntityState.Deleted || state == EntityState.Modified));
             /*
-             * no EntityState.Modified in the !before case because of DbHandler_SoftDeletable_Updating_ChangingState.
+             * not relevant, though important in general
+             * 
              *  Even if one of the handlers changes an entity's state and sets it to EntityState.Unchanged,
              * like what soft deletable handler does, the other handlers that handle this entity still run regardless.
              * At the same time, it means that as long as no other handler changes the entity state back to anything
              * other than EntityState.Unchanged, the after method doesn't run.
              */
         }
-        else if (dbHandlerType == typeof(DbHandler_SoftDeletable_Updating_ChangingState))
+        else if (dbHandlerType == typeof(DbHandler_SoftDeletable_Deleting_ChangingState))
         {
             result = before && typeof(ISoftDeletableEntity).IsAssignableFrom(entityT) &&
-                     state == EntityState.Modified;
+                     state == EntityState.Deleted;
         }
 
         return result;
     }
 
     private static IHandleEntityContext CreateContext<T>(EShop.Infrastructure.Data.EntityState entityState)
-        where T : BaseEntity, new()
+        where T : BaseEntity, new() //new() - otherwise can't call the parameterless new T()
     {
         return new HandleEntityContextMock(new T(), entityState);
     }

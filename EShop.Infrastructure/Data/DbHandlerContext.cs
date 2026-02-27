@@ -1,8 +1,9 @@
 using EShop.Core.Data.DbHandlers;
+using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Engine;
 using Microsoft.EntityFrameworkCore;
 
-namespace EShop.Core.Data;
+namespace EShop.Infrastructure.Data;
 
 public abstract class DbHandlerContext : DbContext
 {
@@ -11,8 +12,7 @@ public abstract class DbHandlerContext : DbContext
     public DbHandlerContext(DbContextOptions options) : base(options)
     {
     }
-
-    //todo
+    
     private IDbHandlerDispatcher ActivateDbHandlerDispatcher()
     {
         try
@@ -98,7 +98,7 @@ public abstract class DbHandlerContext : DbContext
 
     protected internal int SaveChangesCore(bool acceptAllChangesOnSuccess)
     {
-        return base.SaveChanges();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
     /// <summary>

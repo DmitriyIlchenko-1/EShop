@@ -1,8 +1,7 @@
-using Autofac;
-using Autofac.Core;
+using EShop.Core.Data.DbHandlers;
 using EShop.Infrastructure.Extensions;
 
-namespace EShop.Core.Data.DbHandlers;
+namespace EShop.Infrastructure.Data.DbHandlers;
 
 public interface IDbHandlerActivator
 {

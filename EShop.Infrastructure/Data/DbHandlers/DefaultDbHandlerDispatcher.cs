@@ -1,8 +1,9 @@
+using EShop.Core.Data.DbHandlers;
 using EShop.Infrastructure.Collections;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace EShop.Core.Data.DbHandlers;
+namespace EShop.Infrastructure.Data.DbHandlers;
 
 public class SaveChangesExecutingResult : SaveChangesExecutedResult
 {
@@ -16,7 +17,9 @@ public class SaveChangesExecutingResult : SaveChangesExecutedResult
         new SaveChangesExecutingResult(Enumerable.Empty<IDbHandler>(), false);
 
     public bool AnyStateChanged { get; }
-    public IHandleEntityContext[] Entries { get; set; }
+    
+    //DO NOT return null values from collection properties or from methods returning collections. Return an empty collection or an empty array instead.
+    public IHandleEntityContext[] Entries { get; set; } = Array.Empty<IHandleEntityContext>();
 }
 
 public class SaveChangesExecutedResult
@@ -37,19 +40,17 @@ public class DefaultDbHandlerDispatcher : IDbHandlerDispatcher
     private readonly IDbHandlerRegistry _registry;
     private readonly IDbHandlerActivator _activator;
     private readonly bool _hasHooks;
+    
 
     public DefaultDbHandlerDispatcher(IDbHandlerRegistry registry, IDbHandlerActivator activator)
     {
         _registry = registry;
         _activator = activator;
-        _hasHooks = registry.AllMetadata.Length > 0;
+        _hasHooks = registry.GetAllMetadata().Length > 0;
     }
-
-
-    //todo 
+    
     public ILogger Logger { get; set; } = NullLogger.Instance;
-
-
+    
     public async Task<SaveChangesExecutingResult> SavingChangesInvokeAsync(IHandleEntityContext[] entities,
         CancellationToken cancellationToken = default)
     {
@@ -81,7 +82,6 @@ public class DefaultDbHandlerDispatcher : IDbHandlerDispatcher
 
         foreach (var entity in entities)
         {
-            // 
             if (cancellationToken.IsCancellationRequested)
             {
                 continue;
@@ -118,8 +118,9 @@ public class DefaultDbHandlerDispatcher : IDbHandlerDispatcher
                 }
                 catch (Exception ex)
                 {
-                    /* TODO: I don't know if we should swallow exceptions in here.
-                      We make a trade-off that the value of continuing to execute the code is higher than the risk of having inconsistencies. */
+                    // We make a trade-off that the value of continuing  to execute the code is higher than the risk of having inconsistencies.
+                    // We might as well end up with inconsistent state if some of the other db handler don't run for the current unit of work,
+                    // even though you may expect them to get something done.
                     Logger.LogError(ex, $"An exception has been thrown executing {dbHandler.GetType().FullName}.");
                 }
 

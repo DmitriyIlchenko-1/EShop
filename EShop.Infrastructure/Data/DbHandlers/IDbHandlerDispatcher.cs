@@ -1,4 +1,4 @@
-namespace EShop.Core.Data.DbHandlers;
+namespace EShop.Infrastructure.Data.DbHandlers;
 
 /// <summary>
 /// Determines and dispatches the handlers that need to be called before/after SaveChanges().

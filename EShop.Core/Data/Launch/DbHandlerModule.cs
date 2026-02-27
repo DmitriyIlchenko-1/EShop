@@ -1,33 +1,20 @@
-using System.Reflection;
 using Autofac;
-using EShop.Core.Data.DbHandlers.Abstractions;
-using EShop.Core.Data.DbHandlers.Configuration;
 using EShop.Core.Platform.Infructructure.Types;
+using EShop.Infrastructure;
+using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Domain;
 using EShop.Infrastructure.Engine.Attributes;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace EShop.Core.Data.DbHandlers;
+namespace EShop.Core.Data.Launch;
 
 public class DbHandlerModule : Autofac.Module
 {
-    private readonly DbHandlerComponentConfiguration _componentConfiguration;
-    private static readonly Type[] HandlerTypes = [typeof(IDbHandler), typeof(IDbHandler<>)];
-    private static readonly Type Marker = typeof(IDbHandler);
-
-    public DbHandlerModule(Action<DbHandlerComponentConfiguration> configAction = null)
-    {
-        var configuration = new DbHandlerComponentConfiguration();
-        configAction?.Invoke(configuration);
-        _componentConfiguration = configuration;
-    }
-
     protected override void Load(ContainerBuilder builder)
     {
         AddRequiredDependencies(builder);
-        AddDbHandlerClassesWithTimeout(builder, _componentConfiguration);
+        ConnectImplementationsWithMetadata(builder);
     }
 
     private static void AddRequiredDependencies(ContainerBuilder builder)
@@ -46,40 +33,11 @@ public class DbHandlerModule : Autofac.Module
             .SingleInstance();
     }
 
-    public static void AddDbHandlerClassesWithTimeout(ContainerBuilder builder,
-        DbHandlerComponentConfiguration configuration)
-    {
-        using (var cts = new CancellationTokenSource(configuration.Timeout))
-        {
-            try
-            {
-                AddDbHandlerClasses(builder, configuration, cts.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                throw new TimeoutException("Timeout waiting for service registration");
-            }
-        }
-    }
-
-    private static void AddDbHandlerClasses(ContainerBuilder builder, DbHandlerComponentConfiguration configuration,
-        CancellationToken cancellationToken = default)
+    private static void ConnectImplementationsWithMetadata(ContainerBuilder builder)
     {
         var typeScanner = Singleton<ITypeScanner>.Instance;
-        var assemblies = typeScanner.Assemblies;
-        ConnectImplementationsWithMetadata(builder, assemblies, cancellationToken);
-    }
-
-    private static void ConnectImplementationsWithMetadata(ContainerBuilder builder, IEnumerable<Assembly> assemblies,
-        CancellationToken cancellationToken = default)
-    {
-        var foundHandlers = assemblies
-            .SelectMany(x => x.DefinedTypes)
-            .Where(t => t.IsConcrete() && t
-                .ImplementedInterfaces.Any(i => i == typeof(IDbHandler)))
-            .Select(t => t.AsType())
-            .ToList();
-
+        var foundHandlers = typeScanner.FindClassesOfType<IDbHandler>(onlyConcreteClasses: true);
+        
         foreach (var handlerT in foundHandlers)
         {
             // Find out which entity type the handler works with.
@@ -93,7 +51,7 @@ public class DbHandlerModule : Autofac.Module
             // but we also wanna expose it as any other service interface it implements
             // The thing is we do not want to have multiple registrations of the same type,
             // because it doesn't make much sense even if it seems harmful (except for memory consumption) and
-            // so we want to have one registration that exposes this type as all the interfaces it implements*.
+            // so we want to have one registration that exposes this type as all the interfaces it implements.
             // And so what lets us achieve that is that the initial registrations happen in the ConfigureServices() method of the engine startup type
             // and after that, the ConfigureContainer() method gets called, which is where this module is called from
             // and all the registrations that happen in here override the registrations made in the ConfigureServices().
@@ -102,7 +60,8 @@ public class DbHandlerModule : Autofac.Module
             // in this case, Autofac actually overrides the registrations so we only end up with one registration for this type (component).
             var serviceInterfaces = handlerT
                 .GetInterfaces()
-                .Where(t => !HandlerTypes.Any(x => x == t || (x.IsGenericType && t.IsClosedTypeOf(x)))) //*
+                .Where(x => !(x.IsGenericType && x.IsClosedTypeOf(typeof(IDbHandler<>))))
+                .Except(GlobalConfiguration.IgnoredInterfaces.Concat([typeof(IDbHandler)])) 
                 .ToArray();
             if (!serviceInterfaces.Any())
                 serviceInterfaces = new Type[] { handlerT };
@@ -112,7 +71,7 @@ public class DbHandlerModule : Autofac.Module
             //implementation could be activated for each service type. This is because RegisterType != Add*
             var registration = builder
                 .RegisterType(handlerT)
-                .As(Marker) // we register a handler as HandlerType purely to retrieve the related metadata later on in DbHandlerRegistry's ctor. 
+                .As(typeof(IDbHandler)) // we register a handler as HandlerType purely to retrieve the related metadata later on in DbHandlerRegistry's ctor. 
                 .WithMetadata<DbHandlerMetadata>(md =>
                 {
                     md.For(x => x.EntityType, entityT);
@@ -160,7 +119,7 @@ public class DbHandlerModule : Autofac.Module
             baseType = baseType.BaseType;
         }
 
-        
+
         var @interface = dbHandlerType
             .GetInterfaces()
             .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDbHandler<>));

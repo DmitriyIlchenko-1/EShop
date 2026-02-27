@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using EShop.Infrastructure.Data;
+using EShop.Core.Data.DbHandlers;
 using EShop.Infrastructure.Extensions;
 
-namespace EShop.Core.Data.DbHandlers;
+namespace EShop.Infrastructure.Data.DbHandlers;
 
 // We don't follow the template pattern in here because we don't need a way to provide more controlled extensibility.
 // There isn't much centralized logic / possible code reuse in here that would otherwise
@@ -18,16 +18,16 @@ public interface IDbHandlerRegistry
     /// It's done so that we don't have to unnecessarily instantiate db handlers that never handle entities that are a particular type, in a particular state in the given stage (before/after). 
     /// </summary>
     void RemoveVoidDbHandler(DbHandlerMetadata metadata, IHandleEntityContext context,
-        DbHandlerStage stage);  
+        DbHandlerStage stage);
 
-    DbHandlerMetadata[] AllMetadata { get; }
+    DbHandlerMetadata[] GetAllMetadata();
 }
 
 public class DefaultDbHandlerRegistry : IDbHandlerRegistry
 {
     private readonly ConcurrentDictionary<DbHandlerCacheKey, DbHandlerMetadata[]> _cache = [];
     private readonly DbHandlerMetadata[] _metadata;
-    public DbHandlerMetadata[] AllMetadata => _metadata;
+    public DbHandlerMetadata[] GetAllMetadata() => _metadata;
 
     public DefaultDbHandlerRegistry(IEnumerable<Lazy<IDbHandler, DbHandlerMetadata>> metadata)
     {
