@@ -1,4 +1,5 @@
 using EShop.Core.Data;
+using EShop.Core.Data.DbHandlers;
 using EShop.Core.Platform.Logging.Filters;
 using EShop.Core.Platform.Logging.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +20,7 @@ public abstract class BaseController : Controller
         }
         else
         {
+           
             return RedirectToAction("Index", "Home");
         }
     }

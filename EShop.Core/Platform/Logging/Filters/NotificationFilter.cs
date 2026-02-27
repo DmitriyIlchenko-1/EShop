@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace EShop.Core.Platform.Logging.Filters;
 
-public class NotificationFilterAttribute : TypeFilterAttribute
+public class NotificationFilterAttribute : TypeFilterAttribute 
 {
     public const string NotificationKey = "eShop.Notifications";
 

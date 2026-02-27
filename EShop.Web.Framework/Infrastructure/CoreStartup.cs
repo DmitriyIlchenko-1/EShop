@@ -1,3 +1,4 @@
+using Autofac;
 using EShop.Core.Catalog.Attributes.Modeling;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Products.Services;
@@ -5,6 +6,8 @@ using EShop.Core.Common.Services;
 using EShop.Core.Content.Media.Services;
 using EShop.Core.Content.Widgets.Services;
 using EShop.Core.Data;
+using EShop.Core.Data.DbHandlers;
+using EShop.Core.Data.Launch;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Configuration.Domain;
 using EShop.Core.Platform.Configuration.Services;
@@ -14,6 +17,7 @@ using EShop.Core.Platform.Logging.Services;
 using EShop.Core.Platform.Routing;
 using EShop.Core.Platform.Web;
 using EShop.Infrastructure.Modules;
+using EShop.Infrastructure.Storage;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +33,7 @@ public class CoreStartup : BaseStartup
     {
         services.AddSingleton<IJsonSerializer, NewtonsoftJsonSerializer>();
         services.AddScoped<IWidgetInstanceService, WidgetInstanceService>();
+        services.AddScoped<IMediaStorageProvider, MockMediaStorageProvider>();
         services.AddScoped<IMediaService, MediaService>();
         services.AddSingleton<IProductPricingService, ProductPricingService>();
         services.AddSingleton<ICurrencyService, CurrencyService>();
@@ -55,7 +60,7 @@ public class CoreStartup : BaseStartup
 
         services.AddDbContextPool<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql(configuration["DefaultConnection"],
+            options.UseNpgsql(configuration["DbConnections:DefaultDbConnection"],
                 x => x.MigrationsAssembly("EShop.Web"));
         });
 
@@ -76,5 +81,10 @@ public class CoreStartup : BaseStartup
 
 
         services.AddScoped<SlugRouteValueTransformer>();
+    }
+
+    public override void ConfigureContainer(ContainerBuilder builder)
+    {
+        builder.RegisterModule(new DbHandlerModule());
     }
 }

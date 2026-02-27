@@ -11,6 +11,7 @@ public interface IEngine
     IChildLifetimeScopeAccessor ChildLifetimeScopeAccessor { get; set; }
     public IHostEnvironment Environment { get; set; }
     IEngineStartup Startup(IHostEnvironment environment);
-    T? Resolve<T>() where T : class;
+    T Resolve<T>() where T : class;
+    T? ResolveOptional<T>() where T : class;
     object? Resolve(Type type);
 }

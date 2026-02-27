@@ -1,13 +1,16 @@
-using System.Collections.ObjectModel;
 using System.Reflection;
+using System.Runtime.Loader;
+using System.Runtime.Loader;
 using Autofac;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Modules;
+using EShop.Infrastructure.Types;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyModel;
 
 namespace EShop.Infrastructure.Engine;
 
@@ -33,7 +36,7 @@ public interface IEngineStartup : IDisposable
 /// The purpose of this engine startup is to run all the startups without keeping them in the memory afterwards.
 /// The GC will release the memory taken up by them and this object later on.
 /// </remarks>
-public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IEngine
+public abstract class EngineStartup<TEngine> : Disposable, IEngineStartup where TEngine : IEngine
 {
     // Protected members used to expose advanced customization options (in case of subclassing) without unnecessarily complication the main public interface.
     protected IEStartup[] Startups => _startups;
@@ -54,8 +57,6 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
 
     public void ConfigureContainer(ContainerBuilder builder)
     {
-        // Modules ...
-
         foreach (var containerSetup in _startups.OfType<IContainerSetup>())
         {
             containerSetup.ConfigureContainer(builder);
@@ -63,7 +64,7 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
 
         ConfigureContainerCore(builder);
     }
-
+    
     protected virtual void ConfigureContainerCore(ContainerBuilder builder)
     {
     }
@@ -72,15 +73,13 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
     {
         services.AddSingleton<IEngine>(_engine);
         services.AddSingleton<ITypeScanner>(Singleton<ITypeScanner>.Instance);
-
+        
         foreach (var instance in _startups)
         {
             instance.ConfigureServices(services, configuration);
         }
-
         ConfigureServicesCore(services, configuration);
     }
-
     protected virtual void ConfigureServicesCore(IServiceCollection services, IConfiguration configuration)
     {
     }
@@ -110,9 +109,12 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
     }
 
 
+    protected abstract IEnumerable<Assembly> ResolveCoreAssemblies();
+
     private void ConfigureModules()
     {
-        var typeScanner = new DefaultTypeScanner();
+        var coreAssemblies = ResolveCoreAssemblies();
+        var typeScanner = new DefaultTypeScanner(coreAssemblies);
         Singleton<ITypeScanner>.Instance = typeScanner;
         RegisterModules();
     }
@@ -121,15 +123,20 @@ public abstract class EngineStartup<TEngine> : IEngineStartup where TEngine : IE
     {
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        _engine = null;
-        _startups = null;
+        if (disposing)
+        {
+            _engine = null;
+            _startups = null;
+        }
     }
 }
 
 public class EShopEngineStartup : EngineStartup<EShopEngine>
 {
+    private const string AssemblyPrefix = "EShop";
+
     public EShopEngineStartup(IEngine engine) : base(engine)
     {
     }
@@ -151,6 +158,60 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
             startup.ConfigureMvc(mvcBuilder, services);
         }
     }
+    
+    protected override IEnumerable<Assembly> ResolveCoreAssemblies()
+    {
+        var assemblies = new HashSet<Assembly>();
+
+        //This is what lets us access the dependencies used to compile the app without relying on lazy assembly loading. 
+        var libraries = DependencyContext
+            .Default
+            .CompileLibraries
+            .Where(x => IsCoreAssembly(x.Name))
+            .Select(x => new
+            {
+                Name = new AssemblyName(x.Name),
+            });
+
+        // Retrieve the assemblies that have already been loaded so we don't have to do that again.
+        var appAssemblies = AssemblyLoadContext
+            .Default.Assemblies
+            .Where(x => x.FullName.StartsWith(AssemblyPrefix) && IsCoreAssembly(x.GetName()
+                .Name))
+            .Select(x => new
+            {
+                Name = x.GetName(),
+                Assembly = x
+            });
+        foreach (var lib in libraries)
+        {
+            try
+            {
+                var loadedAssembly = appAssemblies.FirstOrDefault(x => x.Name.Name == lib.Name.Name)
+                    ?.Assembly;
+                if (loadedAssembly is null)
+                {
+                    loadedAssembly = AssemblyLoadContext.Default.LoadFromAssemblyName(lib.Name);
+                }
+
+                if (loadedAssembly is not null)
+                {
+                    assemblies.Add(loadedAssembly);
+                }
+            }
+            catch (Exception e)
+            {
+                //todo: log exceptions in here
+            }
+        }
+
+        return assemblies;
+
+        bool IsCoreAssembly(string name)
+        {
+            return name == AssemblyPrefix || name.StartsWith(AssemblyPrefix);
+        }
+    }
 
     protected override void RegisterModules()
     {
@@ -163,5 +224,3 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
         }
     }
 }
-
- 

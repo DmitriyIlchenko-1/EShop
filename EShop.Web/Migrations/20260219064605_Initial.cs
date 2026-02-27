@@ -189,8 +189,8 @@ namespace EShop.Web.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Active = table.Column<bool>(type: "boolean", nullable: false),
-                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    NormalizedName = table.Column<string>(type: "text", nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -401,27 +401,6 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Identity_IdentityRoleClaim`1",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    RoleId = table.Column<int>(type: "integer", nullable: false),
-                    ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Identity_IdentityRoleClaim`1", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Identity_IdentityRoleClaim`1_Platform_Role_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "Platform_Role",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Catalog_ProductAttributeOption",
                 columns: table => new
                 {
@@ -554,10 +533,10 @@ namespace EShop.Web.Migrations
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     BillingAddressId = table.Column<int>(type: "integer", nullable: true),
                     ShippingAddressId = table.Column<int>(type: "integer", nullable: true),
-                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    UserName = table.Column<string>(type: "text", nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "text", nullable: true),
                     EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: true),
                     SecurityStamp = table.Column<string>(type: "text", nullable: true),
@@ -831,67 +810,6 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Identity_IdentityUserClaim`1",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Identity_IdentityUserClaim`1", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Identity_IdentityUserClaim`1_Platform_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Platform_User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Identity_IdentityUserLogin`1",
-                columns: table => new
-                {
-                    LoginProvider = table.Column<string>(type: "text", nullable: false),
-                    ProviderKey = table.Column<string>(type: "text", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
-                    UserId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Identity_IdentityUserLogin`1", x => new { x.LoginProvider, x.ProviderKey });
-                    table.ForeignKey(
-                        name: "FK_Identity_IdentityUserLogin`1_Platform_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Platform_User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Identity_IdentityUserToken`1",
-                columns: table => new
-                {
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    LoginProvider = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Value = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Identity_IdentityUserToken`1", x => new { x.UserId, x.LoginProvider, x.Name });
-                    table.ForeignKey(
-                        name: "FK_Identity_IdentityUserToken`1_Platform_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Platform_User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Platform_UserRole",
                 columns: table => new
                 {
@@ -1129,35 +1047,9 @@ namespace EShop.Web.Migrations
                 column: "WidgetZoneId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Identity_IdentityRoleClaim`1_RoleId",
-                table: "Identity_IdentityRoleClaim`1",
-                column: "RoleId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Identity_IdentityUserClaim`1_UserId",
-                table: "Identity_IdentityUserClaim`1",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Identity_IdentityUserLogin`1_UserId",
-                table: "Identity_IdentityUserLogin`1",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "RoleNameIndex",
-                table: "Platform_Role",
-                column: "NormalizedName",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Platform_UrlRecord_EntityTypeId",
                 table: "Platform_UrlRecord",
                 column: "EntityTypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "EmailIndex",
-                table: "Platform_User",
-                column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Platform_User_BillingAddressId",
@@ -1168,12 +1060,6 @@ namespace EShop.Web.Migrations
                 name: "IX_Platform_User_ShippingAddressId",
                 table: "Platform_User",
                 column: "ShippingAddressId");
-
-            migrationBuilder.CreateIndex(
-                name: "UserNameIndex",
-                table: "Platform_User",
-                column: "NormalizedUserName",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Platform_UserRole_RoleId",
@@ -1213,18 +1099,6 @@ namespace EShop.Web.Migrations
 
             migrationBuilder.DropTable(
                 name: "Content_WidgetInstance");
-
-            migrationBuilder.DropTable(
-                name: "Identity_IdentityRoleClaim`1");
-
-            migrationBuilder.DropTable(
-                name: "Identity_IdentityUserClaim`1");
-
-            migrationBuilder.DropTable(
-                name: "Identity_IdentityUserLogin`1");
-
-            migrationBuilder.DropTable(
-                name: "Identity_IdentityUserToken`1");
 
             migrationBuilder.DropTable(
                 name: "Platform_ActivityLog");

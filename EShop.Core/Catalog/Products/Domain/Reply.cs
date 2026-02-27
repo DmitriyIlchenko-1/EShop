@@ -18,7 +18,7 @@ internal class ReplyMap : IEntityTypeConfiguration<Reply>
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
-public class Reply : BaseEntity, IAuditableEntity, ISoftDeletedEntity
+public class Reply : BaseEntity, IAuditableEntity, ISoftDeletableEntity
 {
     [StringLength(100)]
     public string ReplierName { get; set; }

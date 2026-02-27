@@ -2,8 +2,9 @@ using System.Reflection;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure;
+using EShop.Infrastructure.Data;
+using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Domain;
-
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -11,17 +12,32 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Core.Data;
 
-public partial class ApplicationDbContext : IdentityDbContext<User, Role, int, IdentityUserClaim<int>, UserRole,
-    IdentityUserLogin<int>, IdentityRoleClaim<int>, IdentityUserToken<int>>
+/// <summary>
+/// Abstract base class to inherit for db handler types when the db handler type needs to implement only a subset of the interface methods.
+/// Db handler can also inherit this class to receive typed entity references it can then work with. 
+/// </summary>
+/// <typeparam name="TEntity">The entity type the db handler works with</typeparam>
+public abstract class AsyncDbHandler<TEntity> : AsyncDbHandler<TEntity, ApplicationDbContext> where TEntity : class
+{
+}
+
+public abstract class DbHandler<TEntity> : DbHandler<TEntity, ApplicationDbContext> where TEntity : class
+{
+}
+
+public partial class ApplicationDbContext : DbHandlerContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
+        
     }
-
+    
+    
+ 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var assemblies = Singleton<ITypeScanner>.Instance.GetAssemblies();
+        var assemblies = Singleton<ITypeScanner>.Instance.Assemblies;
         base.OnModelCreating(modelBuilder);
 
         RegisterConvention(modelBuilder);

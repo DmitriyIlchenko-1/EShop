@@ -24,6 +24,9 @@ public class EShopEngine : IEngine
     public T? Resolve<T>() where T : class
         => ChildLifetimeScopeAccessor.GetChildLifetimeScope.Resolve<T>();
 
+    public T ResolveOptional<T>() where T : class
+        => ChildLifetimeScopeAccessor.GetChildLifetimeScope.ResolveOptional<T>();
+
     public object? Resolve(Type type)
         => ChildLifetimeScopeAccessor.GetChildLifetimeScope.Resolve(type);
 }

@@ -1,6 +1,6 @@
 namespace EShop.Infrastructure.Domain;
 
-public interface ISoftDeletedEntity
+public interface ISoftDeletableEntity
 {
     bool Deleted { get; set; }
 }

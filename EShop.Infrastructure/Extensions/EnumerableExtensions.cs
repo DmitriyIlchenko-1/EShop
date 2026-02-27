@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+
 namespace EShop.Infrastructure.Extensions;
 
 public static class EnumerableExtensions
@@ -15,8 +17,16 @@ public static class EnumerableExtensions
                 action(item);
             }
         }
+    }
 
-         
+    public static ReadOnlySet<T> AsReadOnly<T>(this ISet<T> set)
+    {
+        if (set.Count == 0)
+        {
+            return ReadOnlySet<T>.Empty;
+        }
+
+        return new ReadOnlySet<T>(set);
     }
 
 

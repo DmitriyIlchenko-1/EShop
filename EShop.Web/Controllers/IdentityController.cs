@@ -38,6 +38,7 @@ public class IdentityController : BaseController
         _activityLogger = activityLogger;
         _notifyManager = notifyManager;
         _dbContext = dbContext;
+        
     }
 
 

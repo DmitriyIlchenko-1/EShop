@@ -23,7 +23,7 @@ internal class ProductMap : IEntityTypeConfiguration<Product>
         
     }
 }
-public class Product : BaseEntity, IAuditableEntity, ISoftDeletedEntity
+public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity
 {
     [Required, StringLength(200)] 
     public string Name { get; set; }
@@ -86,7 +86,7 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletedEntity
     
 
     public ICollection<ProductReview> ProductReviews { get; set; }
-    public ICollection<ProductCategory> ProductCategories { get; set; }
+    public ICollection<ProductCategory> ProductCategories { get; set; } = [];
 
     public ICollection<ProductLink> ProductLinks { get; set; }
 

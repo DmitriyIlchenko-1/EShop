@@ -1,15 +1,21 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using EShop.Core.Catalog.Categories.Domain;
+using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Common.Services;
+using EShop.Core.Data;
+using EShop.Core.Data.DbHandlers;
 using EShop.Core.Platform.Caching;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Caching;
+using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Engine;
 using EShop.Web.Common.Infrastructure;
 using EShop.Web.Common.Infrustructure;
 using EShop.Web.Common.Models;
 using EShop.Web.Common.Models.Choices;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ZiggyCreatures.Caching.Fusion;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,7 +31,7 @@ startup.ConfigureServices(builder.Services, builder.Configuration);
 builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);
 var app = builder.Build();
 
- 
+
 EngineContext.Current.ChildLifetimeScopeAccessor
     = app.Services.GetRequiredService<IChildLifetimeScopeAccessor>();
 
@@ -36,6 +42,5 @@ app.Lifetime.ApplicationStarted.Register(() =>
 });
 
 startup.ConfigureApplicationPipeline(app);
-
 
 app.Run();
