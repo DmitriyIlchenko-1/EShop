@@ -1,4 +1,5 @@
 using System.Reflection;
+using EasyCaching.Serialization.Json;
 using EShop.Core.Data.DbHandlers;
 using EShop.Core.Data.DbHandlers.Configuration;
 using EShop.Core.Platform.Caching;
@@ -13,6 +14,7 @@ using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using StackExchange.Redis;
 using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Serialization;
@@ -30,7 +32,7 @@ public static class ServiceCollectionExtensions
 
        // services.AddRedisCache(configuration);
 
-        services.AddFusionCacheServices(configuration);
+        services.AddEasyCaching(configuration);
 
         services.AddSingleton<ICacheFactory, FusionCacheFactory>();
 
@@ -60,6 +62,42 @@ public static class ServiceCollectionExtensions
 
             setup.InstanceName = config.InstanceName;
             setup.ConfigurationOptions = options;
+        });
+    }
+
+    private static void AddEasyCaching(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddEasyCaching(options =>
+        {
+            options.WithJson();
+            
+            options.UseInMemory(conf =>
+            {
+ 
+            });
+
+            
+            options.UseRedis(conf =>
+             
+            { 
+                
+                var config = configuration
+                    .GetSection("Redis")
+                    .Get<DistributedCacheSettings>();
+                var options = new ConfigurationOptions()
+                {
+                    EndPoints = { config.Endpoint },
+                    User = config.User,
+                    Password = config.Password
+                };
+
+                conf.DBConfig.ConfigurationOptions = options;
+                conf.DBConfig.ConfigurationOptions.
+               
+            });
+            options.UseHybrid(opt =>
+            {
+            });
         });
     }
 

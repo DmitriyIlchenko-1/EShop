@@ -1,3 +1,4 @@
+using EasyCaching.Core;
 using EShop.Core.Platform.Caching;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;

@@ -10,10 +10,10 @@ public abstract class DbHandler<TEntity, TContext> : IDbHandler<TContext>
     #region Explicit interface impl
 
     //otherwise there would be no way for use to make IDbHandler.OnSaveChangesExecutingAsync,IDbHandler.OnSaveChangesExecutedAsync etc virtual. 
-    Task<DbHandlerResult> IDbHandler.OnSaveChangesExecutingAsync(IHandleEntityContext entity,
+    Task<DbHandlerResult> IDbHandler.OnSaveChangesExecutingAsync(IHandleEntityContext entityContext,
         CancellationToken cancellationToken)
     {
-        return Task.FromResult(OnSaveChangesExecuting(entity));
+        return Task.FromResult(OnSaveChangesExecuting(entityContext));
     }
 
     Task<DbHandlerResult> IDbHandler.OnSaveChangesExecutedAsync(IHandleEntityContext entity,

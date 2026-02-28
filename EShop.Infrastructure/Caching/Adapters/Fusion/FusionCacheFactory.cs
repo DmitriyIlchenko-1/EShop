@@ -1,4 +1,5 @@
 
+using EasyCaching.Core;
 using EShop.Core.Platform.Caching;
 using ZiggyCreatures.Caching.Fusion;
 
@@ -14,6 +15,7 @@ public class FusionCacheFactory : ICacheFactory
 
     public FusionCacheFactory(IFusionCacheProvider cacheProvider)
     {
+       
         _memoryCache
             = new FusionHybridCacheManager(cacheProvider.GetCache(MemoryCacheName));
         _hybridCache

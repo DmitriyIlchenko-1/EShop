@@ -1,5 +1,6 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using EasyCaching.Core;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Common.Services;
@@ -42,5 +43,51 @@ app.Lifetime.ApplicationStarted.Register(() =>
 });
 
 startup.ConfigureApplicationPipeline(app);
+app.MapGet("/",
+    async (HttpContext context, [FromServices] ApplicationDbContext db, 
+        [FromServices] IEasyCachingProvider cacheLocal, 
+        [FromServices] IRedisCachingProvider cache) =>
+    {
+        await cacheLocal.SetAsync("Key", "Value", TimeSpan.FromDays(1));
+        
+        context.Response.Redirect("setup");
+    });
 
+app.MapGet("/setup",
+    async (HttpContext context, ApplicationDbContext db) =>
+    {
+        var category = await db.Categories.FirstOrDefaultAsync(x => x.Name == "TestCategoryName");
+        if (category == null)
+        {
+            category = new Category()
+            {
+                Name = "TestCategoryName",
+            };
+            await db.AddAsync(category);
+        }
+        else
+        {
+            category.Name = "TestCategoryName";
+        }
+
+        var product = await db.Products.FirstOrDefaultAsync(x => x.Name == "TestProductName");
+        if (product == null)
+        {
+            product = new Product()
+            {
+                Name = "TestProductName",
+                Description = "TestProductDescription",
+            };
+            await db.AddAsync(product);
+        }
+        else
+        {
+            product.Name = "TestProductName";
+        }
+
+        product.ProductCategories.Add(new ProductCategory() { Category = category });
+
+
+        await db.SaveChangesAsync();
+    });
 app.Run();

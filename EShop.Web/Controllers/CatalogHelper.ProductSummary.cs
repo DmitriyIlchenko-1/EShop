@@ -71,7 +71,7 @@ public partial class CatalogHelper
                 .GetMediaFilesByIdsAsync(fileIds, false))
             .ToDictionary(x => x.Id);
         
-        //TODO: add caching;
+        
         return await categories
             .SelectAsync(async category =>
             {
