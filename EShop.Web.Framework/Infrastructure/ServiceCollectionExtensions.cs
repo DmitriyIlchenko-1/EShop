@@ -1,4 +1,5 @@
 using System.Reflection;
+using EasyCaching.Core.Configurations;
 using EasyCaching.Serialization.Json;
 using EShop.Core.Data.DbHandlers;
 using EShop.Core.Data.DbHandlers.Configuration;
@@ -6,6 +7,7 @@ using EShop.Core.Platform.Caching;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure;
 using EShop.Infrastructure.Caching;
+using EShop.Infrastructure.Caching.Adapters.EasyCaching;
 using EShop.Infrastructure.Caching.Adapters.Fusion;
 using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Extensions;
@@ -24,116 +26,102 @@ namespace EShop.Web.Common.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
-    
-
     public static void AddCaching(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddMemoryCache();
-
-       // services.AddRedisCache(configuration);
-
         services.AddEasyCaching(configuration);
 
-        services.AddSingleton<ICacheFactory, FusionCacheFactory>();
-
-        //We can inject the hybrid cache without using the factory. 
+        services.AddSingleton<ICacheFactory, EasyCachingFactory>();
+        
+        //Lets us inject the hybrid cache without using the factory. 
         services.AddSingleton<ICacheManager>(sp =>
         {
             var factory = sp.GetRequiredService<ICacheFactory>();
-            return factory.GetMemoryCache();
+            return factory.GetHybridCache();
         });
     }
-
-    public static void AddRedisCache(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddStackExchangeRedisCache(setup =>
-        {
-            //TODO: access through the config. 
-            var config = configuration
-                .GetSection("Redis")
-                .Get<DistributedCacheSettings>();
-
-            var options = new ConfigurationOptions()
-            {
-                EndPoints = { config.Endpoint },
-                User = config.User,
-                Password = config.Password
-            };
-
-            setup.InstanceName = config.InstanceName;
-            setup.ConfigurationOptions = options;
-        });
-    }
-
+    
     private static void AddEasyCaching(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddEasyCaching(options =>
         {
-            options.WithJson();
-            
-            options.UseInMemory(conf =>
-            {
- 
-            });
-
-            
-            options.UseRedis(conf =>
-             
-            { 
-                
-                var config = configuration
-                    .GetSection("Redis")
-                    .Get<DistributedCacheSettings>();
-                var options = new ConfigurationOptions()
-                {
-                    EndPoints = { config.Endpoint },
-                    User = config.User,
-                    Password = config.Password
-                };
-
-                conf.DBConfig.ConfigurationOptions = options;
-                conf.DBConfig.ConfigurationOptions.
-               
-            });
-            options.UseHybrid(opt =>
-            {
-            });
-        });
-    }
-
-    public static void AddFusionCacheServices(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddFusionCacheStackExchangeRedisBackplane(options =>
-        {
-            //TODO: access through the config. 
             var config = configuration
                 .GetSection("Redis")
                 .Get<DistributedCacheSettings>();
-
-            var settings = new ConfigurationOptions()
+             
+            options.WithJson(EasyCachingFactory.DistributedCache);
+            options.UseInMemory(EasyCachingFactory.MemoryCacheName);
+            options.UseRedis(conf =>
             {
-                EndPoints = { config.Endpoint },
-                User = config.User,
-                Password = config.Password
-            };
-
-            options.ConfigurationOptions = settings;
+                conf.DBConfig.ConnectionTimeout = 10_000;
+                conf.DBConfig.Username = config.Username;
+                conf.DBConfig.Password = config.Password;
+                conf.DBConfig.Endpoints.Add(new ServerEndPoint()
+                {
+                    Host = config.Host,
+                    Port = config.Port,
+                });
+            }, EasyCachingFactory.DistributedCache);
+            options.UseHybrid(x =>
+            {
+                x.TopicName = "hybrid-cache";
+                x.LocalCacheProviderName = EasyCachingFactory.MemoryCacheName;
+                x.DistributedCacheProviderName = EasyCachingFactory.DistributedCache;
+            }, EasyCachingFactory.HybridCacheName);
         });
-
-        services.AddSingleton<IFusionCacheSerializer, FusionCacheSerializer>();
-
-        services
-            .AddFusionCache(FusionCacheFactory.HybridCacheName)
-            .WithRegisteredSerializer()
-            .WithRegisteredDistributedCache()
-            .WithRegisteredBackplane();
-
-        services
-            .AddFusionCache(FusionCacheFactory.MemoryCacheName)
-            .WithRegisteredSerializer()
-            .WithRegisteredMemoryCache()
-            .WithoutDistributedCache();
     }
 
-    
+    // public static void AddRedisCache(this IServiceCollection services, IConfiguration configuration)
+    // {
+    //     services.AddStackExchangeRedisCache(setup =>
+    //     {
+    //         //TODO: access through the config. 
+    //         var config = configuration
+    //             .GetSection("Redis")
+    //             .Get<DistributedCacheSettings>();
+    //
+    //         var options = new ConfigurationOptions()
+    //         {
+    //             EndPoints = { config.Host },
+    //             User = config.Username,
+    //             Password = config.Password
+    //         };
+    //
+    //         setup.InstanceName = config.InstanceName;
+    //         setup.ConfigurationOptions = options;
+    //     });
+    // }
+
+    // public static void AddFusionCacheServices(this IServiceCollection services, IConfiguration configuration)
+    // {
+    //     services.AddFusionCacheStackExchangeRedisBackplane(options =>
+    //     {
+    //         //TODO: access through the config. 
+    //         var config = configuration
+    //             .GetSection("Redis")
+    //             .Get<DistributedCacheSettings>();
+    //
+    //         var settings = new ConfigurationOptions()
+    //         {
+    //             EndPoints = { config.Host },
+    //             User = config.Username,
+    //             Password = config.Password
+    //         };
+    //
+    //         options.ConfigurationOptions = settings;
+    //     });
+    //
+    //     services.AddSingleton<IFusionCacheSerializer, FusionCacheSerializer>();
+    //
+    //     services
+    //         .AddFusionCache(FusionCacheFactory.HybridCacheName)
+    //         .WithRegisteredSerializer()
+    //         .WithRegisteredDistributedCache()
+    //         .WithRegisteredBackplane();
+    //
+    //     services
+    //         .AddFusionCache(FusionCacheFactory.MemoryCacheName)
+    //         .WithRegisteredSerializer()
+    //         .WithRegisteredMemoryCache()
+    //         .WithoutDistributedCache();
+    // }
 }

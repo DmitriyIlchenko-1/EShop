@@ -12,23 +12,15 @@ namespace EShop.Core.Platform.Caching;
 public interface ICacheManager
 {
     bool HasDistributedProvider { get; }
-    
-    ValueTask<T> GetOrCreateAsync<T>(string key,
-        Func<CancellationToken, Task<T>> factory, CacheEntryOptions options = null,
-        IEnumerable<string> tags = null, CancellationToken cancellationToken = default);
 
-    ValueTask SetAsync<T>(string key, T value, CacheEntryOptions options = null,
-        IEnumerable<string> tags = null,
-        CancellationToken cancellationToken = default);
+    Task<T> GetOrCreateAsync<T>(string key, Func<Task<T>> factory,
+        CacheEntryOptions options, CancellationToken cancellationToken = default);
+    Task SetAsync<T>(string key, T value,
+        CacheEntryOptions options, CancellationToken cancellationToken = default);
 
-    ValueTask RemoveAsync(string key, CacheEntryOptions options = null,
-        CancellationToken cancellationToken = default);
+    Task RemoveByPatternAsync(string pattern,
+        CancellationToken cancellationToken = default(CancellationToken));
 
-    ValueTask RemoveByTagAsync(string tag, CacheEntryOptions options = null,
-        CancellationToken cancellationToken = default);
-
-    ValueTask ExpireAsync(string key, CacheEntryOptions options = null,
-        CancellationToken cancellationToken = default);
 }
 
  

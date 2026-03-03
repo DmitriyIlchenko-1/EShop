@@ -8,7 +8,8 @@ public class ModelCacheInvalidator : IDbHandler
 {
     // {0}: current user's roles.
     public const string CategoryHomePageModelKey = "pres.category.homepage-{0}";
-    public const string CategoryHomePagePatternKey = "pres.category.homepage";
+    public const string CategoryHomePagePatternKey = "pres.category.homepage*";
+
 
     private readonly ICacheManager _cache;
 
@@ -28,7 +29,15 @@ public class ModelCacheInvalidator : IDbHandler
         var entity = entityContext.Entity;
         var result = DbHandlerResult.Ok;
 
-
+        if (entity is Category)
+        {
+            await _cache.RemoveByPatternAsync(CategoryHomePagePatternKey, cancellationToken);
+        }
+        else
+        {
+            result = DbHandlerResult.Void;
+        }
+        
         return result;
     }
 
