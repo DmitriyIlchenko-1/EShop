@@ -27,6 +27,12 @@ public class HybridEasyCachingManager : ICacheManager
         CancellationToken cancellationToken = default)
         => await _cache.SetAsync<T>(key, value, options.AbsoluteExpiration, cancellationToken);
 
+    public async Task<T> GetAsync<T>(string key, CancellationToken cancellationToken = default)
+    {
+        var result = await _cache.GetAsync<T>(key, cancellationToken);
+        return result.HasValue ? result.Value : default(T);
+    }
+
     public async Task RemoveByPatternAsync(string pattern,
         CancellationToken cancellationToken = default(CancellationToken))
         => await _cache.RemoveByPatternAsync(pattern, cancellationToken);

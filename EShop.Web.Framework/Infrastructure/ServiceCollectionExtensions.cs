@@ -1,5 +1,6 @@
 using System.Reflection;
 using EasyCaching.Core.Configurations;
+using EasyCaching.InMemory;
 using EasyCaching.Serialization.Json;
 using EShop.Core.Data.DbHandlers;
 using EShop.Core.Data.DbHandlers.Configuration;
@@ -31,7 +32,7 @@ public static class ServiceCollectionExtensions
         services.AddEasyCaching(configuration);
 
         services.AddSingleton<ICacheFactory, EasyCachingFactory>();
-        
+
         //Lets us inject the hybrid cache without using the factory. 
         services.AddSingleton<ICacheManager>(sp =>
         {
@@ -39,34 +40,59 @@ public static class ServiceCollectionExtensions
             return factory.GetHybridCache();
         });
     }
-    
+
     private static void AddEasyCaching(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddEasyCaching(options =>
         {
-            var config = configuration
+            
+            options.UseInMemory(
+                config =>
+                {
+                    config.DBConfig = new InMemoryCachingOptions
+                    {
+                        EnableReadDeepClone = false,
+                        EnableWriteDeepClone = false,
+                    };
+                },
+                CachingConstValue.MemoryCacheName);
+            
+            
+            
+            var storageConfig = configuration
                 .GetSection("Redis")
                 .Get<DistributedCacheSettings>();
-             
-            options.WithJson(EasyCachingFactory.DistributedCache);
-            options.UseInMemory(EasyCachingFactory.MemoryCacheName);
-            options.UseRedis(conf =>
-            {
-                conf.DBConfig.ConnectionTimeout = 10_000;
-                conf.DBConfig.Username = config.Username;
-                conf.DBConfig.Password = config.Password;
-                conf.DBConfig.Endpoints.Add(new ServerEndPoint()
+
+            options.WithJson(CachingConstValue.DistributedCache);
+            options.UseInMemory(
+                config =>
                 {
-                    Host = config.Host,
-                    Port = config.Port,
-                });
-            }, EasyCachingFactory.DistributedCache);
+                    config.DBConfig = new InMemoryCachingOptions
+                    {
+                        EnableReadDeepClone = false,
+                        EnableWriteDeepClone = false,
+                    };
+                },
+                "DistributedM1");
+            options.UseRedis(conf =>
+                {
+                    conf.DBConfig.ConnectionTimeout = 10_000;
+                    conf.DBConfig.Username = storageConfig.Username;
+                    conf.DBConfig.Password = storageConfig.Password;
+                    conf.DBConfig.Endpoints.Add(new ServerEndPoint()
+                    {
+                        Host = storageConfig.Host,
+                        Port = storageConfig.Port,
+                    });
+                },
+                CachingConstValue.DistributedCache);
             options.UseHybrid(x =>
-            {
-                x.TopicName = "hybrid-cache";
-                x.LocalCacheProviderName = EasyCachingFactory.MemoryCacheName;
-                x.DistributedCacheProviderName = EasyCachingFactory.DistributedCache;
-            }, EasyCachingFactory.HybridCacheName);
+                {
+                    x.TopicName = "hybrid-cache";
+                    x.LocalCacheProviderName = "DistributedM1";
+                    x.DistributedCacheProviderName = CachingConstValue.DistributedCache;
+                },
+                CachingConstValue.HybridCacheName);
         });
     }
 

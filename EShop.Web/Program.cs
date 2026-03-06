@@ -1,6 +1,7 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using EasyCaching.Core;
+using EasyCaching.InMemory;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Common.Services;

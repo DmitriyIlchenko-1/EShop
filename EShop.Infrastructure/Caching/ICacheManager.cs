@@ -15,12 +15,12 @@ public interface ICacheManager
 
     Task<T> GetOrCreateAsync<T>(string key, Func<Task<T>> factory,
         CacheEntryOptions options, CancellationToken cancellationToken = default);
+
     Task SetAsync<T>(string key, T value,
         CacheEntryOptions options, CancellationToken cancellationToken = default);
 
+    Task<T> GetAsync<T>(string key, CancellationToken cancellationToken = default);
+
     Task RemoveByPatternAsync(string pattern,
         CancellationToken cancellationToken = default(CancellationToken));
-
 }
-
- 
