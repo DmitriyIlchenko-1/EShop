@@ -41,7 +41,9 @@ public class DbHandlerTests
 
         var dispatcher = CreateDispatcher();
         var result = await dispatcher.SavingChangesInvokeAsync([CreateContext<Product>(EntityState.Modified)]);
-        result.ShouldEqual(SaveChangesExecutingResult.Empty);
+        result.AnyStateChanged.ShouldBeFalse();
+        result.ProcessedDbHandlers.ShouldBeEmpty();
+        result.Entries.ShouldBeEmpty();
     }
 
     [Test]
@@ -52,7 +54,10 @@ public class DbHandlerTests
             .Returns([new DbHandlerMetadata()]);
         var dispatcher = CreateDispatcher();
         var result = await dispatcher.SavingChangesInvokeAsync(Array.Empty<IHandleEntityContext>());
-        result.ShouldEqual(SaveChangesExecutingResult.Empty);
+        result.AnyStateChanged.ShouldBeFalse();
+        result.ProcessedDbHandlers.ShouldBeEmpty();
+        result.Entries.ShouldBeEmpty();
+
     }
 
     [Test]
