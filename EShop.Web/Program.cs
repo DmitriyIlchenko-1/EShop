@@ -1,5 +1,7 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using EasyCaching.Core;
+using EasyCaching.InMemory;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Common.Services;
@@ -14,8 +16,10 @@ using EShop.Web.Common.Infrastructure;
 using EShop.Web.Common.Infrustructure;
 using EShop.Web.Common.Models;
 using EShop.Web.Common.Models.Choices;
+using EShop.Web.Infrastructure.DbHandlers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using ZiggyCreatures.Caching.Fusion;
 
 var builder = WebApplication.CreateBuilder(args);

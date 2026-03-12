@@ -99,10 +99,10 @@ internal class DbHandler_ProductAttribute_OnInserted : DbHandler<ProductAttribut
 
 internal class DbHandler_Category_OnSaveBefore : IDbHandler
 {
-    public Task<DbHandlerResult> OnSaveChangesExecutingAsync(IHandleEntityContext entity,
+    public Task<DbHandlerResult> OnSaveChangesExecutingAsync(IHandleEntityContext entityContext,
         CancellationToken cancellationToken = default)
     {
-        if (entity.EntityType != typeof(Category))
+        if (entityContext.EntityType != typeof(Category))
         {
             return Task.FromResult(DbHandlerResult.Void);
         }
@@ -131,7 +131,7 @@ internal class DbHandler_Category_OnSaveBefore : IDbHandler
 
 internal class DbHandler_Product_OnSaveAfter : IDbHandler
 {
-    public Task<DbHandlerResult> OnSaveChangesExecutingAsync(IHandleEntityContext entity,
+    public Task<DbHandlerResult> OnSaveChangesExecutingAsync(IHandleEntityContext entityContext,
         CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();

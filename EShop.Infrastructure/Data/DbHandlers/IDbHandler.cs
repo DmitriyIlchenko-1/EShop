@@ -11,12 +11,12 @@ public interface IDbHandler
     /// <summary>
     /// This method is called before a call to SaveChanges(Async) for every entity found as the result of a call to EF Core's Change Tracker. 
     /// </summary>
-    Task<DbHandlerResult> OnSaveChangesExecutingAsync(IHandleEntityContext entity, CancellationToken cancellationToken = default);
+    Task<DbHandlerResult> OnSaveChangesExecutingAsync(IHandleEntityContext entityContext, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// This method is called after a call to SaveChanges(Async) happens for every entity found as the result of a call to EF Core's Change Tracker. 
     /// </summary>
-    Task<DbHandlerResult> OnSaveChangesExecutedAsync(IHandleEntityContext entity, CancellationToken cancellationToken = default);
+    Task<DbHandlerResult> OnSaveChangesExecutedAsync(IHandleEntityContext entityContext, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// This method is called before a call to SaveChanges(Async) for every entity found as the result of a call to EF Core's Change Tracker. 
