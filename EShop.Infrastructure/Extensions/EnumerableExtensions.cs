@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using EShop.Infrastructure.Utilities;
 
 namespace EShop.Infrastructure.Extensions;
 
@@ -27,6 +28,39 @@ public static class EnumerableExtensions
         }
 
         return new ReadOnlySet<T>(set);
+    }
+
+    public static ReadOnlyCollection<T> AsReadOnly<T>(this IEnumerable<T> source)
+    {
+        if (source is null)
+        {
+            return ReadOnlyCollection<T>.Empty;
+        }
+        else if (source is ReadOnlyCollection<T> typed)
+        {
+            return typed;
+        }
+
+        if (source.TryGetNonEnumeratedCount(out var count) && count == 0)
+        {
+            return ReadOnlyCollection<T>.Empty;
+        }
+
+        if (!source.Any())
+        {
+            return ReadOnlyCollection<T>.Empty;
+        }
+
+        if (source is List<T> list)
+        {
+            return list.AsReadOnly();
+        }
+        else if (source is IList<T> iList)
+        {
+            return new ReadOnlyCollection<T>(iList);
+        }
+        
+        return new ReadOnlyCollection<T>(source.ToList());
     }
 
 
