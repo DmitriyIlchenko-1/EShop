@@ -8,6 +8,9 @@ namespace EShop.Infrastructure.Data.DbHandlers;
 public class DefaultDbHandlerActivator : IDbHandlerActivator
 {
     private readonly ILifetimeScope _lifetimeScope;
+    // We cache instances because some db handlers may hold state that they share across different 'DbHandler' stages (before/after).
+    // That is, we wanna make sure the same instance handles each method for each state.
+    // It looks better because when you think of each save operation, you think of each one as a unit of work.
     private readonly ConcurrentDictionary<DbHandlerMetadata, IDbHandler> _cache = new();
 
     public DefaultDbHandlerActivator(ILifetimeScope lifetimeScope)

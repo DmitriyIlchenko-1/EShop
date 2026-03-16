@@ -22,11 +22,11 @@ public class DbHandlerModule : Autofac.Module
         builder
             .RegisterType<DefaultDbHandlerActivator>()
             .As<IDbHandlerActivator>()
-            .InstancePerLifetimeScope();
+            .InstancePerDependency();
         builder
             .RegisterType<DefaultDbHandlerDispatcher>()
             .As<IDbHandlerDispatcher>()
-            .InstancePerLifetimeScope();
+            .InstancePerDependency();
         builder
             .RegisterType<DefaultDbHandlerRegistry>()
             .As<IDbHandlerRegistry>()
@@ -79,7 +79,7 @@ public class DbHandlerModule : Autofac.Module
                     md.For(x => x.HandlerType, handlerT);
                     md.For(x => x.DbContextType, contextT);
                 })
-                .InstanceScopeFromAttribute(fallback: Lifetime.InstancePerLifetimeScope);
+                .InstanceScopeFromAttribute(fallback: Lifetime.InstancePerDependency);
 
             if (serviceInterfaces.Any())
             {
