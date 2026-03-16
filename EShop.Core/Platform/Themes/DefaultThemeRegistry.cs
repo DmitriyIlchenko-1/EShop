@@ -30,6 +30,7 @@ public class DefaultThemeRegistry : IThemeRegistry
 
         return false;
     }
+     
 
     public ThemeDescriptor GetThemeByName(string themeName)
     {

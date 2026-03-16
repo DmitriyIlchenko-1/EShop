@@ -5,10 +5,10 @@ namespace EShop.Core.Platform.Themes;
 
 public class DefaultThemeContext : IThemeContext
 {
-    private readonly IThemeRegistry _registry;
-    private readonly StoreGeneralSettings _settings;
-    private string _cachedThemeName;
-    private ThemeDescriptor _cachedCurrentTheme;
+    protected readonly IThemeRegistry _registry;
+    protected readonly StoreGeneralSettings _settings;
+    protected string _cachedThemeName;
+     
 
     public DefaultThemeContext(IThemeRegistry registry, StoreGeneralSettings settings)
     {
@@ -16,7 +16,7 @@ public class DefaultThemeContext : IThemeContext
         _settings = settings;
     }
 
-    public string WorkingThemeName
+    public virtual string WorkingThemeName
     {
         get
         {
@@ -42,13 +42,5 @@ public class DefaultThemeContext : IThemeContext
         }
     }
 
-    public ThemeDescriptor CurrentTheme
-    {
-        get
-        {
-            if (_cachedCurrentTheme != null)
-                return _cachedCurrentTheme;
-            return _cachedCurrentTheme = _registry.GetThemeByName(WorkingThemeName);
-        }
-    }
+   
 }

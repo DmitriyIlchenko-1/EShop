@@ -10,7 +10,7 @@ namespace EShop.Infrastructure.Caching;
 /// We don't need to bind application-specific classes into our code.
 /// The code only deals with the ICacheManager interface and so it can work with any user-defined 'ConcreteCacheManager' classes.
 /// </summary>
-public interface ICacheFactory
+public interface ICacheManagerFactory
 {
     ICacheManager GetMemoryCache(); 
     ICacheManager GetHybridCache();

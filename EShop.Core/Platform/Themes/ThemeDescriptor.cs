@@ -1,3 +1,4 @@
+using EShop.Core.Platform.Themes.Domain;
 using EShop.Infrastructure.IO;
 using EShop.Infrastructure.Utilities;
 
@@ -23,4 +24,6 @@ public class ThemeDescriptor
     public string Description { get; internal set; }
     public string Author { get; internal set; }
     public Version Version { get; internal set; }
+    public string PhysicalPath { get; internal set; }
+    public IDictionary<string, ThemeVariableMetadata> Variables { get; internal set; }
 }
