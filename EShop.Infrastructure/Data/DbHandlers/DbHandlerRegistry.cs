@@ -23,6 +23,11 @@ public interface IDbHandlerRegistry
     DbHandlerMetadata[] GetAllMetadata();
 }
 
+// This type would've been made internal if I didn't have to register it in the Core project.
+// I think it's fine to let the type return arrays rather than read-only collections because 
+// this registry isn't supposed to be used outside the framework
+// because it's designed and used in the internal impl. of the framework.
+// It's not part of the public API.
 public class DefaultDbHandlerRegistry : IDbHandlerRegistry
 {
     private readonly ConcurrentDictionary<DbHandlerCacheKey, DbHandlerMetadata[]> _cache = [];
