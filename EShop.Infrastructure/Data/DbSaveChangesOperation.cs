@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using EShop.Core.Data;
 using EShop.Core.Data.DbHandlers;
 using EShop.Infrastructure.Data.DbHandlers;
@@ -44,7 +45,7 @@ internal class DbSaveChangesOperation : IDisposable
             .GetAwaiter()
             .GetResult();
 
-    public virtual Task<int> ExecuteAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+    public Task<int> ExecuteAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken)
         => ExecuteInternal(acceptAllChangesOnSuccess, true, cancellationToken);
 
     private async Task<int> ExecuteInternal(bool acceptAllChangesOnSuccess, bool async,

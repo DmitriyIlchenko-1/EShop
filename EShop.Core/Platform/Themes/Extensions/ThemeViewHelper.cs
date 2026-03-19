@@ -1,0 +1,29 @@
+using System.Dynamic;
+using EShop.Core.Platform.Themes.Services;
+using EShop.Infrastructure.Common;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace EShop.Core.Platform.Themes.Extensions;
+
+public static class ThemeViewHelper
+{
+    public static ThemeDescriptor GetThemeDescriptor(this IViewHelper viewHelper)
+        => viewHelper.HttpContext.RequestServices.GetRequiredService<IThemeContext>()
+            .WorkingTheme;
+
+    public static dynamic GetThemeVariables(this IViewHelper viewHelper)
+    {
+        var services = viewHelper.HttpContext.RequestServices;
+        var themeDescriptor = viewHelper.GetThemeDescriptor();
+        if (themeDescriptor is null)
+        {
+            return new ExpandoObject();
+        }
+
+        return services
+            .GetRequiredService<IThemeVariableService>()
+            .GetThemeVariablesAsync(themeDescriptor.ThemeName)
+            .GetAwaiter()
+            .GetResult();
+    }
+}

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Xml;
 using EShop.Infrastructure;
 using EShop.Infrastructure.Extensions;
@@ -9,8 +10,8 @@ namespace EShop.Core.Platform.Themes;
 public class DefaultThemeRegistry : IThemeRegistry
 {
     private readonly IEShopFileProvider _fileProvider;
-    protected IDictionary<string, ThemeDescriptor> _themeCache;
-    protected static readonly object _locker = new();
+    private IDictionary<string, ThemeDescriptor> _themeCache;
+    private static readonly object _locker = new();
 
     public DefaultThemeRegistry(IEShopFileProvider fileProvider)
     {

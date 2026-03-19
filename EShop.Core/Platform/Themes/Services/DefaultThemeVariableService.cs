@@ -8,12 +8,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Core.Platform.Themes.Services;
 
-public class DefaultThemeVariableService
+public interface IThemeVariableService
+{
+    Task<ExpandoObject> GetThemeVariablesAsync(string themeName);
+    
+}
+
+public class DefaultThemeVariableService : IThemeVariableService
 {
     private const string ThemeVariables = "test";
-    protected readonly ApplicationDbContext _db;
-    protected readonly ICacheManager _cache;
-    protected readonly IThemeRegistry _registry;
+    private readonly ApplicationDbContext _db;
+    private readonly ICacheManager _cache;
+    private readonly IThemeRegistry _registry;
 
     public DefaultThemeVariableService(ICacheManager cache, ApplicationDbContext db, IThemeRegistry registry)
     {

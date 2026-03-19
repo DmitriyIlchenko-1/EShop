@@ -5,9 +5,9 @@ namespace EShop.Core.Platform.Themes;
 
 public class DefaultThemeContext : IThemeContext
 {
-    protected readonly IThemeRegistry _registry;
-    protected readonly StoreGeneralSettings _settings;
-    protected string _cachedThemeName;
+    private readonly IThemeRegistry _registry;
+    private readonly StoreGeneralSettings _settings;
+    private string _cachedThemeName;
      
 
     public DefaultThemeContext(IThemeRegistry registry, StoreGeneralSettings settings)
@@ -41,6 +41,8 @@ public class DefaultThemeContext : IThemeContext
             return _cachedThemeName = theme;
         }
     }
+
+    public ThemeDescriptor WorkingTheme => _registry.GetThemeByName(WorkingThemeName);
 
    
 }
