@@ -28,7 +28,7 @@ public class RecentlyViewedProductsViewComponent : BaseViewComponent
         var routeData = HttpContext.GetRouteData();
         var routeString = routeData.Values.GetRouteString();
         int? currentProductId = routeString == "Product.ProductDetails"
-            ? routeData.Values.GetValueOrDefaultAs<string, object, int>("productId")
+            ? routeData.Values.GetValueOrDefaultAs<int>("productId")
             : null;
 
         var products =

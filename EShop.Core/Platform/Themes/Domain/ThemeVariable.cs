@@ -7,14 +7,23 @@ public class ThemeVariable : BaseEntity
 {
     [StringLength(200)]
     public string Theme { get; set; }
+    
     [StringLength(200)]
     public string Name { get; set; }
+    
     [StringLength(1000)]
     public string Value { get; set; }
 
-    //TODO: equality
-    public override bool Equals(object obj)
+   
+    public override bool Equals(BaseEntity other)
     {
-        return base.Equals(obj);
+        var equals =  base.Equals(other);
+     
+        if (!equals && other is ThemeVariable otherVariable)
+        {
+            return otherVariable.Theme.Equals(Theme, StringComparison.InvariantCulture)
+                   && otherVariable.Name.Equals(Name, StringComparison.InvariantCulture);
+        }
+        return equals;
     }
 }

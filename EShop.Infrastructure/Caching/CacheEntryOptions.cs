@@ -21,6 +21,7 @@ public class CacheEntryOptions
                     "The absolute expiration value must be positive.");
             }
 
+            
             _absoluteExpiration = value;
         }
     }
@@ -30,6 +31,7 @@ public class CacheEntryOptions
         get => _slidingExpiration;
         set
         {
+             
             if (value <= TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(

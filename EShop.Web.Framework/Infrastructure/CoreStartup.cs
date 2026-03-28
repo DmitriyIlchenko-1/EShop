@@ -15,7 +15,12 @@ using EShop.Core.Platform.Identity.Services;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Core.Platform.Logging.Services;
 using EShop.Core.Platform.Routing;
+using EShop.Core.Platform.Themes;
+using EShop.Core.Platform.Themes.Services;
 using EShop.Core.Platform.Web;
+using EShop.Infrastructure.Common;
+using EShop.Infrastructure.FileSystem;
+using EShop.Infrastructure.IO;
 using EShop.Infrastructure.Modules;
 using EShop.Infrastructure.Storage;
 using EShop.Infrastructure.Utilities;
@@ -50,7 +55,11 @@ public class CoreStartup : BaseStartup
         services.AddScoped<ISettingFactory, SettingFactory>();
         services.AddScoped<INotificationManager, NotificationManager>();
         services.AddScoped<IUrlService, UrlService>();
-        
+        services.AddSingleton<IThemeContext, DefaultThemeContext>();
+        services.AddSingleton<IThemeRegistry, DefaultThemeRegistry>();
+        services.AddScoped<IThemeVariableService, DefaultThemeVariableService>();
+        services.AddScoped<IViewHelper, DefaultViewHelper>();
+        services.AddSingleton<IEShopFileProvider, DefaultEShopFileProvider>();
         
         /*
          * Caching

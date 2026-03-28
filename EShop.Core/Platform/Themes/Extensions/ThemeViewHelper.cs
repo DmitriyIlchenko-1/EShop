@@ -1,6 +1,7 @@
 using System.Dynamic;
 using EShop.Core.Platform.Themes.Services;
 using EShop.Infrastructure.Common;
+using EShop.Infrastructure.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EShop.Core.Platform.Themes.Extensions;
@@ -13,17 +14,21 @@ public static class ThemeViewHelper
 
     public static dynamic GetThemeVariables(this IViewHelper viewHelper)
     {
-        var services = viewHelper.HttpContext.RequestServices;
-        var themeDescriptor = viewHelper.GetThemeDescriptor();
-        if (themeDescriptor is null)
-        {
-            return new ExpandoObject();
-        }
+        return viewHelper.HttpContext.GetItem("ThemeVariables",
+            () =>
+            {
+                var services = viewHelper.HttpContext.RequestServices;
+                var themeDescriptor = viewHelper.GetThemeDescriptor();
+                if (themeDescriptor is null)
+                {
+                    return new ExpandoObject();
+                }
 
-        return services
-            .GetRequiredService<IThemeVariableService>()
-            .GetThemeVariablesAsync(themeDescriptor.ThemeName)
-            .GetAwaiter()
-            .GetResult();
+                return services
+                    .GetRequiredService<IThemeVariableService>()
+                    .GetThemeVariablesAsync(themeDescriptor.ThemeName)
+                    .GetAwaiter()
+                    .GetResult();
+            });
     }
 }

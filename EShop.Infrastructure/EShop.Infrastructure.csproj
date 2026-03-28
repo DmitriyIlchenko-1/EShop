@@ -31,9 +31,10 @@
       <PackageReference Include="ZiggyCreatures.FusionCache" Version="2.4.0" />
       <PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.4.0" />
     </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Engine\Extensions\" />
-    </ItemGroup>
+<!--    <ItemGroup>-->
+<!--      <Folder Include="Engine\Extensions\" />-->
+<!--      <Folder Include="Themes\Extensions\" />-->
+<!--    </ItemGroup>-->
     
     
 

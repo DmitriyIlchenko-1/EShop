@@ -1,4 +1,5 @@
 using System.Dynamic;
+using System.Globalization;
 using EShop.Core.Data;
 using EShop.Core.Platform.Caching;
 using EShop.Infrastructure.Caching;
@@ -11,19 +12,18 @@ namespace EShop.Core.Platform.Themes.Services;
 public interface IThemeVariableService
 {
     Task<ExpandoObject> GetThemeVariablesAsync(string themeName);
-    
 }
 
 public class DefaultThemeVariableService : IThemeVariableService
 {
-    private const string ThemeVariables = "test";
+    private const string ThemeVariables = "web:theme-variables-{0}";
     private readonly ApplicationDbContext _db;
     private readonly ICacheManager _cache;
     private readonly IThemeRegistry _registry;
 
-    public DefaultThemeVariableService(ICacheManager cache, ApplicationDbContext db, IThemeRegistry registry)
+    public DefaultThemeVariableService(ICacheManagerFactory cacheFactory, ApplicationDbContext db, IThemeRegistry registry)
     {
-        _cache = cache;
+        _cache = cacheFactory.GetMemoryCache();
         _db = db;
         _registry = registry;
     }
@@ -33,7 +33,8 @@ public class DefaultThemeVariableService : IThemeVariableService
         if (themeName.IsEmpty() || !_registry.Contains(themeName))
             return null;
 
-        var result = await _cache.GetOrCreateAsync(string.Format(ThemeVariables, themeName),
+        string cacheKey = string.Format(CultureInfo.InvariantCulture, ThemeVariables, themeName);
+        var result = await _cache.GetOrCreateAsync(cacheKey,
             async () =>
             {
                 var dbVars = await _db
@@ -47,6 +48,7 @@ public class DefaultThemeVariableService : IThemeVariableService
         return result;
     }
 
+
     /// <summary>
     /// <see href="https://stackoverflow.com/questions/31675973/unboxing-for-dynamic-type"/>
     /// </summary>
@@ -55,7 +57,7 @@ public class DefaultThemeVariableService : IThemeVariableService
         Guard.NotNull(descriptor);
         var result = new ExpandoObject();
         var dict = (IDictionary<string, object>)result;
-        descriptor.Variables.Values.Each(x =>  dict.Add(x.Name, x.DefaultValue));
+        descriptor.Variables.Values.Each(x => dict.Add(x.Name, x.DefaultValue));
         foreach (var varPair in dbVars)
         {
             if (varPair.Value is not null)

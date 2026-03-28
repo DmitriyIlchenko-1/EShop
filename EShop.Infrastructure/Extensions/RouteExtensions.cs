@@ -11,9 +11,9 @@ public static class RouteExtensions
 
     public static string GetRouteString(this RouteValueDictionary routeValues)
     {
-        var area = routeValues.GetValueOrDefaultAs<string, object, string>("area");
-        var controller = routeValues.GetValueOrDefaultAs<string, object, string>("controller");
-        var action = routeValues.GetValueOrDefaultAs<string, object, string>("action");
+        var area = routeValues.GetValueOrDefaultAs<string>("area");
+        var controller = routeValues.GetValueOrDefaultAs<string>("controller");
+        var action = routeValues.GetValueOrDefaultAs<string>("action");
 
         return string.Format(CultureInfo.InvariantCulture,
             ParsedRouteFormat,

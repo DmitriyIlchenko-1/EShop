@@ -42,7 +42,8 @@ public class DefaultThemeContext : IThemeContext
         }
     }
 
-    public ThemeDescriptor WorkingTheme => _registry.GetThemeByName(WorkingThemeName);
+    public virtual ThemeDescriptor WorkingTheme 
+        => _registry.GetThemeByName(WorkingThemeName);
 
    
 }

@@ -44,7 +44,7 @@ public class DefaultThemeRegistry : IThemeRegistry
         return theme;
     }
 
-    public ICollection<ThemeDescriptor> GetThemeDescriptors()
+    public IReadOnlyList<ThemeDescriptor> GetThemeDescriptors()
         => _themeCache.Values.AsReadOnly();
 
      

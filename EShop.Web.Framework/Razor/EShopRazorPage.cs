@@ -10,7 +10,7 @@ public abstract class EShopRazorPage<TModel> : RazorPage<TModel>
 {
     private IViewHelper _viewHelper;
     
-    // lazy service resolution so we don't resolve services we don't end up using. protedted. 
+    // lazy service resolution so we don't resolve services we don't end up using. 
     protected IViewHelper ViewHelper 
         => _viewHelper ??= ViewContext.HttpContext.RequestServices.GetRequiredService<IViewHelper>();
     protected dynamic Config => ViewHelper.GetThemeVariables();

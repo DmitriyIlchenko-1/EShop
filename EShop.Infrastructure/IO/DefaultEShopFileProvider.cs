@@ -8,19 +8,12 @@ using Microsoft.Extensions.Hosting.Internal;
 namespace EShop.Infrastructure.IO;
 
 /// <summary>
-/// When instantiating this provider directly, an absolute directory path is required and serves as the base path for all requests made using the provider. 
+/// The abstraction over EShop's file system. 
 /// </summary>
-public class DefaultFileProvider : PhysicalFileProvider, IEShopFileProvider
+public class DefaultEShopFileProvider : PhysicalFileProvider, IEShopFileProvider
 {
-    public DefaultFileProvider(IWebHostEnvironment hostEnv) : base(File.Exists(hostEnv.ContentRootPath)
-        ? Path.GetDirectoryName(hostEnv.ContentRootPath)!
-        : hostEnv.ContentRootPath)
+    public DefaultEShopFileProvider(IWebHostEnvironment hostEnv) : base(hostEnv.ContentRootPath)
     {
-    }
-
-    public DefaultFileProvider(string path) : base(path)
-    {
-        
     }
 
     public new string Root => base.Root;
