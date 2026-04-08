@@ -1,7 +1,9 @@
+using System.ComponentModel;
 using System.Dynamic;
 using System.Globalization;
 using EShop.Core.Data;
 using EShop.Core.Platform.Caching;
+using EShop.Core.Platform.Themes.Domain;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
@@ -12,11 +14,13 @@ namespace EShop.Core.Platform.Themes.Services;
 public interface IThemeVariableService
 {
     Task<ExpandoObject> GetThemeVariablesAsync(string themeName);
+    Task<string> GenerateCssVarFile(string themeName);
 }
 
 public class DefaultThemeVariableService : IThemeVariableService
 {
     private const string ThemeVariables = "web:theme-variables-{0}";
+    private const string VarFormat = "--{0}: {1};";
     private readonly ApplicationDbContext _db;
     private readonly ICacheManager _cache;
     private readonly IThemeRegistry _registry;
@@ -47,6 +51,23 @@ public class DefaultThemeVariableService : IThemeVariableService
 
         return result;
     }
+    
+    public virtual async Task<string> GenerateCssVarFile(string themeName)
+    {
+        Guard.NotEmpty(themeName);
+        var variables = await GetThemeVariablesAsync(themeName) as IDictionary<string, object>;
+        if (variables.Count == 0)
+            return string.Empty;
+        using var _ = StringBuilderPool.Pool.Get(out var builder);
+        foreach (var variable in variables)
+        {
+            builder.AppendFormat(VarFormat, variable.Key, variable.Value);
+        }
+
+        return builder.ToString();
+    }
+
+     
 
 
     /// <summary>

@@ -29,6 +29,7 @@ public class ProductVariantAttributeValue : BaseEntity
     public bool IsPreSelected { get; set; }
 
     public string Name { get; set; }
+    public int Quantity { get; set; }
 
     public decimal PriceAdjustment { get; set; }
 

@@ -2,6 +2,7 @@ using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Configuration;
+using EShop.Core.Catalog.Products;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Catalog.Products.Services;
 using EShop.Core.Common.Services;
@@ -128,9 +129,7 @@ public partial class CatalogHelper
     {
         throw new NotImplementedException();
     }
-
-
-    #region Model Mapping
+    
 
     private async Task PrepareProductReviewModelAsync(ProductReviewsModel model, Product product, int take = 10)
     {
@@ -180,12 +179,11 @@ public partial class CatalogHelper
 
     private async Task PrepareProductAttributeModelAsync(ProductDetailsModelContext context, ProductDetailVm model)
     {
-        ArgumentNullException.ThrowIfNull(context);
         var product = context.Product;
         var batchContext = context.LazyContext;
         var query = context.ProductVariantQuery;
         var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
-
+        var weightAdjustment = 0m;
         foreach (var attribute in attributes)
         {
             var attributeVm = new ProductVariantAttributeModel()
@@ -201,6 +199,14 @@ public partial class CatalogHelper
                 IsRequired = attribute.IsRequired,
                 AttributeControlType = attribute.AttributeControlType,
             };
+
+            // if (query.Variants.Count > 0)
+            // {
+            //     var selectedAttribute = query.Variants.FirstOrDefault(x =>
+            //         x.ProductId == attribute.ProductId && x.AttributeId == attribute.ProductAttributeId &&
+            //             x.VariantAttributeId == attribute.Id);
+            //     
+            // }
 
 
             if (attribute.IsListTypeAttribute())
@@ -219,7 +225,12 @@ public partial class CatalogHelper
                             Color = value.Color,
                             IsPreSelected = value.IsPreSelected,
                             DisplayOrder = value.DisplayOrder,
+                            QuantityInfo = value.Quantity
                         };
+                        if (value.IsPreSelected)
+                        {
+                            weightAdjustment += value.WeightAdjustment;
+                        }
 
                         return valueVm;
                     })
@@ -231,68 +242,90 @@ public partial class CatalogHelper
                     .ToList();
             }
 
+            foreach (var val in attributeVm.Values.Where(x => x.IsPreSelected))
+            {
+                // query.AddVariant();
+            }
+
             model.ProductVariantAttributes.Add(attributeVm);
         }
 
         if (query != null && (query.Variants.Count > 0))
         {
-            await PrepareProductAttributeCombinationsModelAsync(context, model);
+            var sltAttrs =
+                _productAttributeMaterializer.CreateAttributeSelectionAsync(query, attributes, product.Id);
+            model.SelectedCombination =
+                (await _productAttributeMaterializer.FindProductVariantAttributeCombinationsAsync(
+                    new Dictionary<int, ProductVariantAttributeSelection>() { { product.Id, sltAttrs } }))
+                .FirstOrDefault();
+            (Product Product, ProductLazyContext LazyCtx,
+                ICollection<ProductVariantAttributeModel> ProductVariantAttributes, ProductVariantAttributeSelection
+                SelectedCombination) attributeMappingCtx =
+                    (product, batchContext, model.ProductVariantAttributes, sltAttrs);
+            await PrepareProductSummaryAttributeCombinationModelAsync(attributeMappingCtx);
         }
     }
 
+//     private async Task PrepareProductAttributeCombinationsModelAsync(ProductDetailsModelContext context,
+//     ProductDetailVm model)
+// {
+//     var product = context.Product;
+//     var batchContext = context.LazyContext;
+//     var query = context.ProductVariantQuery;
+//     var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
+//
+//     //selection (attribute + selected value) of all the attributes displayed. 
+//     context.SelectedAttributes =
+//         _productAttributeMaterializer.CreateAttributeSelectionAsync(query, attributes, product.Id);
+//
+//     var selectedValues =
+//         _productAttributeMaterializer.MaterializeProductVariantAttributeValues(context.SelectedAttributes, attributes);
+//     var selectedValueIds = selectedValues
+//         .Select(x => x.Id)
+//         .ToArray();
+//
+//
+//     model.SelectedCombination =
+//         (await _productAttributeMaterializer.FindProductVariantAttributeCombinationsAsync(
+//             new Dictionary<int, ProductVariantAttributeSelection>() { { product.Id, context.SelectedAttributes } }))
+//         .FirstOrDefault();
+//
+//     //more out to a mapper
+//     // if (model.SelectedCombination != null && !model.SelectedCombination.IsActive && model.SelectedCombination.StockQuantity == 0)
+//     // {
+//     //     model.IsAvailable = false;
+//     // }
+//
+//     //TODO: Come up with an idea about how to merge the data between the product and the selection. 
+//     // MergeWithCombination();
+//
+//     foreach (var attribute in model.ProductVariantAttributes.Where(x => x.IsActive))
+//     {
+//         //any value of the attribute intersects with any user chosen value for this attribute.
+//         // In other words, has the user selected a particular value for this attribute? 
+//         var updatePreselection = selectedValueIds.Length > 0 && selectedValueIds
+//             .Intersect(attribute.Values.Select(x => x.Id))
+//             .Any();
+//
+//
+//         foreach (ProductVariantAttributeValueModel value in
+//                  attribute.Values.Cast<ProductVariantAttributeValueModel>())
+//         {
+//             var isSelected = selectedValueIds.Contains(value.Id);
+//             if (updatePreselection)
+//             {
+//                 //set to false or true depending on which value the user has chosen. 
+//                 value.IsPreSelected = isSelected;
+//             }
+//
+//             if (isSelected)
+//             {
+//                 // model.Weight += value.ProductVariantAttributeValue.WeightAdjustment;
+//             }
+//         }
+//     }
+// }
 
-    private async Task PrepareProductAttributeCombinationsModelAsync(ProductDetailsModelContext context,
-        ProductDetailVm model)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        var product = context.Product;
-        var batchContext = context.LazyContext;
-        var query = context.ProductVariantQuery;
-        var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
-
-        var selection = _productAttributeMaterializer.CreateAttributeSelectionAsync(query, attributes, product.Id);
-        context.SelectedAttributes = selection;
-        var selectedValues =
-            _productAttributeMaterializer.MaterializeProductVariantAttributeValues(selection, attributes);
-        var selectedValueIds = selectedValues
-            .Select(x => x.Id)
-            .ToArray();
-
-        model.SelectedCombination =
-            await _productAttributeMaterializer.FindProductVariantAttributeCombinationAsync(product.Id,
-                context.SelectedAttributes);
-
-        if (model.SelectedCombination != null && !model.SelectedCombination.IsActive)
-        {
-            model.IsAllowToOrder = false;
-        }
-
-        //TODO: Come up with an idea about how to merge the data between the product and the selection. 
-        // MergeWithCombination();
-
-        foreach (var attribute in model.ProductVariantAttributes.Where(x => x.IsActive))
-        {
-            var updatePreselection = selectedValueIds.Length > 0 && selectedValueIds
-                .Intersect(attribute.Values.Select(x => x.Id))
-                .Any();
-
-
-            foreach (ProductVariantAttributeValueModel value in
-                     attribute.Values.Cast<ProductVariantAttributeValueModel>())
-            {
-                var isSelected = selectedValueIds.Contains(value.Id);
-                if (updatePreselection)
-                {
-                    value.IsPreSelected = isSelected;
-                }
-
-                if (isSelected)
-                {
-                    model.WidthValue += value.ProductVariantAttributeValue.WeightAdjustment;
-                }
-            }
-        }
-    }
 
     private async Task PrepareProductPropertiesModelAsync(ProductDetailsModelContext context, ProductDetailVm model)
     {
@@ -307,7 +340,7 @@ public partial class CatalogHelper
         model.MetaDescriptions = product.MetaTitle;
         model.Description = product.Description;
         model.ShortDescription = product.ShortDescription;
-        model.IsAllowToOrder = product.IsAllowToOrder;
+        model.IsAvailable = product.IsAvailable;
         model.StockQuantity = product.StockQuantity;
         model.RatingAverage = product.ApprovedRatingSum;
         model.ReviewsCount = product.ApprovedReviewCount;
@@ -384,6 +417,4 @@ public partial class CatalogHelper
             })
             .ToList();
     }
-
-    #endregion
 }

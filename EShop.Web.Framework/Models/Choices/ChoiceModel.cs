@@ -11,5 +11,7 @@ public abstract class ChoiceModel : BaseModel
     public bool IdDisabled { get; set; }
     public bool IsUnavailable{ get; set; }
     public bool IsActive { get; set; }
-   
+    public List<ChoiceItemModel> Values { get; set; }
+    public abstract string BuildControlId();
+
 }

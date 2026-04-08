@@ -41,6 +41,11 @@ public class LazyMultimap<T> : MultiMap<int, T>
         return result;
     }
 
+    public async Task LoadAllAsync()
+    {
+        await LoadAsync(_unloadedKeys);
+    }
+
     private async Task LoadAsync(IEnumerable<int> keys)
     {
         if (keys == null)

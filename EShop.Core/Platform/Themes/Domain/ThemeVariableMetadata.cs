@@ -4,7 +4,8 @@ public enum ThemeVariableType
 {
     Color,
     Integer,
-    String
+    String, 
+    Boolean
 }
 
 public class ThemeVariableMetadata

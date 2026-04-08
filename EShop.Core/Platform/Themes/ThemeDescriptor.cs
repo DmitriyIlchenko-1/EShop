@@ -19,11 +19,24 @@ public class ThemeDescriptor
 
     }
 
-     
-    public string ThemeName { get; internal set; }
-    public string Description { get; internal set; }
-    public string Author { get; internal set; }
-    public Version Version { get; internal set; }
+     //TODO: 
+    public string ThemeName { get;   set; }
+    public string Description { get;   set; }
+    public string Author { get;   set; }
+    public Version Version { get;   set; }
     public string PhysicalPath { get; internal set; }
     public IDictionary<string, ThemeVariableMetadata> Variables { get; internal set; }
+
+    public override bool Equals(object obj)
+    {
+        var other = obj as ThemeDescriptor;
+        return other != null &&
+               ThemeName.Equals(other.ThemeName, StringComparison.InvariantCulture);
+    }
+
+    //TODO: 
+    public override int GetHashCode()
+    {
+        return ThemeName.GetHashCode();
+    }
 }

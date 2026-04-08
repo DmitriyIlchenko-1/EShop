@@ -6,7 +6,7 @@ using EShop.Web.Common.Models;
 
 namespace EShop.Web.Models.Catalog;
 
-public class ProductDetailVm : BaseModel
+public class ProductDetailVm : ProductWithAttributes
 {
     public string MetaDescriptions { get; set; }
     public string MetaTitle { get; set; }
@@ -24,8 +24,7 @@ public class ProductDetailVm : BaseModel
     public decimal HeightValue { get; set; }
     public decimal LengthValue { get; set; }
     public decimal WidthValue { get; set; }
-
-    public bool IsAllowToOrder { get; set; }
+    
     public bool IsAvailable { get; set; }
     public double? RatingAverage { get; set; }
     public int ReviewsCount { get; set; }
@@ -37,8 +36,12 @@ public class ProductDetailVm : BaseModel
     public ICollection<MediaModel> Images { get; set; } = [];
     public ICollection<ProductSpecificationModel> ProductSpecifications { get; set; } = [];
     public IEnumerable<ProductDetailCategoryModel> Categories { get; set; } = [];
-    public ProductVariantAttributeCombination SelectedCombination { get; set; }  
-    public ICollection<ProductVariantAttributeModel> ProductVariantAttributes { get; set; } = [];
     public ICollection<ProductThumbnail> RelatedProducts { get; set; } = [];
     
+}
+
+public abstract class ProductWithAttributes : BaseModel
+{
+    public ProductVariantAttributeCombination SelectedCombination { get; set; }  
+    public ICollection<ProductVariantAttributeModel> ProductVariantAttributes { get; set; } = [];
 }

@@ -41,6 +41,7 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity
     public string MetaKeywords { get; set; }
     public DateTime CreatedOnUtc { get; set; }
     public DateTime ModifiedOnUtc { get; set; }
+    public bool IsAvailable { get; set; }
     public bool Published { get; set; }
     public bool Deleted { get; set; }
 
@@ -52,7 +53,7 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity
 
     public bool HasOptions { get; set; }
 
-    public bool IsAllowToOrder { get; set; }
+     
 
     public bool ShowOnHomePage { get; set; }
     public bool HomePageDisplayOrder { get; set; }

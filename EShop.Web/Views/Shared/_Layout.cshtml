@@ -1,30 +1,416 @@
-<!doctype html>
-<html lang="en-Us">
+<!DOCTYPE html>
+<html lang="en-US">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale-1"/>
-    <title>@ViewData["Title"]</title>
-    @await RenderSectionAsync("additionalMeta", false);
+    <meta charset="utf-8"/>
+    <title>@ViewBag.Title</title>
+    <link href="main.css" rel="stylesheet" type="text/css"/>
+    <link href="hero.css" rel="stylesheet" type="text/css"/>
+    <link href="utility-bar.css" rel="stylesheet" type="text/css"/>
+    <link href="component-list-social.css" rel="stylesheet" type="text/css"/>
+    <link href="utils.css" rel="stylesheet" type="text/css"/>
+    <link href="gallery.css" rel="stylesheet" type="text/css"/>
+    <link href="header.css" rel="stylesheet" type="text/css"/>
 
-  
-    <link rel="stylesheet" href="~/css/site.css"/>
+    <!--Font imports-->
+    <partial name="_FontImports"/>
 
-    @*Scripts*@
-    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js" defer></script>
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+
+    <style>
 
 
-    @await RenderSectionAsync("additionalHead", false);
+        :root {
+
+            /*PAGE LAYOUT*/
+            --narrow-content-width: 57.6rem;
+            --normal-content-width: 67.2rem;
+            --wide-content-width: 73.6rem;
+            --narrow-page-width: 144rem;
+            --normal-page-width: 192rem;
+            --wide-page-width: 240rem;
+
+            /*Content max-width*/
+            --max-width--body-normal: 50ch;
+            --max-width--body-narrow: 22.75em;
+
+            /*SECTION HEIGHTS*/
+            --section-height-small: 24rem;
+            --section-height-medium: 40rem;
+            --section-height-large: 56rem;
+
+            /*640px*/
+            /*medium*/
+            @@media screen and (
+            min-width: 40em) {
+            --section-height-small: 40svh;
+            --section-height-medium: 55svh;
+            --section-height-large: 70svh;
+        }
+
+            /*960px*/
+            /*large*/
+            @@media screen and (
+            min-width: 60em) {
+            --section-height-small: 50svh;
+            --section-height-medium: 65svh;
+            --section-height-large: 80svh;
+        }
+
+
+            /*|| Icons*/
+            --icon-size-2xs: 0.96rem;
+            --icon-size-xs: 1.36rem;
+            --icon-size-sm: 2rem;
+            --icon-size-md: 2.2rem;
+            --icon-size-lg: 2.4rem;
+
+
+            /*|| Gaps*/
+            --gap-3xs: 0.2rem;
+            --gap-2xs: 0.48rem;
+            --gap-xs: 0.8rem;
+            --gap-sm: 1.12rem;
+            --gap-md: 1.44rem;
+            --gap-lg: 1.6rem;
+            --gap-xl: 2rem;
+            --gap-2xl: 3.2rem;
+            --gap-3xl: 4.8rem;
+
+            /*Borders*/
+            --style-border-radius-buttons: 10px; /*from settings*/
+
+
+            /*|| Buttons*/
+            --minimum-touch-target: 44px;
+            --minimum-field-touch-target: 4.4rem;
+            --button-padding-inline: 24px;
+            --button-padding-block: 16px;
+            --btn-primary-border-width: 2px;
+            --btn-secondary-border-width: 1px;
+
+            /*Z-index*/
+            --layer-base: 0;
+            --layer-flat: 1;
+            --layer-raised: 2;
+            --layer-heightened: 4;
+            --layer-sticky: 8;
+            --layer-window-overlay: 10;
+            --layer-header-menu: 12;
+            --layer-overlay: 16;
+            --layer-menu-drawer: 18;
+            --layer-temporary: 20;
+
+            /*|| Spacing*/
+            --space-unit: .4rem;
+
+            --padding-xs: calc(1 * var(--space-unit));
+            --padding-sm: calc(2 * var(--space-unit));
+            --padding-md: calc(3 * var(--space-unit));
+            --padding-lg: calc(4 * var(--space-unit));
+            --padding-xl: calc(5 * var(--space-unit));
+            --padding-2xl: calc(6 * var(--space-unit));
+            --padding-3xl: calc(8 * var(--space-unit));
+            --padding-4xl: calc(10 * var(--space-unit));
+
+            --margin-xs: calc(1 * var(--space-unit));
+            --margin-sm: calc(2 * var(--space-unit));
+            --margin-md: calc(3 * var(--space-unit));
+            --margin-lg: calc(4 * var(--space-unit));
+            --margin-xl: calc(5 * var(--space-unit));
+
+
+            --spacing-scale-sm: 0.6;
+            --spacing-scale-md: 0.7;
+            --spacing-scale-default: 1.0;
+            --spacing-scale-lg: 1.2;
+
+            --letter-spacing--heading-tight: -0.03em;
+            --letter-spacing--heading-normal: 0em;
+            --letter-spacing--heading-loose: 0.03em;
+
+            /*|| Typography*/
+
+            --font-body-family: 'DM Sans', sans-serif;
+            --font-body-style: normal;
+            --font-body-weight: 400;
+            --font-body--size: 16;
+
+            --font-heading--family: 'Inter', sans-serif;
+            --font-heading--style: normal;
+            --font-heading--weight: 700;
+
+            --font-subheading--style: normal;
+            --font-subheading--family: 500;
+            --font-subheading--weight: 'Fira Sans', sans-serif;
+
+
+            /*  !*Heading Font Sizes
+              We have our font max breakpoint set to 1000px.
+              It means that as soon as the viewport reaches that number,
+              the font-size will set to the specified user value.
+              The value is hardcoded in here and equals 48px.
+
+              To make font-size fluid - we have to make it scale down with respect
+              to those 48 pixels it can maximum get in 1000px viewport.
+              4.8vw is going to be our 'scaled down 48 pixels' at any given viewport smaller than 1000px.
+              The formula is (absoluteSize / breakpoint) * 100.
+
+              What's defined by the design:
+              1. The upper-bound limit along with the max breakpoint.
+              Traditionally, 48px (3rem) is the biggest size specified in the last media query for the last font breakpoint.
+
+              2. The max breakpoint is also determined by the design - we do not want the font size to grow anymore after reaching it.
+
+              3. The bottom-bound: the design defines possible sizes the headers can be and each header's bottom-bound is the size of the next heading in the hierarchy.
+              The bottom-bound is for the viewport width that isn't enough to get to 4.8vw.
+              We shouldn't be able make a heading less than the size of the next level header.
+              For example, if h4 is clamp(3.5rem, 7.2vw, 4.5rem) - then h3's bottom-bound must be 4.5rem. (h3 shouldn't become smaller than h4).
+
+              We can jump over size values depending on the design values available. If you can set any heading to 48, 56 or 72px (that's the design possible values),
+              and you choose to set h1 to 48px and h2 to 72px, the h2's bottom-bound should be 3.5rem (56px).
+              The h2 can get smaller down to 3.5rem since there's no heading for that value. - this behaviour is something dictated by the design.
+
+
+              What's defined by the fluid typography:
+              1. The ideal value, which scales down the font size taking into account the current viewport width and 48px font-size
+              that it has to adopt for that viewport size.
+
+
+              The sizes used are 56px, 48px, 32px, 24px, 14px, 12px. */
+
+            --font-size--h1: clamp(4.8rem, 5.6vw, 5.6rem);
+            --font-size--h2: clamp(3.6rem, 4.8vw, 4.8rem);
+            --font-size--h3: 3.2rem;
+            --font-size--h4: 2.4rem;
+            --font-size--h5: 1.4rem;
+            --font-size--h6: 1.2rem;
+
+
+            /*Focus*/
+            --focus-outline-width: 0.2rem;
+            --focus-outline-style: solid;
+            --focus-outline-color: #0071e3;
+            --focus-outline-offset: 0.1rem;
+
+
+            /*|| Product Cards*/
+            --product-card-corner-radius: 7px;
+
+            /*|| Modals*/
+            --modal-border-radius: 16px;
+
+
+            /*Line Heights*/
+            --line-height--body-tight: 1.2;
+            --line-height--body-normal: 1.8;
+            --line-height--body-loose: 1.6;
+
+
+            --line-height--heading-tight: 1;
+            --line-height--heading-normal: 1.1;
+            --line-height--heading-loose: 1.3;
+
+
+            /*|| Inputs. Search*/
+            --input-border-width: 2px;
+            --input-border-radius: 10px;
+            --search-input-border-radius: 55px;
+
+            /*Animation*/
+            --animation-speed: 0.125s;
+            --animation-easing: ease-in-out;
+
+            /*|| Variants*/
+            --variant-border-width: 1px;
+            --variant-border-style: solid;
+            --variant-outline-offset: 2px;
+
+            /*|| Variants - Color Swatches*/
+            --color-swatch-input-border-radius: 50%;
+            --color-swatch-input-width: 24px;
+            --color-swatch-input-height: 24px;
+            --color-swatch-outer-circle-ratio: 1.25;
+
+
+            /*|| BORDERS*/
+            --border-radius-xs: 0.2rem;
+            --border-radius-sm: 0.6rem;
+            --border-radius-md: 0.8rem;
+            --border-radius-50: 50%;
+            --border-radius-lg: 1rem;
+
+
+            /*START*/
+            /*This shouldn't be in this file, my guess (don't know for sure) is that this is done with some sort of server-side parser that produces all these variables as its output*/
+            --font-h1--weight: var(--font-heading--weight);
+            --font-h1--letter-spacing: var(--letter-spacing--heading-normal);
+            --font-h1--size: var(--font-size--h1);
+            --font-h1--family: var(--font-heading--family);
+            --font-h1--style: var(--font-heading--style);
+            --font-h1--case: none;
+            --font-h1--line-height: var(--line-height--heading-loose);
+            --font-h2--weight: var(--font-heading--weight);
+            --font-h2--letter-spacing: var(--letter-spacing--heading-normal);
+            --font-h2--size: var(--font-size--h2);
+            --font-h2--family: var(--font-heading--family);
+            --font-h2--style: var(--font-heading--style);
+            --font-h2--case: none;
+            --font-h2--line-height: var(--line-height--heading-loose);
+            --font-h3--weight: var(--font-heading--weight);
+            --font-h3--letter-spacing: var(--letter-spacing--heading-normal);
+            --font-h3--size: var(--font-size--h3);
+            --font-h3--family: var(--font-heading--family);
+            --font-h3--style: var(--font-heading--style);
+            --font-h3--case: none;
+            --font-h3--line-height: var(--line-height--heading-loose);
+            --font-h4--weight: var(--font-heading--weight);
+            --font-h4--letter-spacing: var(--letter-spacing--heading-normal);
+            --font-h4--size: var(--font-size--h4);
+            --font-h4--family: var(--font-heading--family);
+            --font-h4--style: var(--font-heading--style);
+            --font-h4--case: none;
+            --font-h4--line-height: var(--line-height--heading-loose);
+            --font-h5--weight: var(--font-heading--weight);
+            --font-h5--letter-spacing: var(--letter-spacing--heading-normal);
+            --font-h5--size: var(--font-size--h5);
+            --font-h5--family: var(--font-heading--family);
+            --font-h5--style: var(--font-heading--style);
+            --font-h5--case: none;
+            --font-h5--line-height: var(--line-height--heading-loose);
+            --font-h6--weight: var(--font-heading--weight);
+            --font-h6--letter-spacing: var(--letter-spacing--heading-normal);
+            --font-h6--size: var(--font-size--h6);
+            --font-h6--family: var(--font-subheading--family);
+            --font-h6--style: var(--font-subheading--style);
+            --font-h6--case: none;
+            --font-h6--line-height: var(--line-height--heading-loose);
+            /*END*/
+
+            /*|| Variant */
+            --variant-border-color: #6f7171;
+            --variant-border-opacity: 0.4;
+            --variant-border-checked-color: #000000;
+
+            --star-color-rgb: 255 159 28;
+
+
+            --product-card-price-color: rgb(0, 0, 0);
+            --product-label-text--refurbished: #ffffff;
+            --product-label-gradient--refurbished: linear-gradient(145deg, rgba(42, 156, 44, 1) 20%, rgba(42, 156, 44, 0.76) 82%);
+            --product-label-text--sale: #ffffff;
+            --product-label-gradient--sale: linear-gradient(144deg, rgba(244, 43, 65, 0.8), rgb(218, 50, 67) 97%, rgba(247, 23, 23, 0.8) 97.482%);
+            --in-stock-text-color: #358c03;
+            --in-stock-background-color: rgba(139, 248, 123, 0.44);
+            --in-stock-border-color: rgba(50, 136, 0, 0.41);
+            --in-stock-animation-color: #0c7a01;
+
+            --low-stock-text-color: #c60202;
+            --low-stock-background-color: rgba(228, 4, 4, 0.13);
+            --low-stock-border-color: rgba(136, 0, 0, 0.41);
+            --low-stock-animation-color: #930303;
+            --heading-gap: calc(8 * var(--space-unit));
+
+            --bg-color: #000;
+            --ui-bg-button: #ffffff;
+            --color-white: #ffffff;
+            --text-color-rgb: 43 43 42;
+            --text-color: rgb(43 43 42);
+            --input-text-color: rgb(43 43 42);
+            --input-bg-color: #fff;
+            --input-bg--unavailable: rgba(0, 0, 0, 0.4);
+            --input-line-though: #6f7171;
+
+            --overlay-color: rgba(18, 18, 18, 0.4);
+            --modal-overlay-color: 0 0 0;
+
+        }
+
+        :root, .color-scheme-1 {
+            --color-background: rgb(255, 255, 255);
+            --opacity-5-15: 0.15;
+            --opacity-10-25: 0.25;
+            --opacity-35-55: 0.55;
+            --opacity-40-60: 0.6;
+            --opacity-30-60: 0.6;
+            --color-foreground: rgba(0, 0, 0, 0.81);
+            --color-foreground-rgb: 0 0 0;
+            --color-foreground-heading: rgb(0, 0, 0);
+            --color-foreground-heading-rgb: 255 255 255;
+            --color-primary: rgb(255 255 255 / 1.0);
+            --color-primary-rgb: 255 255 255;
+            --color-primary-hover: rgb(255 255 255 / 0.69);
+            --color-primary-hover-rgb: 255 255 255;
+            --color-border: rgb(230 230 230 / 1.0);
+            --color-border-rgb: 230 230 230;
+            --color-shadow: rgb(0 0 0 / 1.0);
+            --color-shadow-rgb: 0 0 0;
+            --link-color: #2B2B2AFF;
+
+            /*|| Color Buttons*/
+            --color-primary-button-text: rgb(255 255 255 / 1.0);
+            --color-primary-button-background: rgb(0 0 0 / 1.0);
+            --color-primary-button-border: rgb(0 0 0 / 1.0);
+            --color-primary-button-hover-background: rgb(51 51 51 / 1.0);
+            --color-primary-button-hover-text: rgb(255 255 255 / 1.0);
+            --color-link-active: rgba(255, 0, 0, 0.8);
+            --color-primary-button-hover-border: rgb(0 0 0 / 1.0);
+            --color-secondary-button-text: rgb(255 255 255 / 1.0);
+            --color-secondary-button-background: rgb(0 0 0 / 0.0);
+            --color-secondary-button-border: rgb(255 255 255 / 1.0);
+            --color-secondary-button-hover-text: rgb(255 255 255 / 1.0);
+            --color-secondary-button-hover-background: rgba(209, 211, 216, 0.16);
+            --color-secondary-button-hover-border: rgb(255 255 255 / 1.0);
+            --color-input-background: rgb(255 255 255 / 1.0);
+            --color-input-text: rgb(0 0 0 / 0.53);
+            --color-input-text-rgb: 0 0 0;
+            --color-input-border: rgb(0 0 0 / 0.13);
+            --color-input-hover-background: rgb(250 250 250 / 1.0);
+            --color-variant-background: rgb(255 255 255 / 1.0);
+            --color-variant-border: rgb(230 230 230 / 1.0);
+            --color-variant-text: rgb(0 0 0 / 1.0);
+            --color-variant-text-rgb: 0 0 0;
+            --color-variant-hover-background: rgb(245 245 245 / 1.0);
+            --color-variant-hover-text: rgb(0 0 0 / 1.0);
+            --color-variant-hover-border: rgb(230 230 230 / 1.0);
+            --color-selected-variant-background: rgb(0 0 0 / 1.0);
+            --color-selected-variant-border: rgb(0 0 0 / 1.0);
+            --color-selected-variant-text: rgb(255 255 255 / 1.0);
+            --color-selected-variant-hover-background: rgb(26 26 26 / 1.0);
+            --color-selected-variant-hover-text: rgb(255 255 255 / 1.0);
+            --color-selected-variant-hover-border: rgb(26 26 26 / 1.0);
+
+        }
+
+        .color-scheme-2 {
+            --color-background: rgb(255 255 255 / 1.0);
+            --color-foreground: rgba(0, 0, 0);
+            --color-primary-button-text: rgb(255 255 255 / 1.0);
+            --color-primary-button-background: rgb(0 0 0 / 1.0);
+            --color-primary-button-border: rgb(0 0 0 / 1.0);
+            --color-primary-button-hover-text: rgb(255 255 255 / 1.0);
+            --color-primary-button-hover-background: rgb(51 51 51 / 1.0);
+            --color-primary-button-hover-border: rgb(0 0 0 / 1.0);
+            --color-secondary-button-text: rgb(0, 0, 0);
+            --color-secondary-button-background: rgb(0 0 0 / 0.0);
+            --color-secondary-button-border: rgb(0, 0, 0);
+
+            --color-secondary-button-hover-text: rgb(255, 255, 255);
+            --color-secondary-button-hover-background: rgb(27, 26, 26);
+            --color-secondary-button-hover-border: rgb(0, 0, 0);
+
+            --color-link-active: rgba(255, 0, 0, 0.8);
+            --color-foreground-heading: rgb(0, 0, 0);
+            --color-foreground-heading-rgb: 255 255 255;
+        }
+
+    </style>
+
 </head>
-<body>
-<header class="navbar fixed-top navbar-expand-lg navbar-light bg-white">
-     
-
-</header>
+<!--Read to know why overflow-hidden is not on the html element: https://www.w3.org/TR/css-overflow-3/#overflow-propagation-->
+<!--TODO: JS: main-nav, overflow-hidden-->
+<body class="page-width-narrow overflow-hidden ">
 <main>
-    <a asp-action="Logout" asp-controller="Identity">Logout
-    </a>
-    @RenderBody()
+    @RenderBody();
 </main>
-@await RenderSectionAsync("scripts", false);
 </body>
 </html>

@@ -60,6 +60,7 @@ public class DefaultThemeRegistry : IThemeRegistry
                 return;
             _themeCache = new Dictionary<string, ThemeDescriptor>(StringComparer.InvariantCultureIgnoreCase);
             var themePath = _fileProvider.MapPath(GlobalConfiguration.ThemePath);
+            var rr = Directory.GetDirectories(themePath);
             foreach (string dirName in Directory.GetDirectories(themePath))
             {
                 var dir = new DirectoryInfo(dirName);

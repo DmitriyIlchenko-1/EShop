@@ -78,6 +78,7 @@ public class SettingFactory : ISettingFactory
             {
                 continue;
             }
+             
 
             var descriptor = TypeDescriptor.GetConverter(prop.PropertyType);
             if (!descriptor.CanConvertFrom(typeof(string)))
@@ -88,7 +89,7 @@ public class SettingFactory : ISettingFactory
             var value = descriptor.ConvertFromInvariantString(valueStr);
             prop.SetValue(settingsInstance, value);
         }
-
+ 
         return settingsInstance;
     }
 }

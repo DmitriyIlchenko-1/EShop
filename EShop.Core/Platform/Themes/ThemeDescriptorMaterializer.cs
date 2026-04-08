@@ -68,7 +68,7 @@ public class ThemeDescriptorMaterializer
         if (name.IsEmpty())
             throw new InvalidOperationException($"Variable {xElement} has no defined name in the configuration file '{_descriptor.PhysicalPath}'.");
         var result = Enum.TryParse<ThemeVariableType>(xElement.Attribute("type")
-                ?.Value,
+                ?.Value, ignoreCase:true,
             out var type);
         if (!result)
             throw new InvalidOperationException($"Variable {xElement} doesn't have a type in the configuration file '{_descriptor.PhysicalPath}'.");

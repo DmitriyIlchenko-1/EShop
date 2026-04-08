@@ -1,8 +1,12 @@
+using Autofac;
 using EShop.Core.Catalog.Attributes.Domain;
+using EShop.Core.Catalog.Attributes.Services;
+using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Data;
 using EShop.Infrastructure.Collections;
 using EShop.Infrastructure.Extensions;
+using EShop.Infrastructure.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Core.Catalog.Products;
@@ -18,29 +22,41 @@ public class ProductLazyContext
 {
     private readonly List<int> _productIds = [];
     private readonly ApplicationDbContext _db;
+    protected readonly IComponentContext _componentContext;
 
     private LazyMultimap<ProductVariantAttribute> _attributes;
     private LazyMultimap<ProductVariantAttributeCombination> _attributeCombinations;
     private LazyMultimap<ProductLink> _relatedProducts;
+    private LazyMultimap<ProductBrand> _productBrands;
     private LazyMultimap<ProductSpecificationAttribute> _specifications { get; set; }
 
-    public ProductLazyContext(ApplicationDbContext db, IEnumerable<Product> products, bool includeHidden = false)
+    public ProductLazyContext(ApplicationDbContext db, IEnumerable<Product> products,
+        IComponentContext componentContext, bool includeHidden = false)
     {
-        ArgumentNullException.ThrowIfNull(db);
+        Guard.NotNull(db);
+        Guard.NotNull(componentContext);
         _db = db;
+        _componentContext = componentContext;
+
         if (products != null)
         {
             _productIds.AddRange(products.Select(p => p.Id));
         }
     }
 
+    protected IBrandService _brandService;
+
+    internal IBrandService BrandService
+    {
+        get => _brandService ??= _componentContext.Resolve<IBrandService>();
+        set => _brandService = value;
+    }
+
 
     public LazyMultimap<ProductVariantAttribute> Attributes
         => _attributes ??= new LazyMultimap<ProductVariantAttribute>(LoadVariantAttributes, _productIds);
 
-    public LazyMultimap<ProductVariantAttributeCombination> AttributeCombinations
-        => _attributeCombinations ??=
-            new LazyMultimap<ProductVariantAttributeCombination>(LoadAttributeCombinations, _productIds);
+    
 
     public LazyMultimap<ProductSpecificationAttribute> ProductSpecification
         => _specifications ??=
@@ -48,6 +64,14 @@ public class ProductLazyContext
 
     public LazyMultimap<ProductLink> RelatedProducts
         => _relatedProducts ??= new LazyMultimap<ProductLink>(LoadRelatedProducts, _productIds);
+
+    public LazyMultimap<ProductBrand> ProductBrands
+        => _productBrands ??= new LazyMultimap<ProductBrand>(LoadProductBrands, _productIds);
+
+    private async Task<MultiMap<int, ProductBrand>> LoadProductBrands(int[] ids)
+    {
+        return (await BrandService.GetBrandsByProductIdsAsync(ids)).ToMultiMap(x => x.ProductId, x => x);
+    }
 
     private async Task<MultiMap<int, ProductVariantAttribute>> LoadVariantAttributes(int[] ids)
     {
@@ -64,16 +88,7 @@ public class ProductLazyContext
         return attributes.ToMultiMap(x => x.ProductId, x => x);
     }
 
-    private async Task<MultiMap<int, ProductVariantAttributeCombination>> LoadAttributeCombinations(int[] ids)
-    {
-        var combinations = await _db
-            .ProductVariantAttributeCombinations
-            .AsNoTracking()
-            .Where(x => ids.Contains(x.ProductId))
-            .OrderBy(x => x.ProductId)
-            .ToListAsync();
-        return combinations.ToMultiMap(x => x.ProductId, x => x);
-    }
+   
 
     private async Task<MultiMap<int, ProductLink>> LoadRelatedProducts(int[] ids)
     {
@@ -85,7 +100,7 @@ public class ProductLazyContext
             .OrderBy(x => x.DisplayOrder)
             .ThenBy(x => x.ProductId)
             .ToListAsync();
- 
+
 
         return relatedProducts.ToMultiMap(x => x.ProductId, x => x);
     }
@@ -114,5 +129,15 @@ public class ProductLazyContext
             .ThenBy(x => x.DisplayOrder)
             .ThenBy(x => x.SpecificationAttributeOption.SpecificationAttribute.DisplayOrder)
             .ThenBy(x => x.SpecificationAttributeOption.SpecificationAttribute.Name);
+    }
+
+    public void Clear()
+    {
+        _productIds.Clear();
+        _specifications?.Clear();
+        _relatedProducts?.Clear();
+        _productBrands?.Clear();
+        _attributes?.Clear();
+        _attributeCombinations?.Clear();
     }
 }

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Dynamic;
 using EShop.Core.Platform.Themes.Services;
 using EShop.Infrastructure.Common;
@@ -30,5 +31,16 @@ public static class ThemeViewHelper
                     .GetAwaiter()
                     .GetResult();
             });
+    }
+
+    public static T GetVariable<T>(this IViewHelper viewHelper, string name)
+    {
+        var vars = viewHelper.GetThemeVariables() as IDictionary<string, object>;
+        if (vars.TryGetValueAs<string>(name, out string result) && !result.IsEmpty())
+        {
+           return (T)Convert.ChangeType(result, typeof(T));
+        }
+
+        return default(T);
     }
 }

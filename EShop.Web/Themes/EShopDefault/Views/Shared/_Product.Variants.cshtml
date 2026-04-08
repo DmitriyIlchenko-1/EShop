@@ -1,0 +1,73 @@
+@using EShop.Core.Catalog.Attributes.Domain
+@using EShop.Web.Common.TagHelpers
+@using EShop.Web.Models.Catalog
+@model IEnumerable<ProductVariantAttributeModel>
+
+<div class="variants">
+    @foreach (var attr in Model)
+    {
+        var containerId = attr.BuildControlId();
+        var attrValues = attr.Values ?? [];
+        <div class="variant">
+
+            @switch (attr.AttributeControlType)
+            {
+                case AttributeControlType.RadioButtonPills:
+                    <fieldset class="variant__selects">
+                        <legend class="variant__description">
+                            @attr.Name <span aria-hidden="true">: Pro</span>
+                        </legend>
+                        <div class="variant__set">
+                            @foreach (var item in attrValues)
+                            {
+                                var controlId = containerId + "_" + item.Id;
+                                <span class="variant-group">
+                                    <input
+                                        class="variant-group__control @(item.IsUnavailable ? " variant-group__control--unavailable" : "")"
+                                        type="radio"
+                                        id="@controlId" name="@containerId" value="@item.Id"/>
+                                    <label class="variant-group__label"
+                                           for="@controlId">@item.Name
+                                        <span eh-if="item.IsUnavailable"
+                                              class="visually-hidden">(Out of stock)</span></label>
+                                </span>
+                            }
+                            <p class="variant__overlimit text-sm">+ 10</p>
+                        </div>
+
+                    </fieldset>
+                    break;
+                case AttributeControlType.RadioList:
+
+                    break;
+                case AttributeControlType.Swatch:
+                    <fieldset class="variant__selects color-swatches">
+                        <legend class="variant__description">
+                            @attr.Name <span aria-hidden="true">: Red</span>
+                        </legend>
+                        <div class="variant__set color-swatches__color-container">
+                            @foreach (var item in attrValues)
+                            {
+                                var controlId = containerId + "_" + item.Id;
+                                <label class="color-swatch__label"
+                                       for="@controlId">
+                                    <span class="visually-hidden">@item.Name</span>
+                                    <span eh-if="item.IsUnavailable" class="visually-hidden">(Out of stock)</span>
+                                    <input
+                                        class="color-swatch__control @(item.IsUnavailable ? " color-swatch__control--unavailable" : "")"
+                                        type="radio"
+                                        style="--swatch-image: @item.Color"
+                                        id="@controlId" name="@containerId" value="@item.Id"/>
+                                </label>
+                                //linear-gradient(to bottom right, #ff6db7, #ff6db7 50%, #75e6ff 50%, #75e6ff);
+                            }
+                            <p class="variant__overlimit text-sm">+ 2</p>
+                        </div>
+                    </fieldset>
+                    break;
+            }
+        </div>
+    }
+</div>
+
+ 

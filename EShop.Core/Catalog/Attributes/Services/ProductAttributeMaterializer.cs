@@ -1,7 +1,8 @@
 using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Data;
+using EShop.Infrastructure.Utilities;
 using Microsoft.EntityFrameworkCore;
- 
+
 
 namespace EShop.Core.Catalog.Attributes.Services;
 
@@ -14,7 +15,6 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
         _db = db;
     }
 
-    /// <returns>Returns a read-only dictionary containing the IDs of the selected variant attributes and the IDs of their values selected</returns>
     public ProductVariantAttributeSelection CreateAttributeSelectionAsync(ProductVariantQuery query,
         IEnumerable<ProductVariantAttribute> attributes, int productId)
     {
@@ -50,7 +50,8 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
         ProductVariantAttributeSelection selection,
         IEnumerable<ProductVariantAttribute> attributes)
     {
-        ArgumentNullException.ThrowIfNull(attributes, nameof(attributes));
+        Guard.NotNull(selection);
+        Guard.NotNull(attributes);
 
         var result = new List<ProductVariantAttributeValue>();
 
@@ -63,9 +64,9 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
 
             var valueIDs = selection
                 .Attributes
-                .Where(x => variantProductIDs.Contains(x.Key))
-                .Select(x => x.Value)
-                .Where(x => x > 0) // <----- @
+                .Where(x => variantProductIDs.Contains(x.Key)) // x.Key - attribute id.
+                .Select(x => x.Value) // x.Value - the user selected value for that attribute.
+                .Where(x => x > 0)
                 .ToArray();
 
             foreach (var valueId in valueIDs)
@@ -84,19 +85,25 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
         return result;
     }
 
-    public async Task<ProductVariantAttributeCombination> FindProductVariantAttributeCombinationAsync(int productId,
-        ProductVariantAttributeSelection selection)
+    public async Task<ICollection<ProductVariantAttributeCombination>> FindProductVariantAttributeCombinationsAsync(
+        IDictionary<int, ProductVariantAttributeSelection> selections)
     {
-        if (productId == 0 || selection.IsNullOrEmpty())
-        {
-            return null;
-        }
+        Guard.NotNull(selections);
+        if (selections.Count == 0)
+            return [];
 
         //TODO: Add caching. 
-        int hashCode = selection.GetHashCode();
-        var combination = await _db
+        var ids = selections
+            .Select(x => x.Key)
+            .ToArray();
+        var hashCodes = selections
+            .Where(x => !x.Value.IsNullOrEmpty())
+            .Select(x => x.Value.GetHashCode())
+            .ToArray();
+        var combinations = await _db
             .ProductVariantAttributeCombinations.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.ProductId == productId && x.HashCode == hashCode);
-        return combination;
+            .Where(x => ids.Contains(x.ProductId) && hashCodes.Contains(x.HashCode))
+            .ToListAsync();
+        return combinations;
     }
 }

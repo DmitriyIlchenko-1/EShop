@@ -3,7 +3,7 @@ namespace EShop.Core.Catalog.Attributes.Domain;
 public class ProductVariantQueryItem
 {
     public static string CreateKey(int productId, int attributeId, int variantAttributeId)
-        => $"pvari{productId}-{attributeId}-{variantAttributeId}";
+        => $"pvatr{productId}-{attributeId}-{variantAttributeId}";
 
     public int ProductId { get; set; }
     public int AttributeId { get; set; }

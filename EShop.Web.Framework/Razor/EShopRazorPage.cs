@@ -1,4 +1,5 @@
 using EShop.Core.Platform.Themes.Extensions;
+using EShop.Core.Platform.Themes.Services;
 using EShop.Infrastructure.Common;
 using EShop.Web.Common.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -15,4 +16,7 @@ public abstract class EShopRazorPage<TModel> : RazorPage<TModel>
         => _viewHelper ??= ViewContext.HttpContext.RequestServices.GetRequiredService<IViewHelper>();
     protected dynamic Config => ViewHelper.GetThemeVariables();
     
+    //TEMP:
+    protected IThemeVariableService ServiceVariable 
+        => ViewContext.HttpContext.RequestServices.GetRequiredService<IThemeVariableService>();
 }
