@@ -1,12 +1,13 @@
 @model EShop.Web.Models.Catalog.ProductSummaryItemModel
 
 @{
-    var showVariants = Model.Variants is { Count: > 0 };
-    
+    var showVariants = Model.ProductVariantAttributes is { Count: > 0 };
+    var parent = Model.Parent;
 }
 <li class="resource-list__item">
     <div class="product-card">
-        <div class="color-scheme-2 product-grid__card layout-panel-flex  layout-panel-flex--column   border-style gap-style">
+        <div
+            class="color-scheme-2 product-grid__card layout-panel-flex  layout-panel-flex--column   border-style gap-style">
             <div class="product-card__compare text-sm pb-3">
                 <input class="checkbox product-card__compare-checkbox" type="checkbox" id="compare"
                        name=""/>
@@ -16,7 +17,8 @@
             <div class="product-card__top-content">
                 <ul class="product-card__labels list-unstyled top-0 left-0 ">
                     <li class="product-card__label-wrapper flex">
-                                        <span class="product-card__label product-card__label--refurbished product-card__label--rounded">
+                                        <span
+                                            class="product-card__label product-card__label--refurbished product-card__label--rounded">
                                         <svg class="icon" aria-hidden="true" focusable="false" width="16" height="16"
                                              viewBox="0 0 48 48"
                                              fill="none" xmlns="http://www.w3.org/2000/svg"><g
@@ -47,21 +49,24 @@
                                         </span>
                     </li>
                     <li class="product-card__label-wrapper  flex">
-                                        <span class="product-card__label product-card__label--sale product-card__label--rounded">
+                                        <span
+                                            class="product-card__label product-card__label--sale product-card__label--rounded">
                                            <svg class="icon align-middle" focusable="false" aria-hidden="true"
                                                 width="16" height="16"
                                                 version="1.0"
                                                 id="Layer_1" xmlns="http://www.w3.org/2000/svg"
                                                 xmlns:xlink="http://www.w3.org/1999/xlink"
                                                 viewBox="-2.56 -2.56 69.12 69.12" enable-background="new 0 0 64 64"
-                                                xml:space="preserve" fill="#000000" transform="rotate(90)"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g
+                                                xml:space="preserve" fill="#000000" transform="rotate(90)"><g
+                                                   id="SVGRepo_bgCarrier" stroke-width="0"></g><g
                                                    id="SVGRepo_tracerCarrier" stroke-linecap="round"
                                                    stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.128"></g><g
                                                    id="SVGRepo_iconCarrier"> <g> <polygon fill="none" stroke="#000000"
                                                                                           stroke-width="5.3759999999999994"
                                                                                           stroke-miterlimit="10"
                                                                                           points="25,1 63,39 39,63 1,25 1,1 "></polygon> <circle
-                                                           fill="none" stroke="#000000" stroke-width="5.3759999999999994"
+                                                           fill="none" stroke="#000000"
+                                                           stroke-width="5.3759999999999994"
                                                            stroke-miterlimit="10" cx="17" cy="17"
                                                            r="6"></circle> </g> </g></svg>
                                             <span class="align-middle">Up to 15% off</span>
@@ -88,9 +93,10 @@
                                         <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
                                            stroke-linejoin="round"></g>
                                         <g id="SVGRepo_iconCarrier">
-                                            <path d="M7.82054 20.7313C8.21107 21.1218 8.84423 21.1218 9.23476 20.7313L15.8792 14.0868C17.0505 12.9155 17.0508 11.0167 15.88 9.84497L9.3097 3.26958C8.91918 2.87905 8.28601 2.87905 7.89549 3.26958C7.50497 3.6601 7.50497 4.29327 7.89549 4.68379L14.4675 11.2558C14.8581 11.6464 14.8581 12.2795 14.4675 12.67L7.82054 19.317C7.43002 19.7076 7.43002 20.3407 7.82054 20.7313Z"
+                                            <path
+                                                d="M7.82054 20.7313C8.21107 21.1218 8.84423 21.1218 9.23476 20.7313L15.8792 14.0868C17.0505 12.9155 17.0508 11.0167 15.88 9.84497L9.3097 3.26958C8.91918 2.87905 8.28601 2.87905 7.89549 3.26958C7.50497 3.6601 7.50497 4.29327 7.89549 4.68379L14.4675 11.2558C14.8581 11.6464 14.8581 12.2795 14.4675 12.67L7.82054 19.317C7.43002 19.7076 7.43002 20.3407 7.82054 20.7313Z"
 
-                                                  fill="currentColor"></path>
+                                                fill="currentColor"></path>
                                         </g>
                                     </svg>
                                 </button>
@@ -103,15 +109,17 @@
                                         <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
                                            stroke-linejoin="round"></g>
                                         <g id="SVGRepo_iconCarrier">
-                                            <path d="M7.82054 20.7313C8.21107 21.1218 8.84423 21.1218 9.23476 20.7313L15.8792 14.0868C17.0505 12.9155 17.0508 11.0167 15.88 9.84497L9.3097 3.26958C8.91918 2.87905 8.28601 2.87905 7.89549 3.26958C7.50497 3.6601 7.50497 4.29327 7.89549 4.68379L14.4675 11.2558C14.8581 11.6464 14.8581 12.2795 14.4675 12.67L7.82054 19.317C7.43002 19.7076 7.43002 20.3407 7.82054 20.7313Z"
-                                                  fill="currentColor"></path>
+                                            <path
+                                                d="M7.82054 20.7313C8.21107 21.1218 8.84423 21.1218 9.23476 20.7313L15.8792 14.0868C17.0505 12.9155 17.0508 11.0167 15.88 9.84497L9.3097 3.26958C8.91918 2.87905 8.28601 2.87905 7.89549 3.26958C7.50497 3.6601 7.50497 4.29327 7.89549 4.68379L14.4675 11.2558C14.8581 11.6464 14.8581 12.2795 14.4675 12.67L7.82054 19.317C7.43002 19.7076 7.43002 20.3407 7.82054 20.7313Z"
+                                                fill="currentColor"></path>
                                         </g>
                                     </svg>
                                 </button>
                             </div>
                             <!--TODO: aria-hidden on individual slides if not in the focus? (all of them but one currently displayed)-->
                             <div class="slideshow__slides">
-                                <div class="slideshow__slide product-media-container media-fit product-media-container--image">
+                                <div
+                                    class="slideshow__slide product-media-container media-fit product-media-container--image">
                                     <div class="product-media">
                                         <!--TODO: I'll add the sizes and srcset attributes when I start rendering this html though the backend.-->
                                         <img class="product-media__image" loading="eager"
@@ -121,7 +129,8 @@
                                              alt=""/>
                                     </div>
                                 </div>
-                                <div class="slideshow__slide product-media-container media-fit product-media-container--image">
+                                <div
+                                    class="slideshow__slide product-media-container media-fit product-media-container--image">
                                     <div class="product-media">
                                         <img class="product-media__image" loading="lazy"
                                              fetchpriority="auto"
@@ -141,8 +150,8 @@
             <div class="product-card__main-content">
 
 
-                <p class="product-card__ribbon-text text-sm mb-1"><span
-                        class="visually-hidden">Brand:</span>Apple
+                <p eh-if="parent.ShowBrand" class="product-card__ribbon-text text-sm mb-1"><span
+                        class="visually-hidden">Brand:</span>@Model.Brand.Name
                 </p>
 
 
@@ -153,15 +162,18 @@
                         </a>
                     </h2>
                 </div>
-                <div class="rating">
-                    <div role="img" aria-label="4.0 out of 5.0 stars."
+                <div eh-if="@(parent.ShowRating && Model.TotalReviews > 0)" class="rating">
+                     @{
+                         var ratingPercent = ((Model.RatingSum * 100) / Model.TotalReviews) / 5;
+                     }
+                    <div role="img" aria-label="@(Model.RatingSum / Model.TotalReviews) out of 5.0 stars."
                          class="rating__star-container inline-block align-middle">
-                                                <span style="--rating: 4.5; --rating-max: 5"
-                                                      class="rating__stars ">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                        <span style="--rating: @ratingPercent; --rating-max: 5"
+                              class="rating__stars ">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
                     </div>
                     <p class="rating-count inline-block align-middle text-sm m-0">
-                        <span aria-hidden="true">(1)</span>
-                        <span class="visually-hidden">5 reviews in total</span>
+                        <span aria-hidden="true">@Model.TotalReviews</span>
+                        <span class="visually-hidden">@Model.TotalReviews reviews in total</span>
                     </p>
                 </div>
 
@@ -185,10 +197,7 @@
                     Only 44 left
                 </p>
 
-                @if (Model.Variants.Any(x => x.ShowInLists))
-                {
-                    <partial name="_Product.Variants" model="Model.Variants"/>
-                }
+                <partial name="_Product.Variants" model="Model.ProductVariantAttributes"/>
             </div>
 
             <div class="card__cta">

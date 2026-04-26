@@ -1,4 +1,5 @@
 using EShop.Core.Catalog.Attributes.Domain;
+using EShop.Core.Catalog.Products.Domain;
 
 namespace EShop.Core.Catalog.Attributes.Services;
 
@@ -20,7 +21,19 @@ public interface IProductAttributeMaterializer
     /// <summary>
     /// Finds and meterializes product variant attribute combination.
     /// </summary>
-    /// <returns>Found <see cref="ProductVariantAttributeCombination"/></returns>
-    Task<ICollection<ProductVariantAttributeCombination>> FindProductVariantAttributeCombinationsAsync(
+    /// <returns>Found <see cref="ProductVariantAttributeCombination"/>. Keys are product ids whose combinations are in Values</returns>
+    Task<ProductVariantAttributeCombination> FindAttributeCombinationAsync(int productId,
+        ProductVariantAttributeSelection selection);
+
+    Task<int> PrefetchProductVariantAttributeCombinationsAsync(
         IDictionary<int, ProductVariantAttributeSelection> selections);
+
+    Task<CombinationAvailabilityInfo> IsCombinationAvailableAsync(Product product,
+        IEnumerable<ProductVariantAttribute> productVariantAttributes,
+        IEnumerable<ProductVariantAttributeValue> selectedVariantAttributeValues,
+        ProductVariantAttributeValue currentVariantValue);
+
+    ProductVariantAttributeCombination GetPrefetchedCombinationOrDefault(int productId,
+        ProductVariantAttributeSelection selection);
+    Task<IDictionary<int, int>> GetEssentialVariantAttributeValueCountsAsync(bool isRequiredOnly);
 }

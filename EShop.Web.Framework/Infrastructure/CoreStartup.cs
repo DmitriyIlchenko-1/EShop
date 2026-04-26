@@ -1,11 +1,13 @@
 using Autofac;
 using EShop.Core.Catalog.Attributes.Modeling;
 using EShop.Core.Catalog.Attributes.Services;
+using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Products.Services;
 using EShop.Core.Common.Services;
 using EShop.Core.Content.Media.Services;
 using EShop.Core.Content.Widgets.Services;
 using EShop.Core.Data;
+using EShop.Core.Data.Brands.Services;
 using EShop.Core.Data.DbHandlers;
 using EShop.Core.Data.Launch;
 using EShop.Core.Platform.Common;
@@ -18,6 +20,7 @@ using EShop.Core.Platform.Routing;
 using EShop.Core.Platform.Themes;
 using EShop.Core.Platform.Themes.Services;
 using EShop.Core.Platform.Web;
+using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Common;
 using EShop.Infrastructure.FileSystem;
 using EShop.Infrastructure.IO;
@@ -43,6 +46,7 @@ public class CoreStartup : BaseStartup
         services.AddSingleton<IProductPricingService, ProductPricingService>();
         services.AddSingleton<ICurrencyService, CurrencyService>();
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IBrandService, DefaultBrandService>();
         services.AddSingleton<IDateTimeService, DateTimeService>();
         services.AddScoped<IActivityLogger, ActivityLogger>();
         services.AddScoped<IRecentlyViewedProductsService, RecentlyViewedProductsService>();
@@ -60,7 +64,7 @@ public class CoreStartup : BaseStartup
         services.AddScoped<IThemeVariableService, DefaultThemeVariableService>();
         services.AddScoped<IViewHelper, DefaultViewHelper>();
         services.AddSingleton<IEShopFileProvider, DefaultEShopFileProvider>();
-        
+        services.AddScoped<IRequestCache, DefaultRequestCache>();
         /*
          * Caching
          */

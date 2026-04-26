@@ -20,7 +20,7 @@ public interface ICacheManager
         CacheEntryOptions options = null, CancellationToken cancellationToken = default);
 
     Task<T> GetAsync<T>(string key, CancellationToken cancellationToken = default);
-
+    Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default);
     Task RemoveByPatternAsync(string pattern,
         CancellationToken cancellationToken = default(CancellationToken));
 }

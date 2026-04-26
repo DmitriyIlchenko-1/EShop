@@ -4,7 +4,7 @@ using EShop.Core.Catalog.Products.Domain;
 
 namespace EShop.Web.Models.Catalog;
 
-public class ProductDetailsModelContext : ProductAttributeContext
+public class ProductDetailsModelContext  
 {
     public ProductDetailsModelContext(Product product, ProductVariantQuery productVariantQuery,
         ProductLazyContext lazyContext)
@@ -21,7 +21,4 @@ public class ProductDetailsModelContext : ProductAttributeContext
 }
 
 
-public abstract class ProductAttributeContext
-{
-    public ProductVariantAttributeSelection SelectedAttributes { get; set; }
-}
+ 

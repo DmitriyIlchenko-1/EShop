@@ -3,12 +3,13 @@ using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Catalog.Products.Services;
 using EShop.Core.Data;
 using EShop.Core.Platform.Logging.Services;
+using EShop.Infrastructure.Data;
+using EShop.Infrastructure.Extensions;
 using EShop.Web.Models.Catalog;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Web.Controllers;
-
 
 public class ProductController : Controller
 {
@@ -53,20 +54,17 @@ public class ProductController : Controller
         return View(model);
     }
 
+    // public async Task<IActionResult> UpdateProductDetailsInList(int productId, ProductVariantQuery query)
+    // {
+    //     (Product product, int quantity) = await ExtractProductFromForm(HttpContext.Request.Form, productId);
+    //     var model = new ProductSummaryModel();
+    //     // var ctx = _catalogHelper.CreateModelContext()
+    //     await _catalogHelper.PrepareProductSummaryModelAsync();
+    // }
+    
     public async Task<IActionResult> UpdateProductDetails(int productId, ProductVariantQuery productVariantQuery)
     {
-        var form = HttpContext.Request.Form;
-        var quantity = 1;
-
-        var product = await _db
-            .Products.AsNoTracking()
-            .SingleOrDefaultAsync(x => x.Id == productId);
-
-        var quantityKey = form.Keys.FirstOrDefault(x => x.EndsWith("EnteredQuantity"));
-        if (!string.IsNullOrWhiteSpace(quantityKey))
-        {
-            _ = int.TryParse(form[quantityKey], out quantity);
-        }
+        (Product product, int quantity) = await ExtractProductFromForm(HttpContext.Request.Form, productId);
 
         var model = new ProductDetailVm();
         var ctx = _catalogHelper.CreateModelContext(product, productVariantQuery);
@@ -74,4 +72,18 @@ public class ProductController : Controller
 
         throw new NotImplementedException();
     }
+    
+    private async Task<(Product product, int quantity)> ExtractProductFromForm(IFormCollection form, int productId)
+    {
+        var quantity = 1;
+        var product = await _db.Products.FindByIdAsync(productId);
+        var quantityKey = form.Keys.FirstOrDefault(x => x.EndsWith("SetQuantity"));
+        if (!quantityKey.IsEmpty())
+        {
+            int.TryParse(form[quantityKey], out quantity);
+        }
+
+        return (product, quantity);
+    }
+
 }

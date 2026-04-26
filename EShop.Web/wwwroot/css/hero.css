@@ -1,0 +1,106 @@
+/*|| HERO*/
+
+
+/*Allows us to set up the height of our hero*/
+.hero {
+    /*TODO: This variable is set through JS*/
+    --hero-height-offset: 109px;
+
+    position: relative; /**/
+
+    /*
+    We can decide as least how tall we want our hero component to be. It's set through --hero-min-height, which will refer different section-height variables in turn.
+    We can have our hero component be the 100% of the viewport height, 80% etc. Each denoted as small, medium, ..., full screen.
+    We use --hero-height-offset so that the hero component won't overflow the viewport, which means it's unlikely the hero will ever be the exact height specified by us, because
+    we account for the #header-group section above the .hero so that if the header-groud is 109px, we substruct that from 100svh.
+    By accounting for the above content, we make sure the picture and the other contents of the hero won't be displayed below the initial visible area of the page.
+
+    If there's too much content so that the height has to become taller to fit it in - the hero will end up overflowing.
+    */
+    min-height: calc(var(--hero-min-height) - var(--hero-height-offset))
+}
+
+
+.hero__container {
+    position: relative;
+    overflow: hidden;
+    border: var(--hero-border-width) var(--hero-border-style) rgb(var(--color-border-rgb) / var(--hero-border-opacity));
+    min-height: inherit;
+    z-index: var(--layer-base);
+}
+
+
+.hero__media-wrapper {
+    /*
+    We make the image container absolute and not the text wrapper because as we have more and more options for customizing this wrapper,
+    like how many images we want to display and how we want to display them, it's easier to make all these changes without affecting the normal layout flow.
+    */
+    position: absolute;
+    inset: 0;
+    display: grid; /*Used so that we can choose between one or two images and the way of displaying them*/
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr; /*TODO: ideally, it's set through a setting. 1fr, 1fr - if there are two images*/
+}
+
+
+.hero__image {
+    /*
+    When we set the height to 100%, the grid column bounce the responsibility back to the <img> element because its height is sized naturally based on its content.
+    It means that the image is going to overflow the hero container that only considers the 'text' part for its height (or its min-height if there is not enough content).
+
+    A surprising feature is that
+    setting an <img>'s overflow property to auto, scroll, hidden or overlay will prevent the <img>'s containing block from having its height increased to match the height of the <img>.
+    (https://www.youtube.com/watch?v=pOccH1V5N6w). I haven't found any information that would explain why this is a thing.
+
+    It means that the .hero__media-wrapper is only going to be as height as its containing block.
+    And so now we just have to set the height of the <img> to 100% to make the <img> element's height the size of the .hero__media-wrapper, and so the image (not the <img> element) is going to be squished into that much height.
+    And then we use the object-fit: cover to clip the image to make it look fine.
+    */
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    object-fit: cover;
+    object-position: center center; /**/
+    z-index: var(--layer-base);
+}
+
+/*Mobile / Desktop image set up*/
+
+.hero__image--desktop {
+    display: block;
+}
+
+.hero__image--mobile {
+    display: none;
+}
+
+@media screen and (width <= 749px) {
+    .hero__image--desktop {
+        display: none;
+    }
+
+    .hero__image--mobile {
+        display: block;
+    }
+}
+
+
+/*Content part of the hero component*/
+.hero__content-wrapper {
+    position: relative;
+    inset: 0; /**/
+    z-index: 1;
+
+}
+
+.hero__content-wrapper.page-width {
+    grid-column: 2;
+}
+
+
+.hero__heading {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+

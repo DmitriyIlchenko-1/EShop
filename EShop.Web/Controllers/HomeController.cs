@@ -1,3 +1,4 @@
+using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Content.Widgets.Services;
 using EShop.Web.Models.Home;
 using EShop.Web.Models.Widgets;
@@ -18,7 +19,7 @@ namespace EShop.Web.Controllers
             _widgetInstanceService = widgetInstanceService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(ProductVariantQuery query)
         {
             //TODO: add home-page settings.
 

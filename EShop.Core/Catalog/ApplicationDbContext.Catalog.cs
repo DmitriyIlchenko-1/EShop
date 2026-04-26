@@ -13,11 +13,14 @@ public partial class ApplicationDbContext
 {
     public DbSet<Product> Products { get; set; }
     public DbSet<Brand> Brands { get; set; }
-    public DbSet<ProductBrand> ProductBrands { get; set; }
+  
 
     public DbSet<ProductReview> ProductReviews { get; set; }
     public DbSet<ProductLink> ProductLinks { get; set; }
     public DbSet<ProductVariantAttribute> ProductVariantAttributes { get; set; }
+    public DbSet<ProductAttribute> ProductAttributes { get; set; }
+    public DbSet<ProductAttributeOptionsSet> ProductAttributeOptionsSets { get; set; }
+    public DbSet<ProductAttributeOption> ProductAttributeOptions { get; set; }
     public DbSet<ProductVariantAttributeCombination> ProductVariantAttributeCombinations { get; set; }
     public DbSet<ProductVariantAttributeValue> ProductVariantAttributeValues { get; set; }
     public DbSet<ProductSpecificationAttribute> ProductSpecificationAttributes { get; set; }

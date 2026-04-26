@@ -62,7 +62,7 @@ public static class ServiceCollectionExtensions
             var storageConfig = configuration
                 .GetSection("Redis")
                 .Get<DistributedCacheSettings>();
-
+        
             options.WithJson(CachingConstValue.DistributedCache);
             options.UseInMemory(
                 config =>

@@ -11,11 +11,11 @@ public class ProductAttribute : BaseEntity
     public string Alias { get; set; }
 
     public string Description { get; set; }
-
     public int DisplayOrder { get; set; }
     public string TextPrompt { get; set; }
 
     public string Name { get; set; }
+    
 
     public ICollection<ProductAttributeOptionsSet> ProductAttributeOptionsSets { get; set; }
 }

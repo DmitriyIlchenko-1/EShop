@@ -147,6 +147,9 @@ namespace EShop.Web.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsRequired")
                         .HasColumnType("boolean");
 
@@ -209,7 +212,7 @@ namespace EShop.Web.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("QuantityUnitId")
+                    b.Property<int?>("QuantityUnitId")
                         .HasColumnType("integer");
 
                     b.Property<string>("RawAttributes")
@@ -262,6 +265,9 @@ namespace EShop.Web.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IsEssential")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsPreSelected")
                         .HasColumnType("boolean");
 
@@ -272,6 +278,9 @@ namespace EShop.Web.Migrations
                         .HasColumnType("numeric");
 
                     b.Property<int>("ProductVariantAttributeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
                     b.Property<decimal>("WeightAdjustment")
@@ -468,8 +477,8 @@ namespace EShop.Web.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
 
-                    b.Property<byte>("DisplayOrder")
-                        .HasColumnType("smallint");
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("integer");
@@ -497,7 +506,19 @@ namespace EShop.Web.Migrations
                     b.Property<int>("ApprovedReviewCount")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("AttributeCombinationRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("BasePriceAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("BasePriceBaseAmount")
+                        .HasColumnType("numeric");
+
                     b.Property<int?>("BrandId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CombinationDisplayBehaviour")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedOnUtc")
@@ -505,6 +526,9 @@ namespace EShop.Web.Migrations
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("boolean");
+
+                    b.Property<int?>("DeliveryTimeId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasMaxLength(5000)
@@ -523,7 +547,10 @@ namespace EShop.Web.Migrations
                     b.Property<bool>("HomePageDisplayOrder")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsAllowToOrder")
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsShippingEnabled")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsVisibleIndividually")
@@ -566,6 +593,9 @@ namespace EShop.Web.Migrations
 
                     b.Property<bool>("Published")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("QuantityUnitId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ShortDescription")
                         .HasMaxLength(2000)
@@ -1521,7 +1551,7 @@ namespace EShop.Web.Migrations
             modelBuilder.Entity("EShop.Core.Catalog.Products.Domain.Product", b =>
                 {
                     b.HasOne("EShop.Core.Catalog.Brands.Domain.Brand", "Brand")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("BrandId")
                         .OnDelete(DeleteBehavior.SetNull);
 
@@ -1737,6 +1767,11 @@ namespace EShop.Web.Migrations
             modelBuilder.Entity("EShop.Core.Catalog.Attributes.Domain.SpecificationAttributeOption", b =>
                 {
                     b.Navigation("ProductSpecificationAttributes");
+                });
+
+            modelBuilder.Entity("EShop.Core.Catalog.Brands.Domain.Brand", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("EShop.Core.Catalog.Categories.Domain.Category", b =>

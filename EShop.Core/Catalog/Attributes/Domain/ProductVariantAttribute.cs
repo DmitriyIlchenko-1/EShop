@@ -38,8 +38,10 @@ public class ProductVariantAttribute : BaseEntity
     public int AttributeControlTypeId { get; set; }
 
     public int DisplayOrder { get; set; }
-    
+
     public bool IsRequired { get; set; }
+    public bool IsActive { get; set; }
+    
 
     public Product Product { get; set; }
 
@@ -52,6 +54,17 @@ public class ProductVariantAttribute : BaseEntity
     public ICollection<ProductVariantAttributeValue> ProductVariantAttributeValues { get; set; }
 
     public bool IsListTypeAttribute()
+    {
+        return AttributeControlType switch
+        {
+            AttributeControlType.RadioList => true,
+            AttributeControlType.Swatch => true,
+            AttributeControlType.RadioButtonPills => true,
+            _ => false
+        };
+    }
+
+    public bool IsMultipleChoices()
     {
         return AttributeControlType switch
         {

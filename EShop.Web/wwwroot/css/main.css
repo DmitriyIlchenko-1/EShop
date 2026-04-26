@@ -1,0 +1,1405 @@
+/* || BASE */
+
+html {
+    height: 100%;
+    font-size: 62.5%;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+*:focus-visible {
+    outline: var(--focus-outline-width) var(--focus-outline-style) var(--focus-outline-color);
+    outline-offset: var(--focus-outline-offset);
+}
+
+/*noinspection ALL*/
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    margin: 0;
+}
+
+body, .color-scheme1, .color-scheme-2 {
+    color: var(--color-foreground);
+    background-color: var(--color-background);
+}
+
+body, .paragraph > * {
+    font-size: calc(var(--font-body--size) * 0.1rem);
+    line-height: var(--line-height--body-loose); /*Consider 1.6–1.8 for paragraphs with dense content or low-contrast color schemes.*/
+    font-family: var(--font-body-family);
+    font-style: var(--font-body-style);
+    font-weight: var(--font-body-weight);
+    color: rgb(var(--text-color-rgb));
+}
+
+
+h1, .h1, .text-block.h1 > * {
+    font-family: var(--font-h1--family);
+    font-size: var(--font-size--h1);
+    font-style: var(--font-h1--style);
+    font-weight: var(--font-h1--weight);
+    line-height: var(--font-h1--line-height);
+    letter-spacing: var(--font-h1--letter-spacing);
+    color: var(--color, var(--color-foreground-heading));
+    margin-block: 0 .5em;
+    margin-inline: 0 0;
+}
+
+h2, .h2, .text-block.h2 > * {
+    font-family: var(--font-h2--family);
+    font-size: var(--font-size--h2);
+    font-style: var(--font-h2--style);
+    font-weight: var(--font-h2--weight);
+    line-height: var(--font-h2--line-height);
+    letter-spacing: var(--font-h2--letter-spacing);
+    color: var(--color, var(--color-foreground-heading));
+    margin-block: 0 .5em;
+    margin-inline: 0 0;
+}
+
+h3, .h3, .text-block.h3 > * {
+    font-family: var(--font-h3--family);
+    font-size: var(--font-size--h3);
+    font-style: var(--font-h3--style);
+    font-weight: var(--font-h3--weight);
+    line-height: var(--font-h3--line-height);
+    letter-spacing: var(--font-h3--letter-spacing);
+    color: var(--color, var(--color-foreground-heading));
+    margin-block: 0 .5em;
+    margin-inline: 0 0;
+}
+
+h4, .h4, .text-block.h4 > * {
+    font-family: var(--font-h4--family);
+    font-size: var(--font-size--h4);
+    font-style: var(--font-h4--style);
+    font-weight: var(--font-h4--weight);
+    line-height: var(--font-h4--line-height);
+    letter-spacing: var(--font-h4--letter-spacing);
+    color: var(--color, var(--color-foreground-heading));
+    margin-block: 0 .5em;
+    margin-inline: 0 0;
+}
+
+h5, .h5, .text-block.h5 > * {
+    font-family: var(--font-h5--family);
+    font-size: var(--font-size--h5);
+    font-style: var(--font-h5--style);
+    font-weight: var(--font-h5--weight);
+    line-height: var(--font-h5--line-height);
+    letter-spacing: var(--font-h5--letter-spacing);
+    color: var(--color, var(--color-foreground-heading));
+    margin-block: 0 .5em;
+    margin-inline: 0 0;
+}
+
+h6, .h6, .text-block.h6 > * {
+    font-family: var(--font-h6--family);
+    font-size: var(--font-size--h6);
+    font-style: var(--font-h6--style);
+    font-weight: var(--font-h6--weight);
+    line-height: var(--font-h6--line-height);
+    letter-spacing: var(--font-h6--letter-spacing);
+    color: var(--color, var(--color-foreground-heading));
+    margin-block: 0 .5em;
+    margin-inline: 0 0;
+}
+
+img, svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/*We want images to stretch the size of their containing block even
+ if it means the image is going to look pixelated because
+ the client may not have the right size image
+ / not know about what happens if a small image is uploaded*/
+img {
+    display: block;
+    width: 100%;
+}
+
+summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.border-style {
+    border-width: var(--border-width);
+    border-style: var(--border-style);
+    border-color: var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.svg-wrapper{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+}
+
+p {
+    margin: 0 0 1em 0;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    overflow-wrap: break-word;
+}
+
+input, button, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: normal;
+    margin: 0;
+}
+
+input[type="search"] {
+    -webkit-appearance: none;
+}
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+p {
+    margin-block: 0 1em;
+}
+
+
+/*|| Buttons*/
+
+.button,
+.button-secondary {
+    --text-align: center;
+    appearance: none;
+    display: inline-block;
+    color: var(--button-color);
+    background: var(--button-bg-color) linear-gradient(
+            104deg, var(--button-bg-hover-color) 60%,
+            var(--button-bg-color) 60% 100%) no-repeat 100% 100%;
+);
+    background-size: 300% 100%;
+    border: none;
+    font: inherit;
+    margin-block: 0;
+    transition: background-position .4s ease-out;
+    cursor: pointer;
+    border-radius: var(--style-border-radius-buttons);
+    outline-offset: 3px;
+    padding-block: var(--button-padding-block);
+    padding-inline: var(--button-padding-inline);
+    line-height: normal;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    :is(.button, .button-secondary):not([disabled]):hover {
+        background-position: 0 100%;
+        color: var(--button-color-hover);
+        border-color: var(--button-border-hover-color);
+    }
+}
+
+.button {
+    border: var(--btn-primary-border-width) solid var(--button-border-color);
+}
+
+.button-secondary {
+    border: var(--btn-secondary-border-width) solid var(--button-border-color);
+}
+
+.button {
+    --button-color: var(--color-primary-button-text);
+    --button-color-hover: var(--color-primary-button-hover-text);
+    --button-bg-color: var(--color-primary-button-background);
+    --button-bg-hover-color: var(--color-primary-button-hover-background);
+    --button-border-color: var(--color-primary-button-border);
+    --button-border-hover-color: var(--color-primary-button-hover-border);
+}
+
+.button-secondary {
+    --button-color: var(--color-secondary-button-text);
+    --button-background-color: var(--color-secondary-button-background);
+    --button-color-hover: var(--color-secondary-button-hover-text);
+    --button-bg-color: var(--color-secondary-button-background);
+    --button-bg-hover-color: var(--color-secondary-button-hover-background);
+    --button-border-color: var(--color-secondary-button-border);
+    --button-border-hover-color: var(--color-secondary-button-hover-border);
+}
+
+button {
+    padding: 0;
+    background: inherit;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-family: inherit;
+    font-style: inherit;
+    font-size: inherit;
+    cursor: pointer;
+}
+
+.field__button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--minimum-field-touch-target);
+    width: var(--minimum-field-touch-target);
+    cursor: pointer;
+    border: 0;
+    background-color: transparent;
+    padding: 0;
+}
+
+.field__input {
+    -webkit-appearance: none;
+    appearance: none;
+    position: relative;
+    width: 100%;
+    height: 4.5rem;
+    border: 0;
+    border-radius: var(--input-border-radius);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body-family);
+    font-style: var(--font-body-style);
+    font-weight: var(--font-body-weight);
+}
+
+.button-unstyled--transparent {
+    background: transparent;
+    box-shadow: none;
+}
+
+.custom-select {
+    position: relative;
+}
+
+/*TODO: add JS functionality*/
+.custom-select__listbox {
+    position: absolute;
+    z-index: var(--layer-temporary);
+    top: 5px;
+    right: 5px;
+    min-width: max(100%, 165px);
+    max-height: 20em;
+    margin: 0;
+    padding: 0;
+    border: var(--input-border-width) solid rgb(var(--color-foreground-rgb), .15);
+    border-radius: var(--modal-border-radius);
+    overflow-y: auto;
+    font-size: .88em;
+    list-style: none;
+    background-color: var(--color-background);
+}
+
+.custom-select__option {
+    padding-inline: var(--padding-md);
+    padding-block: var(--padding-md);
+    cursor: pointer;
+}
+
+.custom-select__button {
+    width: 100%;
+    display: flex;
+}
+
+.custom-select__button > .icon {
+    width: var(--icon-size-xs);
+}
+
+@media screen and (hover: hover) and (pointer: fine) {
+    .custom-select__button:hover {
+        cursor: pointer;
+    }
+}
+
+.custom-select__init-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.custom-select__button > .icon,
+.custom-select__button > svg {
+    flex-shrink: 0;
+    margin-inline-start: auto;
+}
+
+/*|| UTILITY*/
+
+
+.caption-with-letter-spacing {
+    letter-spacing: .13rem;
+    text-transform: uppercase;
+}
+
+/*Spacing style*/
+
+.spacing-style {
+    --spacing-scale: var(--spacing-scale-md);
+}
+
+@media screen and (min-width: 1024px) {
+    .spacing-style {
+        --spacing-scale: var(--spacing-scale-default);
+    }
+}
+
+.spacing-style {
+    padding-block: var(--padding-block-start, 0px) var(--padding-block-end, 0px);
+    padding-inline: var(--padding-inline-start, 0px) var(--padding-inline-end, 0px);
+    margin-block: var(--margin-block-start, 0px) var(--margin-block-end, 0px);
+    margin-inline: var(--margin-inline-start, 0px) var(--margin-inline-end, 0px);
+}
+
+a, .link {
+    text-decoration: none;
+    color: var(--link-color);
+}
+
+/*rte - rich text editor*/
+
+.link, .rte a {
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .2rem;
+    transition: text-decoration-color .3s, opacity .3s;
+}
+
+.link:hover, .rte a:hover {
+    text-decoration-color: transparent;
+    opacity: .6;
+}
+
+
+.unstyled-link {
+    text-decoration: none;
+    display: block;
+}
+
+
+/*|| LAYOUT*/
+
+.page-width-wide,
+.page-width-normal,
+.page-width-narrow {
+    --page-margin: 16px;
+}
+
+@media screen and (min-width: 769px) {
+    .page-width-wide,
+    .page-width-normal,
+    .page-width-narrow {
+        --page-margin: 40px;
+    }
+}
+
+
+.page-width-narrow {
+    --page-content-width: var(--narrow-page-width);
+    --page-width: calc(var(--page-content-width) + (var(--page-margin) * 2));
+}
+
+.page-width-normal {
+    --page-content-width: var(--normal-page-width);
+    --page-width: calc(var(--page-content-width) + (var(--page-margin) * 2));
+}
+
+.page-width-wide {
+    --page-content-width: var(--wide-page-width);
+    --page-width: calc(var(--page-content-width) + (var(--page-margin) * 2));
+}
+
+/*SECTION*/
+/*
+We use this class to wrap up sections on the page. This allows us to define the size of the main content and margin size on both sides on the page.
+We have 3 options that specify how wide the main content is:
+.page-width-narrow - we want the page content to be 1440px wide, Or as wide as possible with 40px/16px margin columns on both sides*.
+.page-width-normal - we want the page content to be 1920px wide, Or as wide as possible with 40px/16px margin columns on both sides.
+.page-width-wide - we want the page content to be 2400px wide, Or as wide as possible with 40px/16px margin columns on both sides.
+
+
+**: --full-page-grid-central-column-width: this is going to keep the page content as wide as specified in --narrow/normal/wide-page-width - no matter how wide the user's viewport can get.
+   If there's any free space left - the 'margin' columns will take it up.
+
+   *If the value in --narrow/normal/wide-page-width is bigger than the user's viewport can ever get
+- the page content will be as wide as possible while still preserving the specified space for its margins (40px/16px), otherwise: **
+
+Defining margins as columns lets us use background images that will display across the full width of the page, and not just within the content box of a section
+*/
+.section {
+
+    --full-page-grid-central-column-width: min(
+            var(--page-width) - var(--page-margin) * 2,
+            calc(100% - var(--page-margin) * 2)
+    );
+    --full-page-grid-margin: minmax(var(--page-margin), 1fr);
+    --full-page-grid-with-margins: var(--full-page-grid-margin) var(--full-page-grid-central-column-width) var(--full-page-grid-margin);
+
+    display: grid;
+    width: 100%;
+    position: relative;
+    grid-template-columns: var(--full-page-grid-with-margins);
+    min-height: var(--section-min-height, 'auto');
+}
+
+.section--content-middle > * {
+    grid-column: 2;
+}
+
+.section--full-width > * {
+    grid-column: 1 / -1;
+}
+
+/*
+ This section content wrapper let us specify the min-width, like medium, large etc. for the section's content.
+ It should be sometimes possible to do that if the content is part of a component that itself restricts the height,
+ like the hero component.
+ */
+.section-content-wrapper {
+    min-height: calc(var(--section-min-height, auto) - var(--section-height-offset, 0px)); /**/
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.section__header {
+    max-width: 100%;
+    margin-bottom: var(--heading-gap);
+}
+
+/*TODO: do sth with this spacing scale*/
+.layout-panel-flex {
+    --gap-scale: var(--spacing-scale-md);
+
+    @media screen and (min-width: 990px) {
+        --gap-scale: var(--spacing-scale-default);
+    }
+}
+
+/*Flex*/
+.layout-panel-flex {
+    display: flex;
+    gap: var(--gap);
+    height: 100%; /**/
+
+}
+
+.layout-panel-flex--row {
+    flex-flow: row var(--flex-wrap);
+    justify-content: var(--horizontal-alignment);
+    align-items: var(--vertical-alignment);
+}
+
+.layout-panel-flex--column {
+    flex-flow: column var(--flex-wrap) /*set to nowrap, it matters?*/;
+    align-items: var(--horizontal-alignment);
+    justify-content: var(--vertical-alignment);
+}
+
+@media screen and (width <= 749px) {
+    .mobile-column {
+        flex-flow: column nowrap; /*Why nowrap? */
+        align-items: var(--horizontal-alignment);
+        justify-content: var(--vertical-alignment);
+    }
+
+}
+
+@media screen and (min-width: 750px) {
+    .layout-panel-flex {
+        flex-direction: var(--flex-direction); /**/
+    }
+}
+
+
+/*TODO: refactor to remove this class*/
+.img-fit {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /*it's a safe choice, if we were to use a 100% max-height instead, pictures may be too small to display when their containing block are wide*/
+    height: 100%; /*/*it's a safe choice, if we were to use an auto instead, pictures may be too short to display when their containing block are high*/
+    object-fit: cover;
+}
+
+/*Overlay*/
+.overlay {
+    position: absolute;
+    inset: 0;
+    z-index: var(--overlay-layer);
+    pointer-events: none;
+}
+
+.overlay--solid {
+    background: var(--overlay-color);
+}
+
+.list-unstyled {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+
+.link--text {
+    color: rgba(var(--color-foreground));
+}
+
+
+/*|| GENERAL ICONS*/
+
+.icon {
+    pointer-events: none;
+}
+
+.icon-arrow {
+    width: 1.5rem;
+}
+
+.animate-arrow .icon-arrow path {
+    transform: translateX(-2.5px);
+    transition: transform .1s ease;
+}
+
+.animate-arrow:hover .icon-arrow path {
+    transform: translateX(-0.5px);
+}
+
+.visually-hidden:not(:focus):not(:active) {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+
+.checkbox {
+    --bg-color: var(--input-bg-color);
+    --border-color: var(--text-color);
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--bg-color);
+    border: var(--input-border-width) solid var(--border-color);
+    height: 2.4rem;
+    width: 2.4rem;
+    display: inline-block;
+    border-radius: 100%;
+    vertical-align: middle;
+    position: relative;
+}
+
+.checkbox::before {
+    content: '';
+    position: absolute;
+    margin: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    top: 0;
+    transform: scale(0) rotate(45deg) translateY(-20%) translateX(-10%);
+    transition: transform .2s ease-in-out;
+    cursor: pointer;
+}
+
+.checkbox {
+    border-radius: 10%;
+}
+
+.checkbox:checked::before {
+    border-right: 3px solid;
+    border-bottom: 3px solid;
+    border-color: var(--text-color);
+    height: calc(50% + 3px);
+    width: calc(30% + 3px);
+    right: 1px;
+    transform: scale(1) rotate(45deg) translateY(-20%) translateX(-10%);
+}
+
+.checkbox + label {
+    position: relative;
+    left: -.4em;
+    padding-left: .6em;
+    cursor: pointer;
+    vertical-align: middle;
+    font-size: 1em;
+}
+
+.checkbox:checked {
+    --border-color: #0d5192;
+    --shadow-color: rgba(34, 139, 236, .05);
+    box-shadow: inset 0 0 20px 3px var(--shadow-color);
+}
+
+.checkbox[disabled] {
+    opacity: .45;
+}
+
+
+/*Text block*/
+
+
+/*This block is used to wrap up paragraph(s) to make them look consistent/have centering options.
+For example, you might want to create a header that is actually more than one line, so you wrap multiple <p> elements and make the text block a header (h1,h2 etc).
+You can also switch the contents of a .text-block between fit-content, which will prevent the content to be wider or narrower than its max/min-content while still growing along size its .text-block,
+and 'fill' options (width: 100%), which will let you center the content right/left/center, though the paragraphs sitting inside the .text-block will always be as wide the their .text-block,
+though in narrow screens, you will have each letter sitting onto a new line because of overflow-wrap: break-word. */
+
+.text-block {
+    width: var(--width, 100%);
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: var(--horizontal-alignment);
+}
+
+.text-block > * {
+    width: var(--width, 100%);
+    max-inline-size: min(100%, var(--max-width, 100%));
+    text-align: var(--text-align, left);
+
+    /*https://developer.chrome.com/blog/css-text-wrap-pretty*/
+
+    text-wrap: var(--text-wrap);
+}
+
+/*By default, browsers will try to fill the text line by line.
+In the case of titles (headings), we want to you the text-wrap: balance value so that each line is roughly the same length*/
+.text-block:not(.text-block--full-width):is(.h1, .h2, .h3, .h4, .h5, .h6) {
+    text-wrap: balance;
+}
+
+.text-block > :last-child {
+    margin-block-end: 0;
+}
+
+.text-block > :first-child {
+    margin-block-start: 0;
+}
+
+
+/*Size style*/
+.size-style {
+    width: var(--size-style-width-mobile, var(--size-style-width));
+    height: var(--size-style-height-mobile, var(--size-style-height));
+
+    @media screen and (min-width: 750px) {
+        width: var(--size-style-width);
+        height: var(--size-style-height);
+    }
+}
+
+/*TODO: is it possible & OK to do something to make the badge take up exactly
+   as match space as its content in case a word that would
+    otherwise overflow break onto a new line + do something with anywhere overflow becuase main-nav has break-word that bring inconsistency in here*/
+.badge {
+    display: none;
+    position: absolute;
+    z-index: var(--layer-heightened);
+    left: 8px;
+    top: 8px;
+    width: auto;
+    max-width: calc(100% - 16px);
+    color: var(--badge-color, currentColor);
+    background-color: var(--badge-bg-color, var(--color-white));
+    border-radius: var(--border-radius-lg);
+    padding-inline: .6em;
+    padding-block: .4em;
+    box-shadow: 1px 2px 4px -1px #80808985;
+}
+
+.badge__message {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.badge--with-icon {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 5px;
+}
+
+.badge--with-icon .icon {
+    flex-shrink: 0;
+}
+
+
+.resource-list {
+    --resource-list-row-gap-mobile-max: 9999px;
+    --resource-list-column-gap-mobile-max: 9999px;
+
+    @media screen and (max-width: 769px) {
+        --resource-list-row-gap-mobile-max: 24px;
+        --resource-list-column-gap-mobile-max: 12px;
+    }
+
+    --resource-list-column-gap: min(var(--resource-list-column-gap-mobile-max),
+    var(--resource-list-column-gap-desktop));
+    --resource-list-row-gap: min(var(--resource-list-row-gap-mobile-max),
+    var(--resource-list-row-gap-desktop));
+}
+
+.resource-list--grid {
+    display: grid;
+    gap: var(--resource-list-row-gap) var(--resource-list-column-gap);
+
+}
+
+
+@media (width < 1024px) {
+    .product-grid.grid-cols-2 {
+        --resource-list-row-gap: 0;
+        --resource-list-column-gap: 0;
+    }
+}
+
+
+.resource-list__item {
+    height: 100%; /**/
+    color: var(--color-foreground);
+    text-decoration: none; /**/
+}
+
+.resource-list__item:has(.product-card .product-card__link:focus-visible) {
+    outline: var(--focus-outline-width) var(--focus-outline-style) var(--focus-outline-color);
+    outline-offset: var(--focus-outline-offset);
+}
+
+
+.product-card {
+    position: relative;
+    height: 100%;
+}
+
+/*TODO: I remove the abs for now while debuging*/
+.product-card__link::after {
+    content: "";
+    /*  position: absolute;
+      inset: 0;
+      z-index: var(--layer-flat);*/
+}
+
+.product-grid__card {
+    display: flex;
+    flex-flow: column nowrap;
+    text-decoration: none;
+    color: var(--color, var(--color-foreground));
+    overflow: hidden;
+    padding-block: 16px;
+    border-radius: var(--product-card-corner-radius);
+
+    @media (width > 830px) {
+        padding-block: 10px;
+    }
+}
+
+
+.product-card__top-content {
+    position: relative;
+}
+
+.product-card__labels {
+    position: absolute;
+    z-index: var(--layer-raised);
+}
+
+
+.product-card__label-wrapper:not(:last-child) {
+    margin-bottom: 2px;
+}
+
+
+.product-card__label {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 6px;
+    font-size: 1.1rem;
+    line-height: 1.7rem;
+    font-weight: 600;
+    @media screen and (width >= 769px) {
+        padding: 4px 8px;
+        font-size: 1.3rem;
+    }
+}
+
+.product-card__label--rounded {
+    border-radius: 3px;
+}
+
+
+/*https://css-tricks.com/tips-aligning-icons-text/*/
+.product-card__label .icon {
+    position: relative;
+    top: -0.5px;
+    flex-shrink: 0;
+    margin-inline-end: .5em;
+}
+
+.product-card__label--refurbished {
+    background: var(--product-label-gradient--refurbished);
+    color: var(--product-label-text--refurbished);
+}
+
+.product-card__label--sale {
+    background: var(--product-label-gradient--sale);
+    color: var(--product-label-text--sale);
+}
+
+
+.slideshow {
+    /*TODO: timeline-scope*/
+}
+
+.slideshow__container {
+    position: relative;
+    container-type: inline-size;
+}
+
+
+.slideshow-arrows {
+    position: absolute;
+    z-index: var(--layer-heightened);
+    inset: 0;
+    display: flex;
+    pointer-events: none;
+    mix-blend-mode: difference;
+}
+
+.slideshow-arrows[position='center'] {
+    align-items: center;
+    justify-content: space-between;
+}
+
+/*todo: what do we do if the screen is so small that the container holding the controls can't hold the two 44px elements? Are we OK with shrinking? */
+.slideshow__control {
+    display: grid;
+    min-width: var(--minimum-touch-target);
+    min-height: var(--minimum-touch-target);
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    opacity: 0;
+}
+
+.card-gallery .slideshow-arrows .slideshow__control {
+    padding-inline: var(--padding-sm);
+
+    @container (width > 249px) {
+        .card-gallery .slideshow-arrows .slideshow__control {
+            padding-inline: var(--padding-md);
+        }
+    }
+}
+
+
+@media (width < 600px) {
+    .product-card .slideshow-arrows .slideshow__control {
+        display: none;
+    }
+}
+
+
+.slideshow__control .icon-arrow {
+    color: var(--color-white);
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+}
+
+:is(.slideshow:hover, .slideshow:focus-within) > .slideshow__container > .slideshow-arrows .slideshow__control {
+    animation: arrowSlideIn .3s ease-in-out forwards;
+}
+
+
+.slideshow__control:focus-visible {
+    outline: 3px var(--focus-outline-style) var(--focus-outline-color);
+    outline-offset: 3px;
+}
+
+.slideshow__slides {
+    width: 100%;
+    position: relative;
+    display: flex;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-color: transparent transparent;
+    scrollbar-width: none;
+    cursor: pointer;
+}
+
+.slideshow__slide {
+    scroll-snap-align: center;
+    position: relative;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+/*We use flex layout for the images because if one of the images' height
+(or its aspect ratio is different)
+ is smaller that the other's, there's going
+  to be height inconsistencies unless we make all the images
+  be the height of the container, which is done using flex
+   (flex items stretch through the flex line)*/
+*:not(.dialog-zoomed-gallery) > .product-media-container {
+    display: flex;
+    aspect-ratio: var(--gallery-aspect-ratio, auto); /*TODO: move the defaul value out of the css file*/
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+
+/*TODO:  add trigger iOS 16.4*/
+.product-media {
+    display: flex;
+    flex: 1;
+    /*the aspect-ratio also affects this element's size*/
+    aspect-ratio: var(--gallery-aspect-ratio);
+}
+
+.product-media-container.media-fit {
+    img {
+        object-fit: var(--product-media-fit, cover); /*TODO: move the defaul value out of the css file*/
+    }
+}
+
+/*todo: we should let images stretch even if they start to look pixelated cuz that's better than having half the card with no image. */
+.product-media-container img {
+    aspect-ratio: inherit;
+    object-fit: contain;
+}
+
+.product-card__main-content {
+    padding-block-start: var(--padding-lg);
+}
+
+
+.product-card__ribbon-text {
+    opacity: .7;
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+}
+
+
+.product-card__heading {
+    font-weight: var(--font-h2--weight);
+    line-height: var(--line-height--heading-loose);
+}
+
+.variants {
+    display: flex;
+    flex-direction: column;
+    row-gap: 5px;
+    z-index: var(--layer-heightened);
+    font-size: 1.4rem;
+
+    @media (min-width: 769px) {
+        font-size: calc(var(--font-body--size) * .1rem);
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .variants:hover {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+
+.variant__description {
+    color: rgb(var(--text-color-rgb), 0.7);
+    padding: 0;
+    font-size: 1em;
+}
+
+
+.variant__description span {
+    color: var(--text-color);
+}
+
+
+.variant__selects {
+    padding-block: 0;
+    padding-inline: 0;
+    border: none;
+}
+
+
+.variant__set {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+
+/*
+VARIANT GROUP: <li>
+*/
+
+.variant-group {
+    position: relative;
+    display: flex;
+}
+
+/*
+VARIANT LABEL and CONTROL
+*/
+
+.variant-group__label {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;;
+    min-width: 14px;
+    min-height: 14px;
+    padding-block: 3px;
+    padding-inline: 8px;
+    border-radius: var(--input-border-radius);
+    border: var(--variant-border-width) var(--variant-border-style) var(--variant-border-color);
+    font-size: 1em;
+    line-height: normal;
+    cursor: pointer;
+}
+
+
+.variant-group__control:focus-visible ~ .variant-group__label {
+    outline: var(--focus-outline-width) var(--focus-outline-style) var(--focus-outline-color);
+    outline-offset: 3px;
+}
+
+.variant-group__control:hover ~ .variant-group__label,
+.variant-group__label:hover {
+    box-shadow: 0 0 0 1px var(--variant-border-color);
+}
+
+.variant-group__control:focus ~ .variant-group__label, /* :focus 1*/
+.variant-group__control:checked + .variant-group__label {
+    box-shadow: 0 0 0 1px var(--variant-border-checked-color);
+    border-color: var(--variant-border-checked-color);
+}
+
+
+/* 1. The native radio buttons remain in the DOM, and are used as the focusable elements
+ that control the state of their custom visualization*/
+
+
+/*Why not use .visually-hidden?
+Short: Causes accessibility issues for some screen reader users.
+Source:  https://scottaohara.github.io/a11y_styled_form_controls/src/radio-button--pill/*/
+.variant-group__control {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: none;
+    border: var(--variant-border-width) solid; /*the size should match the label's*/
+    border-radius: var(--input-border-radius);
+    height: 100%;
+    left: 0;
+    opacity: .00001;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: var(--layer-raised);
+    cursor: pointer;
+}
+
+
+/*
+ Disabled
+*/
+.variant-group__control--unavailable ~ .variant-group__label::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top right, transparent calc(50% - 1px), var(--color-foreground) 50%, var(--color-foreground) 50%, transparent calc(50% + 1px)) no-repeat;
+}
+
+.variant-group .variant-group__control--unavailable + .variant-group__label {
+    opacity: .5;
+}
+
+
+/*Color swatches*/
+
+.color-swatch__label {
+    display: grid; /*1.*/
+    position: relative;
+}
+
+/* 1. It's just a convenient way of centering the square (the line through)
+before applying the positioning and the transformation.
+If we remove this and make the label a block,
+we have to spend more time positioning the square (:after element) probably using float numbers
+to make it sit where it sits now. It just makes it easier to place the square - that's it.
+ This is why this works: https://www.w3.org/TR/css-grid-1/#static-position*/
+
+
+.color-swatches__color-container {
+    display: flex;
+    gap: 13px;
+    padding-block-start: 3px;
+}
+
+.color-swatch__control {
+    position: relative;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0;
+    padding: 0;
+    border-radius: var(--color-swatch-input-border-radius);
+    border: 1px solid var(--text-color);
+
+    display: inline-grid;
+
+    width: var(--color-swatch-input-width);
+    height: var(--color-swatch-input-height);
+
+
+    background: var(--swatch-color);
+    background-image: var(--swatch-image, none);
+    cursor: pointer;
+
+}
+
+.color-swatch__control:focus-visible {
+    outline-offset: 6px;
+    outline-width: 2px;
+}
+
+.color-swatch__control,
+.color-swatch__control::after,
+.color-swatch__control::before {
+    line-height: 0;
+    font-size: 0;
+}
+
+.color-swatch__control::after,
+.color-swatch__control::before {
+    content: "";
+    position: absolute;
+    place-self: center;
+
+    width: calc(var(--color-swatch-outer-circle-ratio) * var(--color-swatch-input-width));
+    height: calc(var(--color-swatch-outer-circle-ratio) * var(--color-swatch-input-height));
+    border-radius: var(--color-swatch-input-border-radius);
+}
+
+.color-swatch__control::before,
+.color-swatch__control::after {
+    border: 1px solid transparent;
+}
+
+.color-swatch__control::before {
+    border-width: 1.5px;
+
+}
+
+/*TODO: deal with this*/
+.color-swatch__control:focus-visible::before,
+.color-swatch__control:hover::before,
+.color-swatch__control:hover::after,
+.color-swatch__control:checked::after {
+    border-color: rgba(var(--variant-border-color-rgb), 1);
+}
+
+
+/*
+ Disabled
+*/
+
+.color-swatch__label:has(.color-swatch__control--unavailable)::after {
+    position: absolute;
+    content: "";
+    height: 1px;
+    place-self: center;
+    width: calc(var(-swatch-outer-circle-ratio) * var(--color-swatch-input-width));
+    background: var(--input-line-though);
+    transform: rotate(-135deg);
+}
+
+.variant__overlimit {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    line-height: normal;
+}
+
+.color-swatch__label:has(.color-swatch__control--unavailable)::before {
+    position: absolute;
+    content: '';
+    width: var(--color-swatch-input-width);
+    height: var(--color-swatch-input-height);
+    border-radius: var(--color-swatch-input-border-radius);
+    background: var(--input-bg--unavailable);
+    z-index: var(--layer-raised);
+}
+
+
+/*STAR RATING */
+
+
+.rating__star-container {
+    line-height: 1.5rem;
+}
+
+
+.rating__stars {
+    --percent: calc((var(--rating) / var(--rating-max) + .01) * 100%);
+    --no-rating-color: rgb(var(--star-color-rgb) / 0.2);
+    background: linear-gradient(90deg,
+    rgb(var(--star-color-rgb)) var(--percent),
+    var(--no-rating-color) var(--percent));
+    letter-spacing: -.1em;
+    line-height: 1;
+    color: transparent;
+    background-clip: text;
+    font-size: 1.125em;
+    font-family: "Times";
+}
+
+
+.rating-count {
+    line-height: 1.5rem;
+}
+
+.price {
+    margin: 0;
+}
+
+.price__current {
+    padding-inline-end: .5rem;
+    font-size: 1em;
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--product-card-price-color);
+
+    @media screen and (min-width: 769px) {
+        font-size: 1.2em;
+    }
+}
+
+
+.price__regular {
+    color: rgb(var(--text-color-rgb), .8);
+    font-size: .8em;
+    white-space: nowrap;
+
+    @media screen and (min-width: 769px) {
+        font-size: 1em;
+    }
+}
+
+
+[data-inventory-level="normal"] {
+    --color-inventory: var(--in-stock-text-color);
+    --color-pulser: var(--in-stock-animation-color);
+    --inventory-bg: var(--in-stock-background-color);
+}
+
+[data-inventory-level="low"] {
+    --color-inventory: var(--low-stock-text-color);
+    --color-pulser: var(--low-stock-animation-color);
+    --inventory-bg: var(--low-stock-background-color);
+}
+
+.product-card__inventory-container {
+    color: var(--color-inventory);
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    border-radius: 5px;
+    background: var(--inventory-bg);
+    padding-inline-end: 5px;
+}
+
+.product-card__inventory-indicator {
+    display: inline-block;
+    background: transparent;
+    width: 25px;
+    height: 25px;
+    flex-shrink: 0;
+}
+
+.core {
+    color: var(--color-inventory);
+}
+
+.pulser {
+    animation: inventory-pulser 1500ms cubic-bezier(0.9, 0.7, 0.5, 0.9) infinite;
+    transform-origin: center center;
+    color: var(--color-pulser);
+}
+
+@keyframes inventory-pulser {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.6);
+        opacity: 0.4;
+    }
+}
+
+.card__cta {
+    margin-top: auto;
+    padding-block: var(--padding-sm) 0;
+    z-index: var(--layer-raised);
+
+    @media (min-width: 1024px) {
+        padding-block: var(--padding-lg) 0;
+    }
+}
+
+
+/*TODO: FIX: the outline styles overflow on the first card component when focusing the compare checkbox with the keyboard.*/
+.product-card__compare {
+    z-index: var(--layer-raised);
+}
+
+.product-card__compare .product-card__compare-checkbox {
+    height: 1.6rem;
+    width: 1.6rem;
+    border-width: 2px;
+}
+
+
+/*Animations*/
+
+
+@keyframes arrowSlideIn {
+    0% {
+        transform: translate(calc(5 * var(--space-unit)));
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}

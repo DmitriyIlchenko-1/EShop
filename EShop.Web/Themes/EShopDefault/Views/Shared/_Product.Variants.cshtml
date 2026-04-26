@@ -8,31 +8,41 @@
     {
         var containerId = attr.BuildControlId();
         var attrValues = attr.Values ?? [];
+        var preSelectedVal = attrValues.FirstOrDefault(x => x.IsPreSelected);
         <div class="variant">
 
+            @{
+                var res = attr?.AttributeControlType;
+                Console.WriteLine();
+            }
             @switch (attr.AttributeControlType)
             {
                 case AttributeControlType.RadioButtonPills:
                     <fieldset class="variant__selects">
                         <legend class="variant__description">
-                            @attr.Name <span aria-hidden="true">: Pro</span>
+                            @attr.Name <span aria-hidden="true">: @preSelectedVal?.Name</span>
                         </legend>
                         <div class="variant__set">
                             @foreach (var item in attrValues)
                             {
                                 var controlId = containerId + "_" + item.Id;
+                                var @checked = preSelectedVal == item;
                                 <span class="variant-group">
                                     <input
                                         class="variant-group__control @(item.IsUnavailable ? " variant-group__control--unavailable" : "")"
                                         type="radio"
+                                        @(@checked ? "checked" : "")
                                         id="@controlId" name="@containerId" value="@item.Id"/>
-                                    <label class="variant-group__label"
-                                           for="@controlId">@item.Name
-                                        <span eh-if="item.IsUnavailable"
-                                              class="visually-hidden">(Out of stock)</span></label>
+                                    <label class="variant-group__label" for="@controlId">
+                                        @item.Name
+                                        <span eh-if="item.IsUnavailable" class="visually-hidden">
+                                            @item.Title
+                                        </span>
+                                    </label>
+                                    <span class="visually-hidden">IsEssential? :@(((ProductVariantAttributeValueModel)item).IsEssential)</span>
                                 </span>
                             }
-                            <p class="variant__overlimit text-sm">+ 10</p>
+                            <p eh-if="@(attr.TotalAttributeCount > 0)" class="variant__overlimit text-sm">+ @attr.TotalAttributeCount</p>
                         </div>
 
                     </fieldset>
@@ -43,7 +53,7 @@
                 case AttributeControlType.Swatch:
                     <fieldset class="variant__selects color-swatches">
                         <legend class="variant__description">
-                            @attr.Name <span aria-hidden="true">: Red</span>
+                            @attr.Name <span aria-hidden="true">: @preSelectedVal?.Name</span>
                         </legend>
                         <div class="variant__set color-swatches__color-container">
                             @foreach (var item in attrValues)
@@ -52,19 +62,22 @@
                                 <label class="color-swatch__label"
                                        for="@controlId">
                                     <span class="visually-hidden">@item.Name</span>
-                                    <span eh-if="item.IsUnavailable" class="visually-hidden">(Out of stock)</span>
+                                    <span eh-if="item.IsUnavailable" class="visually-hidden">@item.Title</span>
                                     <input
-                                        class="color-swatch__control @(item.IsUnavailable ? " color-swatch__control--unavailable" : "")"
+                                        class="color-swatch__control
+ @(item.IsUnavailable ? " color-swatch__control--unavailable" : "")"
                                         type="radio"
                                         style="--swatch-image: @item.Color"
                                         id="@controlId" name="@containerId" value="@item.Id"/>
+                                    <span class="visually-hidden">IsEssential? :@(((ProductVariantAttributeValueModel)item).IsEssential)</span>
                                 </label>
-                                //linear-gradient(to bottom right, #ff6db7, #ff6db7 50%, #75e6ff 50%, #75e6ff);
                             }
-                            <p class="variant__overlimit text-sm">+ 2</p>
+                            <p eh-if="@(attr.TotalAttributeCount > 0)" class="variant__overlimit text-sm">+ @attr.TotalAttributeCount</p>
                         </div>
                     </fieldset>
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         </div>
     }

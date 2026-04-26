@@ -27,6 +27,13 @@ public static class DictionaryExtensions
         return value;
     }
 
+    public static TValue? Get<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
+    {
+        Guard.NotNull(dictionary);
+        Guard.NotNull(key);
+        return dictionary.TryGetValue(key, out var value) ? value : default(TValue);
+    }
+
 
     public static bool TryGetValueAs<TValue>(this IDictionary<string, object?> dictionary, string key,
         [MaybeNullWhen(false)] out TValue value)

@@ -213,6 +213,21 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Platform_ThemeVariable",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Theme = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Value = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Platform_ThemeVariable", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Catalog_ProductAttributeOptionsSet",
                 columns: table => new
                 {
@@ -472,15 +487,22 @@ namespace EShop.Web.Migrations
                     MetaKeywords = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    BasePriceAmount = table.Column<decimal>(type: "numeric", nullable: true),
+                    BasePriceBaseAmount = table.Column<decimal>(type: "numeric", nullable: true),
+                    CombinationDisplayBehaviour = table.Column<int>(type: "integer", nullable: false),
+                    IsAvailable = table.Column<bool>(type: "boolean", nullable: false),
+                    AttributeCombinationRequired = table.Column<bool>(type: "boolean", nullable: false),
                     Published = table.Column<bool>(type: "boolean", nullable: false),
                     Deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeliveryTimeId = table.Column<int>(type: "integer", nullable: true),
                     Sku = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
+                    QuantityUnitId = table.Column<int>(type: "integer", nullable: false),
                     Gtin = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
                     HasOptions = table.Column<bool>(type: "boolean", nullable: false),
-                    IsAllowToOrder = table.Column<bool>(type: "boolean", nullable: false),
                     ShowOnHomePage = table.Column<bool>(type: "boolean", nullable: false),
                     HomePageDisplayOrder = table.Column<bool>(type: "boolean", nullable: false),
                     IsVisibleIndividually = table.Column<bool>(type: "boolean", nullable: false),
+                    IsShippingEnabled = table.Column<bool>(type: "boolean", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
                     OldPrice = table.Column<decimal>(type: "numeric", nullable: true),
                     SpecialPrice = table.Column<decimal>(type: "numeric", nullable: true),
@@ -574,6 +596,7 @@ namespace EShop.Web.Migrations
                     AttributeControlTypeId = table.Column<int>(type: "integer", nullable: false),
                     DisplayOrder = table.Column<int>(type: "integer", nullable: false),
                     IsRequired = table.Column<bool>(type: "boolean", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     ProductAttributeId = table.Column<int>(type: "integer", nullable: false),
                     ProductId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -601,7 +624,7 @@ namespace EShop.Web.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    DisplayOrder = table.Column<byte>(type: "smallint", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
                     ProductId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -699,7 +722,7 @@ namespace EShop.Web.Migrations
                     HashCode = table.Column<int>(type: "integer", nullable: false),
                     RawAttributes = table.Column<string>(type: "text", nullable: true),
                     ProductId = table.Column<int>(type: "integer", nullable: false),
-                    QuantityUnitId = table.Column<int>(type: "integer", nullable: false),
+                    QuantityUnitId = table.Column<int>(type: "integer", nullable: true),
                     Sku = table.Column<string>(type: "text", nullable: true),
                     StockQuantity = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -844,6 +867,8 @@ namespace EShop.Web.Migrations
                     DisplayOrder = table.Column<int>(type: "integer", nullable: false),
                     IsPreSelected = table.Column<bool>(type: "boolean", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    IsEssential = table.Column<bool>(type: "boolean", nullable: false),
                     PriceAdjustment = table.Column<decimal>(type: "numeric", nullable: false),
                     ProductVariantAttributeId = table.Column<int>(type: "integer", nullable: false),
                     WeightAdjustment = table.Column<decimal>(type: "numeric", nullable: false)
@@ -1108,6 +1133,9 @@ namespace EShop.Web.Migrations
 
             migrationBuilder.DropTable(
                 name: "Platform_Setting");
+
+            migrationBuilder.DropTable(
+                name: "Platform_ThemeVariable");
 
             migrationBuilder.DropTable(
                 name: "Platform_UrlRecord");

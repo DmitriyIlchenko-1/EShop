@@ -83,6 +83,13 @@ internal class DbSaveChangesOperation : IDisposable
             var initialAutoDetectChanges = _dbContext.ChangeTracker.AutoDetectChangesEnabled;
             // For performance, we don't want EF Core's internal methods detect changes everytime they get called. We're going to manually detect changes when needed.
             _dbContext.ChangeTracker.AutoDetectChangesEnabled = false;
+            var mergeableEntities = _dbContext
+                .ChangeTracker.Entries()
+                .Select(x => x.Entity)
+                .OfType<IMergedData>()
+                .ToArray();
+
+            IgnoreMergeProperties(mergeableEntities, true);
             _dbContext.ChangeTracker.DetectChanges();
             _changedEntries = GetChangedEntities()
                 .ToArray();
@@ -188,6 +195,14 @@ internal class DbSaveChangesOperation : IDisposable
             });
 
         return isHandled;
+    }
+
+    private static void IgnoreMergeProperties(IMergedData[] entries, bool ignore)
+    {
+        for (int i = 0; i < entries.Length; i++)
+        {
+            entries[i].IgnoreMerge = ignore;
+        }
     }
 
 

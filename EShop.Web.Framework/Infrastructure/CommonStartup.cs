@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Http;
 using EShop.Infrastructure.Modules;
+using EShop.Web.Common.Razor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -25,6 +26,11 @@ public class CommonStartup : BaseStartup
         builder.AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        });
+        
+        builder.AddRazorOptions(x =>
+        {
+            x.ViewLocationExpanders.Add(new ThemeLocationExpander());
         });
         
         builder.AddSessionStateTempDataProvider();

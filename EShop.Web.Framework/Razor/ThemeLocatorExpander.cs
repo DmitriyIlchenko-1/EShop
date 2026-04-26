@@ -24,11 +24,12 @@ public class ThemeLocationExpander : IViewLocationExpander
     {
         if (context.Values.TryGetValue(CacheKey, out var themeName))
         {
-            viewLocations = viewLocations.Concat(new[]
+            var ext = RazorViewEngine.ViewExtension;
+            return new string[]
             {
-                $"Themes/{themeName}/Views/{{1}}/{{0}}.cshtml",
-                $"Themes/{themeName}/Views/Shared/{{0}}.cshtml"
-            });
+                $"Themes/{themeName}/Views/{{1}}/{{0}}{ext}",
+                $"Themes/{themeName}/Views/Shared/{{0}}{ext}"
+            }.Union(viewLocations);
         }
 
         return viewLocations;

@@ -8,8 +8,8 @@ public class ProductVariantAttributeModel : ChoiceModel
     public string Name { get; set; }
     public string Description { get; set; }
     public bool IsRequired { get; set; }
+    public int TotalAttributeCount { get; set; }
     public AttributeControlType AttributeControlType { get; set; }
-    public bool ShowInLists { get; set; }
     public int ProductAttributeId { get; set; }
     public int ProductId { get; set; }
      

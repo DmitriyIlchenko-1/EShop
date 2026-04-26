@@ -6,7 +6,7 @@ using EShop.Web.Common.Models;
 
 namespace EShop.Web.Models.Catalog;
 
-public class ProductDetailVm : ProductWithAttributes
+public class ProductDetailVm : ProductCombinationMap
 {
     public string MetaDescriptions { get; set; }
     public string MetaTitle { get; set; }
@@ -24,12 +24,13 @@ public class ProductDetailVm : ProductWithAttributes
     public decimal HeightValue { get; set; }
     public decimal LengthValue { get; set; }
     public decimal WidthValue { get; set; }
-    
+
     public bool IsAvailable { get; set; }
     public double? RatingAverage { get; set; }
     public int ReviewsCount { get; set; }
     public int StockQuantity { get; set; }
     public string DeliveryTimeDate { get; set; }
+   
     public Brand Brand { get; set; }
     public ProductReviewsModel? ProductReviews { get; set; }
     public CalculatedProductPrice CalculatedProductPrice { get; set; }
@@ -37,11 +38,14 @@ public class ProductDetailVm : ProductWithAttributes
     public ICollection<ProductSpecificationModel> ProductSpecifications { get; set; } = [];
     public IEnumerable<ProductDetailCategoryModel> Categories { get; set; } = [];
     public ICollection<ProductThumbnail> RelatedProducts { get; set; } = [];
-    
-}
 
-public abstract class ProductWithAttributes : BaseModel
-{
-    public ProductVariantAttributeCombination SelectedCombination { get; set; }  
-    public ICollection<ProductVariantAttributeModel> ProductVariantAttributes { get; set; } = [];
+    public override void AdjustForCombinationActive(bool isActive)
+    {
+        IsAvailable = isActive;
+    }
+
+    public override void AdjustForAttributeValue(ProductVariantAttributeValueModel chosenAttribute)
+    {
+        this.WeightValue += chosenAttribute.ProductVariantAttributeValue.WeightAdjustment;
+    }
 }

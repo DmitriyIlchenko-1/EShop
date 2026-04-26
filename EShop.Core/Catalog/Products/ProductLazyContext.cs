@@ -25,9 +25,9 @@ public class ProductLazyContext
     protected readonly IComponentContext _componentContext;
 
     private LazyMultimap<ProductVariantAttribute> _attributes;
+    private LazyMultimap<ProductVariantAttribute> _essentialAttributes;
     private LazyMultimap<ProductVariantAttributeCombination> _attributeCombinations;
     private LazyMultimap<ProductLink> _relatedProducts;
-    private LazyMultimap<ProductBrand> _productBrands;
     private LazyMultimap<ProductSpecificationAttribute> _specifications { get; set; }
 
     public ProductLazyContext(ApplicationDbContext db, IEnumerable<Product> products,
@@ -56,7 +56,8 @@ public class ProductLazyContext
     public LazyMultimap<ProductVariantAttribute> Attributes
         => _attributes ??= new LazyMultimap<ProductVariantAttribute>(LoadVariantAttributes, _productIds);
 
-    
+    public LazyMultimap<ProductVariantAttribute> EssentialAttributes
+        => _essentialAttributes ??= new LazyMultimap<ProductVariantAttribute>(LoadEssentialVariantAttributes, _productIds);
 
     public LazyMultimap<ProductSpecificationAttribute> ProductSpecification
         => _specifications ??=
@@ -65,30 +66,41 @@ public class ProductLazyContext
     public LazyMultimap<ProductLink> RelatedProducts
         => _relatedProducts ??= new LazyMultimap<ProductLink>(LoadRelatedProducts, _productIds);
 
-    public LazyMultimap<ProductBrand> ProductBrands
-        => _productBrands ??= new LazyMultimap<ProductBrand>(LoadProductBrands, _productIds);
 
-    private async Task<MultiMap<int, ProductBrand>> LoadProductBrands(int[] ids)
+    protected virtual async Task<MultiMap<int, ProductVariantAttribute>> LoadEssentialVariantAttributes(int[] ids)
     {
-        return (await BrandService.GetBrandsByProductIdsAsync(ids)).ToMultiMap(x => x.ProductId, x => x);
+        if (Attributes.IsFullyLoaded)
+        {
+            return Attributes
+                .SelectMany(x => x.Value)
+                .Where(x => x.ProductVariantAttributeValues.Any(y => y.IsEssential))
+                .ToMultiMap(x => x.ProductId, x => x);
+        }
+
+        var attributes = await BuildVariantAttributeQuery(_db, ids, true).ToListAsync();
+        return attributes.ToMultiMap(x => x.ProductId, x => x);
+
     }
 
     private async Task<MultiMap<int, ProductVariantAttribute>> LoadVariantAttributes(int[] ids)
     {
-        var attributes = await _db
+        var attributes = await BuildVariantAttributeQuery(_db, ids, false).ToListAsync();
+        return attributes.ToMultiMap(x => x.ProductId, x => x);
+    }
+    
+    private static IQueryable<ProductVariantAttribute> BuildVariantAttributeQuery(ApplicationDbContext db, int[] ids, bool isEssential = false)
+    {
+        return db
             .ProductVariantAttributes
             .AsNoTracking()
             .Include(x => x.ProductAttribute)
-            .Include(x => x.ProductVariantAttributeValues)
-            .Where(x => ids.Contains(x.Id))
+            .Include(x => x.ProductVariantAttributeValues.Where(x => !isEssential || x.IsEssential))
+            .Where(x => ids.Contains(x.ProductId))
+            .Where(x => !isEssential || x.ProductVariantAttributeValues.Any(y => y.IsEssential))
             .OrderBy(x => x.ProductId)
-            .ThenBy(x => x.DisplayOrder)
-            .ToListAsync();
-
-        return attributes.ToMultiMap(x => x.ProductId, x => x);
+            .ThenBy(x => x.DisplayOrder);
     }
 
-   
 
     private async Task<MultiMap<int, ProductLink>> LoadRelatedProducts(int[] ids)
     {
@@ -136,7 +148,6 @@ public class ProductLazyContext
         _productIds.Clear();
         _specifications?.Clear();
         _relatedProducts?.Clear();
-        _productBrands?.Clear();
         _attributes?.Clear();
         _attributeCombinations?.Clear();
     }

@@ -4,37 +4,30 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Core.Data.Brands.Services;
 
- 
-public class BrandService : IBrandService
+public class DefaultBrandService : IBrandService
 {
     private readonly ApplicationDbContext _db;
 
-    public BrandService(ApplicationDbContext db)
+    public DefaultBrandService(ApplicationDbContext db)
     {
         _db = db;
     }
 
-    public virtual async Task<ICollection<ProductBrand>> GetBrandsByProductIdsAsync(int[] productIds, bool includeUnpublished = false)
+    public virtual async Task<ICollection<Brand>> GetBrandsByIdsAsync(int[] brandIds,
+        bool includeUnpublished = false, bool track = false)
     {
-        Guard.NotNull(productIds);
-        if (productIds.Length == 0)
+        Guard.NotNull(brandIds);
+        if (brandIds.Length == 0)
         {
             return [];
         }
 
-        var brandQuery = _db
-            .Brands.AsNoTracking()
-            .Where(x => x.IsPublished == includeUnpublished);
-        
-        var productBrandQuery = _db
-            .ProductBrands.AsNoTracking()
-            .Include(x => x.Brand)
-            .Where(x => productIds.Contains(x.ProductId));
-        
-        var query = from pb in productBrandQuery
-            join b in brandQuery on pb.BrandId equals b.Id
-            orderby pb.DisplayOrder
-            select pb;
-        return await query.ToListAsync();
+        var query = _db.Brands.AsQueryable();
+        if(track)
+            query = query.AsNoTracking();
+        return await query
+            .Where(x => includeUnpublished || x.IsPublished)
+            .Where(x => brandIds.Contains(x.Id))
+            .ToListAsync();
     }
 }

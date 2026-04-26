@@ -7,4 +7,5 @@ public class ProductVariantAttributeValueModel : ChoiceItemModel
 {
     public ProductVariantAttributeValue ProductVariantAttributeValue { get; set; }
     public int DisplayOrder { get; set; }
+    public bool IsEssential { get; set; }
 }

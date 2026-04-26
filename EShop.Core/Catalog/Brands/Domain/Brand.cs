@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Content.Media.Domain;
 using EShop.Infrastructure.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -34,5 +35,6 @@ public class Brand : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IDispla
     
     public int? MediaFileId { get; set; }
     public MediaFile MediaFile { get; set; }
+    public ICollection<Product> Products { get; set; }
   
 }
