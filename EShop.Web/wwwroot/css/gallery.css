@@ -1,0 +1,100 @@
+
+.gallery {
+    display: grid;
+    gap: calc(3 * var(--space-unit));
+    grid-auto-rows: min-content; /**/
+
+
+    @media screen and (min-width: 769px) {
+        gap: calc(6 * var(--space-unit));
+    }
+}
+
+
+.gallery-item {
+    min-height: 260px; /*min-height on mobile*/
+}
+
+.gallery-item.row-span-2, .gallery-item.row-span-3 {
+    min-height: 455px; /*min-height on mobile*/
+}
+
+@media (min-width: 769px) {
+    .gallery-item {
+        min-height: calc(230px + 8vw); /*min-height on large screens*/
+    }
+
+    .gallery-item.row-span-2 {
+        min-height: calc(calc(230px + 8vw) * 2); /*min-height on large screens*/
+    }
+
+    .gallery-item.row-span-3 {
+        min-height: calc(calc(230px + 8vw) * 3); /*min-height on large screens*/
+    }
+}
+
+
+.gallery-item__content {
+    position: relative;
+    /* This is valid because the gallery item's height is explicit, even though we only give it a value for its min-height and not height.
+    The fact that the gallery item is sitting in the grid layout is what makes its height explicit (definite).
+    1. https://www.w3.org/TR/css-grid-2/#layout-algorithm (12.4 + Note)
+    2. https://stackoverflow.com/questions/58548583/why-does-height-100-on-a-child-element-not-apply-when-the-parent-element-has-a.
+    3. https://stackoverflow.com/questions/8468066/child-inside-parent-with-min-height-100-not-inheriting-height.
+    */
+    height: 100%;
+}
+
+.gallery-item__image-wrapper {
+    /*We use absolute positioning in here to define the positioning context for the image sitting inside.
+    We make the image absolute so that it displays behind the label so we can place the label freely across its containing block (on top of the image).
+    The wrapper exists to apply the overlay to the image and not the label sitting on top of it.
+    If we make this one static, we wouldn't be able to make it the size of its parent - the .gallery-item__content, which means that now the image can't be correctly displayed because its width is 100% of its containing block.
+     */
+    position: absolute;
+    inset: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    /*rea..*/
+    .hover\:media-grow:hover .gallery-item__image-wrapper {
+        transform: scale(1.03);
+        border-color: transparent;
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .hover\:media-grow .gallery-item__image-wrapper {
+        transition: transform .4s cubic-bezier(.38, .41, .27, 1), border-color .4s;
+        will-change: transform; /**/
+    }
+}
+
+
+.gallery-item__promo-label {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 5%;
+    z-index: 2;
+    background: var(--bg-color);
+    color: var(--color, currentColor);
+
+    @media (min-width: 1024px) {
+        padding: calc(5 * var(--space-unit));
+    }
+}
+
+.gallery-item__promo-label--rounded {
+    border-radius: 50%;
+    aspect-ratio: 1/1;
+}
+
+
+.gallery-item__promo-label p:last-child {
+    margin-block-end: 0;
+}
+
+.gallery-item__link{
+    --color: var(--text-color);
+}

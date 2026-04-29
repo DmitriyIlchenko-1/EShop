@@ -1,24 +1,11 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
+using EShop.Infrastructure.Utilities;
 
 namespace EShop.Infrastructure.Extensions;
 
 public static class DictionaryExtensions
 {
-    public static bool TryGetValueAs<TKey, TValue, TActual>(this IDictionary<TKey, TValue> dictionary, TKey key,
-        out TActual value)
-    {
-        ArgumentNullException.ThrowIfNull(dictionary);
-
-        if (dictionary.TryGetValue(key, out TValue result) && result is TActual typedVal)
-        {
-            value = typedVal;
-            return true;
-        }
-
-        value = default(TActual);
-        return false;
-    }
-
     public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
         Func<TKey, TValue> valueFactory)
         where TKey : notnull
@@ -36,28 +23,38 @@ public static class DictionaryExtensions
         {
             dictionary[key] = value = valueFactory(key);
         }
+
         return value;
     }
 
-    public static bool TryGetTypedValue<TKey, TValue, TActual>(this IDictionary<TKey, TValue> dictionary, TKey key,
-        out TActual value) where TActual : TValue
+    public static TValue? Get<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
     {
-        ArgumentNullException.ThrowIfNull(dictionary);
+        Guard.NotNull(dictionary);
+        Guard.NotNull(key);
+        return dictionary.TryGetValue(key, out var value) ? value : default(TValue);
+    }
 
-        if (dictionary.TryGetValue(key, out TValue result))
+
+    public static bool TryGetValueAs<TValue>(this IDictionary<string, object?> dictionary, string key,
+        [MaybeNullWhen(false)] out TValue value)
+    {
+        Guard.NotNull(dictionary);
+
+        if (dictionary.TryGetValue(key, out object result) && result is TValue typedVal)
         {
-            value = (TActual)result;
+            value = typedVal;
             return true;
         }
 
-        value = default(TActual);
+        value = default(TValue);
         return false;
     }
 
-    public static TActual GetValueOrDefaultAs<TKey, TValue, TActual>(this IDictionary<TKey, TValue> dictionary,
-        TKey key)
+    public static TValue GetValueOrDefaultAs<TValue>(this IDictionary<string, object> dictionary,
+        string key)
     {
         ArgumentNullException.ThrowIfNull(dictionary);
-        return dictionary.TryGetValueAs(key, out TActual result) ? result : default(TActual);
+        dictionary.TryGetValueAs(key, out TValue result);
+        return result;
     }
 }

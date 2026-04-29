@@ -1,0 +1,38 @@
+.list-social {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 1.2rem;
+}
+
+@media only screen and (max-width: 749px) {
+    .list-social {
+        justify-content: center;
+    }
+}
+
+
+.list-social__item .icon {
+    height: 2.2rem;
+    width: 2.2rem;
+}
+
+
+.list-social__link {
+    display: flex;
+    align-items: center;
+    position: relative;
+    color: rgb(var(--color-foreground));
+}
+
+
+
+
+.list-social__link:hover .icon {
+    scale: 1.07;
+}
+
+.announcement-bar__link .icon-arrow {
+    width: 1.6rem;
+    flex-shrink: 0;
+}

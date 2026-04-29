@@ -12,7 +12,9 @@ public abstract class DbHandlerContext : DbContext
     public DbHandlerContext(DbContextOptions options) : base(options)
     {
     }
+
     
+
     private IDbHandlerDispatcher ActivateDbHandlerDispatcher()
     {
         try

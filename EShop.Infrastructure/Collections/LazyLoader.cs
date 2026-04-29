@@ -14,6 +14,8 @@ public class LazyMultimap<T> : MultiMap<int, T>
 
     private readonly HashSet<int> _unloadedKeys;
 
+    public bool IsFullyLoaded { get; private set; }
+
     public LazyMultimap (
         Func<int[], Task<MultiMap<int, T>>> load, IEnumerable<int> keys = null)
     {
@@ -22,7 +24,7 @@ public class LazyMultimap<T> : MultiMap<int, T>
         _unloadedKeys = new HashSet<int>(keys);
     }
 
-    public async Task<ICollection<T>> GetOrLoadAsync(int key)
+    public async Task<IEnumerable<T>> GetOrLoadAsync(int key)
     {
         if (key == 0)
         {
@@ -39,6 +41,13 @@ public class LazyMultimap<T> : MultiMap<int, T>
 
         var result = base[key];
         return result;
+    }
+
+    public async Task LoadAllAsync()
+    {
+        IsFullyLoaded = true;
+        await LoadAsync(_unloadedKeys);
+        
     }
 
     private async Task LoadAsync(IEnumerable<int> keys)

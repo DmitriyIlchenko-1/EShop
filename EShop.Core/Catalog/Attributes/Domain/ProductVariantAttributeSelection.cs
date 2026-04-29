@@ -1,19 +1,29 @@
+using EShop.Infrastructure.Collections;
+using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
+using Newtonsoft.Json;
 
 namespace EShop.Core.Catalog.Attributes.Domain;
 
 public class ProductVariantAttributeSelection : IEquatable<ProductVariantAttributeSelection>
 {
-    private readonly Dictionary<int, int> _attributes;
+    private readonly MultiMap<int, int> _attributes = new();
+    private string _jsonAttributeData;
+    public bool _isJson;
+    
 
-    public IEnumerable<KeyValuePair<int, int>> Attributes
-        => _attributes;
+    public IEnumerable<KeyValuePair<int, IEnumerable<int>>> Attributes
+        => _attributes.AsEnumerable();
 
      
 
     public void AddAttribute(int attributeId, int value)
     {
         _attributes.Add(attributeId, value);
+    }
+    public void AddAttribute(int attributeId, IEnumerable<int> values)
+    {
+        _attributes.AddRange(attributeId, values);
     }
     
     public bool IsEmpty() => _attributes.Count == 0;
@@ -33,6 +43,27 @@ public class ProductVariantAttributeSelection : IEquatable<ProductVariantAttribu
         }
 
         return combiner.GetCombinedHash();
+    }
+
+    //todo: finish it
+    public virtual string AsJson()
+    {
+        if (_jsonAttributeData.HasValue() && _isJson)
+            return _jsonAttributeData;
+        if (_attributes.Count == 0)
+            return null;
+        
+        try
+        {
+            var json = JsonConvert.SerializeObject(_attributes);
+            _isJson = true;
+            return _jsonAttributeData = json;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     public static bool operator ==(ProductVariantAttributeSelection left, ProductVariantAttributeSelection right)

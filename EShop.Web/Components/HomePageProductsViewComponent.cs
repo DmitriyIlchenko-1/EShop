@@ -1,3 +1,4 @@
+using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Configuration;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Data;
@@ -31,11 +32,18 @@ public class HomePageProductsViewComponent : BaseViewComponent
             .Where(x => x.ShowOnHomePage)
             .OrderBy(x => x.HomePageDisplayOrder)
             .SelectSummaryOnly()
+            .Take(20)
             .ToListAsync();
 
-        //TEMP: been checked.
-        var model = await _catalogHelper.PrepareProductSummaryModelAsync(products);
-        if (!model.Any())
+
+        
+        var modelSettings = _catalogHelper.GetProductSummaryMappingSettings();
+        var model = await _catalogHelper.PrepareProductSummaryModelAsync(products, modelSettings, 
+            new ProductVariantQuery()
+            {
+                
+            });
+        if (!model.Items.Any())
         {
             return NoContent();
         }

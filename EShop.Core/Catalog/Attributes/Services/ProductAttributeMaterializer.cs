@@ -1,20 +1,43 @@
+using System.Collections.Immutable;
 using EShop.Core.Catalog.Attributes.Domain;
+using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Data;
+using EShop.Core.Platform.Caching;
+using EShop.Core.Platform.Common;
+using EShop.Infrastructure.Caching;
+using EShop.Infrastructure.Collections;
+using EShop.Infrastructure.Extensions;
+using EShop.Infrastructure.Utilities;
 using Microsoft.EntityFrameworkCore;
- 
+
 
 namespace EShop.Core.Catalog.Attributes.Services;
 
 public class ProductAttributeMaterializer : IProductAttributeMaterializer
 {
     private readonly ApplicationDbContext _db;
+    private readonly ICacheManager _cache;
+    private readonly IRequestCache _requestCache;
+    private readonly PerformanceSettings _performanceSettings;
+    private const string AttributeCombinationByIdHashCodeKey = "attributecombination:byproductid-{0}-{1}";
 
-    public ProductAttributeMaterializer(ApplicationDbContext db)
+    private const string AttributeCombinationAvailabilityByIdCacheKey =
+        "attributecombinationavailability:byproductid-{0}";
+
+    private const string AttributeValueCountKey = "variantattributevalue:count:{0}";
+    private bool _isCombinationAvailabilityPrefetchedSuccess;
+    private bool _isCombinationAvailabilityPrefetchCalled;
+
+
+    public ProductAttributeMaterializer(ApplicationDbContext db, ICacheManager cache, IRequestCache requestCache,
+        PerformanceSettings performanceSettings)
     {
         _db = db;
+        _cache = cache;
+        _requestCache = requestCache;
+        _performanceSettings = performanceSettings;
     }
 
-    /// <returns>Returns a read-only dictionary containing the IDs of the selected variant attributes and the IDs of their values selected</returns>
     public ProductVariantAttributeSelection CreateAttributeSelectionAsync(ProductVariantQuery query,
         IEnumerable<ProductVariantAttribute> attributes, int productId)
     {
@@ -24,6 +47,7 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
         ProductVariantAttributeSelection selection = new ProductVariantAttributeSelection();
         foreach (var attribute in attributes)
         {
+            // 3 2 10
             var selectedVariant = query.Variants.FirstOrDefault(x =>
                 x.ProductId == productId &&
                 x.AttributeId == attribute.ProductAttributeId &&
@@ -37,7 +61,7 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
 
             int.TryParse(selectedVariant.Value, out int valueId);
 
-            if (valueId > 1)
+            if (valueId != 0)
             {
                 selection.AddAttribute(attribute.Id, valueId);
             }
@@ -50,7 +74,8 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
         ProductVariantAttributeSelection selection,
         IEnumerable<ProductVariantAttribute> attributes)
     {
-        ArgumentNullException.ThrowIfNull(attributes, nameof(attributes));
+        Guard.NotNull(selection);
+        Guard.NotNull(attributes);
 
         var result = new List<ProductVariantAttributeValue>();
 
@@ -63,9 +88,10 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
 
             var valueIDs = selection
                 .Attributes
-                .Where(x => variantProductIDs.Contains(x.Key))
-                .Select(x => x.Value)
-                .Where(x => x > 0) // <----- @
+                .Where(x => variantProductIDs.Contains(x.Key)) // x.Key - attribute id.
+                .SelectMany(x => x.Value) // x.Value - the user selected value/s for that attribute.
+                .Select(x => x)
+                .Where(x => x != 0)
                 .ToArray();
 
             foreach (var valueId in valueIDs)
@@ -84,7 +110,68 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
         return result;
     }
 
-    public async Task<ProductVariantAttributeCombination> FindProductVariantAttributeCombinationAsync(int productId,
+
+    public async Task<int> PrefetchProductVariantAttributeCombinationsAsync(
+        IDictionary<int, ProductVariantAttributeSelection> selections)
+    {
+        Guard.NotNull(selections);
+        if (!selections.Any())
+            return 0;
+        var alreadyCollectedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        List<(int productId, string cacheKey, int hashCode)> combinationCacheInfos = new();
+
+        foreach (var selectionPair in selections)
+        {
+            if (!selectionPair.Value.Attributes.Any())
+                continue;
+
+            var productId = selectionPair.Key;
+            var selection = selectionPair.Value;
+            var hashCode = selection.GetHashCode();
+            var cacheKey = string.Format(AttributeCombinationByIdHashCodeKey, productId, hashCode);
+
+            if (!alreadyCollectedKeys.Contains(cacheKey) || !_requestCache.Contains(cacheKey))
+            {
+                //add the ones that haven't been loaded.
+                combinationCacheInfos.Add(new ValueTuple<int, string, int>(productId, cacheKey, hashCode));
+                alreadyCollectedKeys.Add(cacheKey);
+            }
+        }
+
+        //Contains(x.ProductId)
+        var allProductIds = combinationCacheInfos
+            .Select(x => x.productId)
+            .Where(x => x != 0)
+            .Distinct()
+            .ToArray();
+
+        //Contains(x.HashCode)
+        var allHashCodes = combinationCacheInfos
+            .Select(x => x.hashCode)
+            .Where(x => x != 0)
+            .Distinct()
+            .ToArray();
+
+
+        // Load all values in one go.
+        var combinations = await _db
+            .ProductVariantAttributeCombinations.AsNoTracking()
+            .Where(x => allProductIds.Contains(x.ProductId) && allHashCodes.Contains(x.HashCode))
+            .ToListAsync();
+        var combinationMap = combinations.ToDictionary(x => x.HashCode);
+
+        foreach (var info in combinationCacheInfos)
+        {
+            if (combinationMap.TryGetValue(info.hashCode, out var combination))
+            {
+                _requestCache.Put(info.cacheKey, combination);
+            }
+        }
+
+        return combinationCacheInfos.Count;
+    }
+
+    public async Task<ProductVariantAttributeCombination> FindAttributeCombinationAsync(int productId,
         ProductVariantAttributeSelection selection)
     {
         if (productId == 0 || selection.IsNullOrEmpty())
@@ -92,11 +179,290 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
             return null;
         }
 
-        //TODO: Add caching. 
         int hashCode = selection.GetHashCode();
-        var combination = await _db
-            .ProductVariantAttributeCombinations.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.ProductId == productId && x.HashCode == hashCode);
-        return combination;
+        var cache = string.Format(AttributeCombinationByIdHashCodeKey, productId, hashCode);
+        return await _requestCache.GetOrCreateAsync<ProductVariantAttributeCombination>(cache,
+                async () =>
+                {
+                    return await _db
+                        .ProductVariantAttributeCombinations.AsNoTracking()
+                        .FirstOrDefaultAsync(x => x.ProductId == productId && x.HashCode == hashCode);
+                });
     }
+
+
+    public virtual bool TryGetPrefetchedCombination(int productId, ProductVariantAttributeSelection selection,
+        out ProductVariantAttributeCombination combination)
+    {
+        if (productId == 0 || selection.IsNullOrEmpty())
+        {
+            combination = null;
+            return false;
+        }
+
+        int hashCode = selection.GetHashCode();
+        var cacheKey = string.Format(AttributeCombinationByIdHashCodeKey, productId, hashCode);
+        return _requestCache.TryGet<ProductVariantAttributeCombination>(cacheKey, out combination);
+    }
+
+
+    /// <summary>
+    /// This method accepts variant attributes related to a product.
+    /// Then it takes every value from every product variant attribute and matches this value to every other value from every other product variant attribute.
+    /// So essentially it matches this taken value with every other value from every other product variant attribute except from the product variant attribute the taken value is from.
+    /// For example, if the current taken value is Red, then we match Red with Plastic from the material product variant attribute entity,
+    /// and we also match Red with Metal, but we aren't interested in the rest of the colors at this moment,
+    /// because a combination is formed with only one possible value from every product variant attribute.
+    /// </summary>
+    /// <param name="product"></param>
+    /// <param name="attributes"></param>
+    /// <param name="variantAttributes"></param>
+    /// <returns></returns>
+    public virtual async Task<CombinationAvailabilityInfo> IsCombinationAvailableAsync(Product product,
+        IEnumerable<ProductVariantAttribute> productVariantAttributes,
+        IEnumerable<ProductVariantAttributeValue> selectedVariantAttributeValues,
+        ProductVariantAttributeValue currentVariantValue)
+    {
+        Guard.NotNull(product);
+        Guard.NotNull(productVariantAttributes);
+        Guard.NotNull(selectedVariantAttributeValues);
+        Guard.NotNull(currentVariantValue);
+        if (!productVariantAttributes.Any() || !selectedVariantAttributeValues.Any())
+            return null;
+        if (_performanceSettings.MaxUnavailableCombinations <= 0)
+            return null;
+
+        bool isLoaded = _isCombinationAvailabilityPrefetchedSuccess;
+        IDictionary<int, CombinationAvailabilityInfo> combinationAvailabilityInfos;
+        if (_isCombinationAvailabilityPrefetchedSuccess)
+        {
+            TryGetPrefetchedCombinationAvailabilityInfos(product.Id, out combinationAvailabilityInfos);
+        }
+        else if (!_isCombinationAvailabilityPrefetchCalled)
+        {
+            var cacheKey = string.Format(AttributeCombinationAvailabilityByIdCacheKey, product.Id);
+            combinationAvailabilityInfos =
+                await _cache.GetOrCreateAsync(cacheKey,
+                    async () =>
+                    {
+                        var query = _db
+                            .ProductVariantAttributeCombinations.AsNoTracking()
+                            .Where(x => x.ProductId == product.Id)
+                            .Where(x => !x.IsActive || x.StockQuantity <= 0)
+                            .Select(x => new CombinationAvailabilityInfo()
+                            {
+                                ProductId = x.ProductId,
+                                HashCode = x.HashCode,
+                                IsActive = x.IsActive,
+                                IsOutOfStock = x.StockQuantity <= 0,
+                            });
+                        var availableInfoCount = await query.CountAsync();
+                        if (_performanceSettings.MaxUnavailableCombinations <= availableInfoCount)
+                        {
+                            isLoaded = true;
+                            return await query.ToDictionaryAsync(x => x.HashCode, x => x);
+                        }
+
+                        isLoaded = false;
+                        return [];
+                    },
+                    new CacheEntryOptions() { AbsoluteExpiration = TimeSpan.FromSeconds(60) });
+        }
+        else
+        {
+            combinationAvailabilityInfos = new Dictionary<int, CombinationAvailabilityInfo>();
+        }
+
+        if (combinationAvailabilityInfos.Count == 0 && !product.AttributeCombinationRequired)
+            return null;
+        var selection = new ProductVariantAttributeSelection();
+        
+        
+        var selectedValuesMap =
+            selectedVariantAttributeValues.ToMultiMap(x => x.ProductVariantAttributeId, x => x.Id);
+        foreach (var productVariantAttribute in productVariantAttributes.Where(x => x.IsListTypeAttribute()))
+        {
+
+            IEnumerable<int> chosenValueIds;
+            var selectedValues = selectedValuesMap.TryGetValue(productVariantAttribute.Id, out var valueIds)
+                ? valueIds
+                : null;
+             
+            if (productVariantAttribute.Id == currentVariantValue.ProductVariantAttributeId)
+            {
+                if (selectedValues != null && productVariantAttribute.IsMultipleChoices())
+                {
+                    chosenValueIds = selectedValues
+                        .Append(currentVariantValue.Id)
+                        .Distinct();
+                }
+                else
+                {
+                    chosenValueIds = new[] { currentVariantValue.Id };
+                }
+            }
+            else
+            {
+                if (selectedValues == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    chosenValueIds = selectedValues;
+                }
+            }
+            
+            
+            // if the current variant value is from any other variant attribute that's not the current one, we just add all its choise value in here
+            // (uually only one value, though, unless it's a multi choice)
+            selection.AddAttribute(productVariantAttribute.Id, chosenValueIds);
+        }
+
+        var hashCode = selection.GetHashCode();
+        if (combinationAvailabilityInfos.TryGetValue(hashCode, out var combination))
+        {
+            return combination;
+        }
+
+        if (isLoaded || product.AttributeCombinationRequired
+            && await FindAttributeCombinationAsync(product.Id, selection) != null)
+        {
+            return new()
+            {
+                IsActive = false
+            };
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    protected virtual bool TryGetPrefetchedCombinationAvailabilityInfos(int productId,
+        out IDictionary<int, CombinationAvailabilityInfo> infos)
+    {
+        var cacheKey = string.Format(AttributeCombinationAvailabilityByIdCacheKey, productId);
+        var result =
+            _requestCache.TryGet<IDictionary<int, CombinationAvailabilityInfo>>(cacheKey, out var cachedResult);
+        infos = cachedResult ?? new Dictionary<int, CombinationAvailabilityInfo>();
+        return result;
+    }
+
+    public virtual async Task<int> PrefetchCombinationAvailabilityInfosAsync(
+        IDictionary<int, ProductVariantAttributeSelection> selections)
+    {
+        Guard.NotNull(selections);
+        if (_performanceSettings.MaxUnavailableCombinations <= 0)
+            return 0;
+        if (!selections.Any())
+            return 0;
+        var alreadyCollectedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        List<(int productId, int hashCode, string cacheKey)> availabilityCacheInfos = new();
+
+        foreach (var selection in selections)
+        {
+            if (selection.Value.IsNullOrEmpty())
+            {
+                continue;
+            }
+
+            var cacheKey = string.Format(AttributeCombinationAvailabilityByIdCacheKey, selection.Key);
+
+            if (!alreadyCollectedKeys.Contains(cacheKey) || !_requestCache.Contains(cacheKey))
+            {
+                //add the ones that haven't been loaded.
+                availabilityCacheInfos.Add(
+                    new ValueTuple<int, int, string>(selection.Key, selection.Value.GetHashCode(), cacheKey));
+                alreadyCollectedKeys.Add(cacheKey);
+            }
+        }
+
+        //Contains(x.ProductId)
+        var allProductIds = availabilityCacheInfos
+            .Select(x => x.productId)
+            .Where(x => x != 0)
+            .Distinct()
+            .ToArray();
+
+        var hashCodes = availabilityCacheInfos
+            .Select(x => x.hashCode)
+            .Where(x => x != 0)
+            .Distinct()
+            .ToArray();
+
+        // Load all values in one go.
+        var query = _db
+            .ProductVariantAttributeCombinations.AsNoTracking()
+            .Where(x => allProductIds.Contains(x.ProductId) && hashCodes.Contains(x.HashCode))
+            .Where(x => !x.IsActive || x.StockQuantity <= 0)
+            .Select(x => new CombinationAvailabilityInfo()
+            {
+                ProductId = x.ProductId,
+                HashCode = x.HashCode,
+                IsActive = x.IsActive,
+                IsOutOfStock = x.StockQuantity <= 0,
+            });
+
+        var anavailableCombCount = await query.CountAsync();
+
+        if (_performanceSettings.MaxUnavailableCombinations < anavailableCombCount)
+        {
+            _isCombinationAvailabilityPrefetchCalled = true;
+            return 0;
+        }
+
+        var anavailableComb = await query.ToListAsync();
+
+        var anavailableCombMap = anavailableComb.ToMultiMap(x => x.ProductId, x => x);
+
+
+        foreach (var info in availabilityCacheInfos)
+        {
+            if (anavailableCombMap.TryGetValue(info.productId, out var combination))
+            {
+                _requestCache.Put(info.cacheKey, combination.ToDictionary(x => x.HashCode, x => x));
+            }
+        }
+
+        _isCombinationAvailabilityPrefetchedSuccess = true;
+        return availabilityCacheInfos.Count;
+    }
+
+
+    public virtual async Task<IDictionary<int, int>> GetEssentialVariantAttributeValueCountsAsync(
+        bool isRequiredOnly = false)
+    {
+        var cacheKey = string.Format(AttributeValueCountKey, isRequiredOnly);
+        return await _cache.GetOrCreateAsync(cacheKey,
+            async () =>
+            {
+                var q1 = _db
+                    .ProductVariantAttributes.Where(x => !isRequiredOnly || x.IsRequired
+                        && x.ProductVariantAttributeValues.Any(x => x.IsEssential))
+                    .AsNoTracking();
+                return await q1
+                    .Select(x => new AttributeVariantCountModel()
+                    {
+                        AttributeId = x.Id,
+                        ValueCount = x.ProductVariantAttributeValues.Count
+                    })
+                    .ToDictionaryAsync(x => x.AttributeId, x => x.ValueCount);
+            },
+            new CacheEntryOptions() { AbsoluteExpiration = TimeSpan.FromSeconds(60) });
+    }
+}
+
+public class CombinationAvailabilityInfo
+{
+    public int ProductId { get; set; }
+    public int HashCode { get; set; }
+    public bool IsActive { get; set; }
+    public bool IsOutOfStock { get; set; }
+}
+
+public class AttributeVariantCountModel
+{
+    public int AttributeId { get; set; }
+    public int ValueCount { get; set; }
 }

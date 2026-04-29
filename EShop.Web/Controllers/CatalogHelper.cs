@@ -2,7 +2,9 @@ using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Configuration;
+using EShop.Core.Catalog.Products;
 using EShop.Core.Catalog.Products.Domain;
+using EShop.Core.Catalog.Products.Extensions;
 using EShop.Core.Catalog.Products.Services;
 using EShop.Core.Common.Services;
 using EShop.Core.Content.Media.Services;
@@ -13,6 +15,7 @@ using EShop.Web.Common.Models.Choices;
 using EShop.Web.Models.Catalog;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace EShop.Web.Controllers;
 
@@ -24,6 +27,7 @@ public partial class CatalogHelper
     private readonly IProductAttributeMaterializer _productAttributeMaterializer;
     private readonly IDeliveryTimeService _deliveryTimeService;
     private readonly IDateTimeService _dateTimeService;
+    private readonly IBrandService _brandService;
     private readonly IUrlService _urlService;
     private readonly ApplicationDbContext _db;
     private readonly CatalogSettings _catalogSettings;
@@ -31,7 +35,7 @@ public partial class CatalogHelper
     public CatalogHelper(IMediaService mediaService, IProductPricingService productPricingService,
         IProductService productService, IProductAttributeMaterializer productAttributeMaterializer,
         IDeliveryTimeService deliveryTimeService, ApplicationDbContext db, IDateTimeService dateTimeService,
-        IUrlService urlService, CatalogSettings catalogSettings)
+        IUrlService urlService, CatalogSettings catalogSettings, IBrandService brandService)
     {
         _mediaService = mediaService;
         _productPricingService = productPricingService;
@@ -42,6 +46,7 @@ public partial class CatalogHelper
         _dateTimeService = dateTimeService;
         _urlService = urlService;
         _catalogSettings = catalogSettings;
+        _brandService = brandService;
     }
 
     public ProductDetailsModelContext CreateModelContext(Product product, ProductVariantQuery query)
@@ -51,6 +56,11 @@ public partial class CatalogHelper
             query,
             _productService.CreateProductBatchContext(new[] { product }));
     }
+
+    // public ProductSummaryItemContext CreateSummaryItemContext(Product product, ProductVariantQuery query)
+    // {
+    //     
+    // }
 
 
     public async Task<ProductDetailVm> MapProductDetailsPageModelAsync(Product product,
@@ -83,7 +93,7 @@ public partial class CatalogHelper
         var product = context.Product;
 
         await PrepareProductAttributeModelAsync(context, model);
-        model.WeightValue = product.Weight;
+
         await PrepareProductPropertiesModelAsync(context, model);
     }
 
@@ -129,8 +139,6 @@ public partial class CatalogHelper
         throw new NotImplementedException();
     }
 
-
-    #region Model Mapping
 
     private async Task PrepareProductReviewModelAsync(ProductReviewsModel model, Product product, int take = 10)
     {
@@ -180,12 +188,11 @@ public partial class CatalogHelper
 
     private async Task PrepareProductAttributeModelAsync(ProductDetailsModelContext context, ProductDetailVm model)
     {
-        ArgumentNullException.ThrowIfNull(context);
         var product = context.Product;
         var batchContext = context.LazyContext;
         var query = context.ProductVariantQuery;
         var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
-
+        var weightAdjustment = 0m;
         foreach (var attribute in attributes)
         {
             var attributeVm = new ProductVariantAttributeModel()
@@ -201,6 +208,14 @@ public partial class CatalogHelper
                 IsRequired = attribute.IsRequired,
                 AttributeControlType = attribute.AttributeControlType,
             };
+
+            // if (query.Variants.Count > 0)
+            // {
+            //     var selectedAttribute = query.Variants.FirstOrDefault(x =>
+            //         x.ProductId == attribute.ProductId && x.AttributeId == attribute.ProductAttributeId &&
+            //             x.VariantAttributeId == attribute.Id);
+            //     
+            // }
 
 
             if (attribute.IsListTypeAttribute())
@@ -219,7 +234,12 @@ public partial class CatalogHelper
                             Color = value.Color,
                             IsPreSelected = value.IsPreSelected,
                             DisplayOrder = value.DisplayOrder,
+                            QuantityInfo = value.Quantity
                         };
+                        if (value.IsPreSelected)
+                        {
+                            weightAdjustment += value.WeightAdjustment;
+                        }
 
                         return valueVm;
                     })
@@ -231,68 +251,95 @@ public partial class CatalogHelper
                     .ToList();
             }
 
+            foreach (var val in attributeVm.Values.Where(x => x.IsPreSelected))
+            {
+                // query.AddVariant();
+            }
+
             model.ProductVariantAttributes.Add(attributeVm);
         }
 
         if (query != null && (query.Variants.Count > 0))
         {
-            await PrepareProductAttributeCombinationsModelAsync(context, model);
+             await PrepareProductAttributeCombinationsModelAsync(context, model);
         }
     }
 
-
     private async Task PrepareProductAttributeCombinationsModelAsync(ProductDetailsModelContext context,
-        ProductDetailVm model)
+    ProductDetailVm model)
+{
+    var product = context.Product;
+    var batchContext = context.LazyContext;
+    var query = context.ProductVariantQuery;
+    var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
+
+    //selection (attribute + selected value) of all the attributes displayed. 
+    var selection = _productAttributeMaterializer.CreateAttributeSelectionAsync(query, attributes, product.Id);
+    context.Selection = selection;
+    var selectedValues =
+        _productAttributeMaterializer.MaterializeProductVariantAttributeValues(selection, attributes);
+    var selectedValueIds = selectedValues
+        .Select(x => x.Id)
+        .ToArray();
+
+    model.SelectedCombination =
+        await _productAttributeMaterializer.FindAttributeCombinationAsync(product.Id, selection);
+    
+    if (model.SelectedCombination != null && !model.SelectedCombination.IsActive && model.SelectedCombination.StockQuantity == 0)
     {
-        ArgumentNullException.ThrowIfNull(context);
-        var product = context.Product;
-        var batchContext = context.LazyContext;
-        var query = context.ProductVariantQuery;
-        var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
+        model.IsAvailable = false;
+    }
 
-        var selection = _productAttributeMaterializer.CreateAttributeSelectionAsync(query, attributes, product.Id);
-        context.SelectedAttributes = selection;
-        var selectedValues =
-            _productAttributeMaterializer.MaterializeProductVariantAttributeValues(selection, attributes);
-        var selectedValueIds = selectedValues
-            .Select(x => x.Id)
-            .ToArray();
+    product.MergeDataWithCombination(model.SelectedCombination);
 
-        model.SelectedCombination =
-            await _productAttributeMaterializer.FindProductVariantAttributeCombinationAsync(product.Id,
-                context.SelectedAttributes);
+    foreach (var attribute in model.ProductVariantAttributes.Where(x => x.IsActive))
+    {
+        //any value of the attribute intersects with any user chosen value for this attribute.
+        // In other words, has the user selected a particular value for this attribute? 
+        var updatePreselection = selectedValueIds.Length > 0 && selectedValueIds
+            .Intersect(attribute.Values.Select(x => x.Id))
+            .Any();
 
-        if (model.SelectedCombination != null && !model.SelectedCombination.IsActive)
+
+        foreach (ProductVariantAttributeValueModel value in
+                 attribute.Values.Cast<ProductVariantAttributeValueModel>())
         {
-            model.IsAllowToOrder = false;
-        }
-
-        //TODO: Come up with an idea about how to merge the data between the product and the selection. 
-        // MergeWithCombination();
-
-        foreach (var attribute in model.ProductVariantAttributes.Where(x => x.IsActive))
-        {
-            var updatePreselection = selectedValueIds.Length > 0 && selectedValueIds
-                .Intersect(attribute.Values.Select(x => x.Id))
-                .Any();
-
-
-            foreach (ProductVariantAttributeValueModel value in
-                     attribute.Values.Cast<ProductVariantAttributeValueModel>())
+            var isSelected = selectedValueIds.Contains(value.Id);
+            if (updatePreselection)
             {
-                var isSelected = selectedValueIds.Contains(value.Id);
-                if (updatePreselection)
-                {
-                    value.IsPreSelected = isSelected;
-                }
+                //set to false or true depending on which value the user has chosen. 
+                value.IsPreSelected = isSelected;
+            }
 
-                if (isSelected)
+            if (isSelected)
+            {
+                // model.Weight += value.ProductVariantAttributeValue.WeightAdjustment;
+            }
+            
+            if (true)
+            {
+                var availabilityInfo = await _productAttributeMaterializer.IsCombinationAvailableAsync(
+                    product,
+                    attributes,
+                    selectedValues,
+                    value.ProductVariantAttributeValue);
+                if (availabilityInfo != null)
                 {
-                    model.WidthValue += value.ProductVariantAttributeValue.WeightAdjustment;
+                    value.IsUnavailable = true;
+                    if (availabilityInfo.IsOutOfStock && availabilityInfo.IsActive)
+                    {
+                        value.Title = "Out of Stock";
+                    }
+                    else
+                    {
+                        value.Title = "Not Available";
+                    }
                 }
             }
         }
     }
+}
+
 
     private async Task PrepareProductPropertiesModelAsync(ProductDetailsModelContext context, ProductDetailVm model)
     {
@@ -307,11 +354,10 @@ public partial class CatalogHelper
         model.MetaDescriptions = product.MetaTitle;
         model.Description = product.Description;
         model.ShortDescription = product.ShortDescription;
-        model.IsAllowToOrder = product.IsAllowToOrder;
+        model.IsAvailable = product.IsAvailable;
         model.StockQuantity = product.StockQuantity;
         model.RatingAverage = product.ApprovedRatingSum;
         model.ReviewsCount = product.ApprovedReviewCount;
-        model.WeightValue = product.Weight;
 
 
         model.CalculatedProductPrice = combination is { Price: not null }
@@ -333,9 +379,6 @@ public partial class CatalogHelper
         model.Width = combination?.Width > 0 ? $"{combination.Width:G29}" :
             product.Width > 0 ? $"{product.Width:G29}" : string.Empty;
 
-        model.HeightValue = combination is { Height: not null } ? combination.Height.Value : product.Height;
-        model.LengthValue = combination is { Length: not null } ? combination.Length.Value : product.Length;
-        model.WidthValue = combination is { Width: not null } ? combination.Width.Value : product.Width;
 
         // Delivery time 
         if (combination?.DeliveryTimeId is > 0 && model.IsAvailable)
@@ -384,6 +427,4 @@ public partial class CatalogHelper
             })
             .ToList();
     }
-
-    #endregion
 }

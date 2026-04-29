@@ -74,7 +74,7 @@ public class DefaultChildLifetimeScopeAccessor : IChildLifetimeScopeAccessor
             if (scope == null)
             {
                 _customScope = CreateCustomLifetimeScope();
-                var scopeRef = _customScope;
+                var scopeRef = scope = _customScope;
                 return new ActionDisposable(() => scopeRef.Dispose());
             }
 

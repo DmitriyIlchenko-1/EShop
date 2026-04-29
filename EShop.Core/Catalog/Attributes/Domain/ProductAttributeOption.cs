@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Infrastructure.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,15 @@ public class ProductAttributeOption : BaseEntity
     public string Alias { get; set; }
 
     public string Color { get; set; }
+
+    // [NotMapped]
+    // public AttributeColorType ColorType
+    // {
+    //     get => (AttributeColorType)AttributeColorTypeId;
+    //     set => AttributeColorTypeId = (int)value;
+    // }
+    // public int AttributeColorTypeId { get; set; }
+    
 
     public int DisplayOrder { get; set; }
 

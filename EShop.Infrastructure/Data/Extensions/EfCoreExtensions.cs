@@ -205,4 +205,6 @@ public static class EfCoreExtensions
         ArgumentNullException.ThrowIfNull(query);
         return track ? query.AsTracking() : query.AsNoTracking();
     }
+    
+    
 }

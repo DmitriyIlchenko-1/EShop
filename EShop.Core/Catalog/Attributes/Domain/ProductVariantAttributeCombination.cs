@@ -57,7 +57,7 @@ public class ProductVariantAttributeCombination : BaseEntity
 
     public int ProductId { get; set; }
 
-    public int QuantityUnitId { get; set; }
+    public int? QuantityUnitId { get; set; }
 
     public string Sku { get; set; }
 

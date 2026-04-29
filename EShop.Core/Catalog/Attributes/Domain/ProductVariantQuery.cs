@@ -6,7 +6,7 @@ namespace EShop.Core.Catalog.Attributes.Domain;
 [ModelBinder(typeof(ProductAttributeQueryModelBinder))]
 public class ProductVariantQuery
 {
-    private readonly List<ProductVariantQueryItem> _variants = new List<ProductVariantQueryItem>();
+    private readonly List<ProductVariantQueryItem> _variants = [];
 
     public IReadOnlyList<ProductVariantQueryItem> Variants => _variants;
 

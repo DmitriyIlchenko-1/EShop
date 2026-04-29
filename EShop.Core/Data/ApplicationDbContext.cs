@@ -1,4 +1,5 @@
 using System.Reflection;
+using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure;
@@ -40,6 +41,7 @@ public partial class ApplicationDbContext : DbHandlerContext
         var assemblies = Singleton<ITypeScanner>.Instance.Assemblies;
         base.OnModelCreating(modelBuilder);
 
+        
         RegisterConvention(modelBuilder);
 
         RegisterCustomMappings(modelBuilder, assemblies);

@@ -31,12 +31,12 @@ public static class ServiceCollectionExtensions
     {
         services.AddEasyCaching(configuration);
 
-        services.AddSingleton<ICacheFactory, EasyCachingFactory>();
+        services.AddSingleton<ICacheManagerFactory, EasyCachingManagerFactory>();
 
         //Lets us inject the hybrid cache without using the factory. 
         services.AddSingleton<ICacheManager>(sp =>
         {
-            var factory = sp.GetRequiredService<ICacheFactory>();
+            var factory = sp.GetRequiredService<ICacheManagerFactory>();
             return factory.GetHybridCache();
         });
     }
@@ -62,7 +62,7 @@ public static class ServiceCollectionExtensions
             var storageConfig = configuration
                 .GetSection("Redis")
                 .Get<DistributedCacheSettings>();
-
+        
             options.WithJson(CachingConstValue.DistributedCache);
             options.UseInMemory(
                 config =>

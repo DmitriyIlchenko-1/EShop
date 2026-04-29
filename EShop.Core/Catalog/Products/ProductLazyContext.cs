@@ -1,8 +1,12 @@
+using Autofac;
 using EShop.Core.Catalog.Attributes.Domain;
+using EShop.Core.Catalog.Attributes.Services;
+using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Data;
 using EShop.Infrastructure.Collections;
 using EShop.Infrastructure.Extensions;
+using EShop.Infrastructure.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Core.Catalog.Products;
@@ -18,29 +22,42 @@ public class ProductLazyContext
 {
     private readonly List<int> _productIds = [];
     private readonly ApplicationDbContext _db;
+    protected readonly IComponentContext _componentContext;
 
     private LazyMultimap<ProductVariantAttribute> _attributes;
+    private LazyMultimap<ProductVariantAttribute> _essentialAttributes;
     private LazyMultimap<ProductVariantAttributeCombination> _attributeCombinations;
     private LazyMultimap<ProductLink> _relatedProducts;
     private LazyMultimap<ProductSpecificationAttribute> _specifications { get; set; }
 
-    public ProductLazyContext(ApplicationDbContext db, IEnumerable<Product> products, bool includeHidden = false)
+    public ProductLazyContext(ApplicationDbContext db, IEnumerable<Product> products,
+        IComponentContext componentContext, bool includeHidden = false)
     {
-        ArgumentNullException.ThrowIfNull(db);
+        Guard.NotNull(db);
+        Guard.NotNull(componentContext);
         _db = db;
+        _componentContext = componentContext;
+
         if (products != null)
         {
             _productIds.AddRange(products.Select(p => p.Id));
         }
     }
 
+    protected IBrandService _brandService;
+
+    internal IBrandService BrandService
+    {
+        get => _brandService ??= _componentContext.Resolve<IBrandService>();
+        set => _brandService = value;
+    }
+
 
     public LazyMultimap<ProductVariantAttribute> Attributes
         => _attributes ??= new LazyMultimap<ProductVariantAttribute>(LoadVariantAttributes, _productIds);
 
-    public LazyMultimap<ProductVariantAttributeCombination> AttributeCombinations
-        => _attributeCombinations ??=
-            new LazyMultimap<ProductVariantAttributeCombination>(LoadAttributeCombinations, _productIds);
+    public LazyMultimap<ProductVariantAttribute> EssentialAttributes
+        => _essentialAttributes ??= new LazyMultimap<ProductVariantAttribute>(LoadEssentialVariantAttributes, _productIds);
 
     public LazyMultimap<ProductSpecificationAttribute> ProductSpecification
         => _specifications ??=
@@ -49,31 +66,41 @@ public class ProductLazyContext
     public LazyMultimap<ProductLink> RelatedProducts
         => _relatedProducts ??= new LazyMultimap<ProductLink>(LoadRelatedProducts, _productIds);
 
+
+    protected virtual async Task<MultiMap<int, ProductVariantAttribute>> LoadEssentialVariantAttributes(int[] ids)
+    {
+        if (Attributes.IsFullyLoaded)
+        {
+            return Attributes
+                .SelectMany(x => x.Value)
+                .Where(x => x.ProductVariantAttributeValues.Any(y => y.IsEssential))
+                .ToMultiMap(x => x.ProductId, x => x);
+        }
+
+        var attributes = await BuildVariantAttributeQuery(_db, ids, true).ToListAsync();
+        return attributes.ToMultiMap(x => x.ProductId, x => x);
+
+    }
+
     private async Task<MultiMap<int, ProductVariantAttribute>> LoadVariantAttributes(int[] ids)
     {
-        var attributes = await _db
+        var attributes = await BuildVariantAttributeQuery(_db, ids, false).ToListAsync();
+        return attributes.ToMultiMap(x => x.ProductId, x => x);
+    }
+    
+    private static IQueryable<ProductVariantAttribute> BuildVariantAttributeQuery(ApplicationDbContext db, int[] ids, bool isEssential = false)
+    {
+        return db
             .ProductVariantAttributes
             .AsNoTracking()
             .Include(x => x.ProductAttribute)
-            .Include(x => x.ProductVariantAttributeValues)
-            .Where(x => ids.Contains(x.Id))
-            .OrderBy(x => x.ProductId)
-            .ThenBy(x => x.DisplayOrder)
-            .ToListAsync();
-
-        return attributes.ToMultiMap(x => x.ProductId, x => x);
-    }
-
-    private async Task<MultiMap<int, ProductVariantAttributeCombination>> LoadAttributeCombinations(int[] ids)
-    {
-        var combinations = await _db
-            .ProductVariantAttributeCombinations
-            .AsNoTracking()
+            .Include(x => x.ProductVariantAttributeValues.Where(x => !isEssential || x.IsEssential))
             .Where(x => ids.Contains(x.ProductId))
+            .Where(x => !isEssential || x.ProductVariantAttributeValues.Any(y => y.IsEssential))
             .OrderBy(x => x.ProductId)
-            .ToListAsync();
-        return combinations.ToMultiMap(x => x.ProductId, x => x);
+            .ThenBy(x => x.DisplayOrder);
     }
+
 
     private async Task<MultiMap<int, ProductLink>> LoadRelatedProducts(int[] ids)
     {
@@ -85,7 +112,7 @@ public class ProductLazyContext
             .OrderBy(x => x.DisplayOrder)
             .ThenBy(x => x.ProductId)
             .ToListAsync();
- 
+
 
         return relatedProducts.ToMultiMap(x => x.ProductId, x => x);
     }
@@ -114,5 +141,14 @@ public class ProductLazyContext
             .ThenBy(x => x.DisplayOrder)
             .ThenBy(x => x.SpecificationAttributeOption.SpecificationAttribute.DisplayOrder)
             .ThenBy(x => x.SpecificationAttributeOption.SpecificationAttribute.Name);
+    }
+
+    public void Clear()
+    {
+        _productIds.Clear();
+        _specifications?.Clear();
+        _relatedProducts?.Clear();
+        _attributes?.Clear();
+        _attributeCombinations?.Clear();
     }
 }

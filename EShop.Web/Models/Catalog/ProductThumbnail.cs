@@ -53,7 +53,6 @@ public class ProductThumbnail
             SpecialPriceEnds = product.SpecialPriceEndsUtc,
             HasOptions = product.HasOptions,
             IsVisibleIndividually = product.IsVisibleIndividually,
-            IsAllowToOrder = product.IsAllowToOrder,
             StockQuantity = product.StockQuantity,
         };
     }

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using EShop.Infrastructure.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -23,12 +24,21 @@ public class ProductVariantAttributeValue : BaseEntity
 {
     public string Alias { get; set; }
 
+    // [NotMapped]
+    // public AttributeColorType ColorType
+    // {
+    //     get => (AttributeColorType)AttributeColorTypeId;
+    //     set => AttributeColorTypeId = (int)value;
+    // }
+    // public int AttributeColorTypeId { get; set; }
     public string Color { get; set; }
 
     public int DisplayOrder { get; set; }
     public bool IsPreSelected { get; set; }
 
     public string Name { get; set; }
+    public int Quantity { get; set; }
+    public bool IsEssential { get; set; }
 
     public decimal PriceAdjustment { get; set; }
 

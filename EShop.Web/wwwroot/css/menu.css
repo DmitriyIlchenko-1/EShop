@@ -1,0 +1,72 @@
+@media screen and (width <= 768px) {
+    .main-menu--mobile-left {
+        order: -1;
+        margin-inline-end: 20px;
+    }
+}
+
+.main-menu {
+    @media screen and (min-width: 769px) {
+        order: 3;
+        width: 100%;
+    }
+}
+
+.main-menu__toggle {
+    @media screen and (min-width: 769px) {
+        display: none;
+    }
+}
+
+.main-menu__toggle .icon {
+    position: absolute;
+    transform: scale(1);
+    opacity: 1;
+    transition: transform .2s ease, opacity .2s ease;
+}
+
+.main-menu__disclosure:not([open]) > .main-menu__toggle .icon-close,
+.main-menu__disclosure[open] > .main-menu__toggle .icon-hamburger {
+    visibility: hidden; /**/
+    opacity: 0;
+    transform: scale(.8);
+}
+
+/*TODO: Animate the menu to slide into the view. */
+
+.main-menu__content, .main-nav__child {
+    /*TEMP:*/
+    --header-width: 124px;
+    background-color: var(--nav-bg-color);
+    color: var(--text-color);
+    @media screen and (max-width: 769px) {
+        /*Mobile Layout*/
+        position: fixed;
+        width: 100vw;
+        height: calc(var(--viewport-height) - var(--header-bottom-position));
+        bottom: 0;
+        top: var(--header-bottom-position);
+        left: 0;
+        overflow-y: scroll;
+        /*TODO: rems? */
+        padding-block-end: 60px;
+    }
+}
+
+@media screen and (min-width: 769px) {
+    .main-nav__child {
+        border-block-start: 1px solid rgb(var(--color-foreground-rgb) / .2);
+        position: absolute;
+        overflow-y: scroll;
+        top: 100%;
+        left: 0;
+        width: 100vw;
+        max-height: 468px;
+        padding-block: var(--padding-2xl);
+
+        /*TODO: temp*/
+        padding-inline: 20px;
+    }
+
+}
+

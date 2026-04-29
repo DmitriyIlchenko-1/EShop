@@ -80,10 +80,10 @@ public partial class ProductVariantQueryFactory : IProductVariantQueryFactory
     private void CreateVariant(ProductVariantQuery query, string key, string value)
     {
         var ids = key
-            .Replace("pvar", string.Empty)
+            .Replace("pvatr", string.Empty)
             .Split('-')
             .ToArray();
-        if (ids.Length < 4)
+        if (ids.Length < 3)
         {
             return;
         }
@@ -101,6 +101,6 @@ public partial class ProductVariantQueryFactory : IProductVariantQueryFactory
     }
 
 
-    [GeneratedRegex("pvar[0-9]+-[0-9]+-[0-9]+-[0-9]+", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
+    [GeneratedRegex("pvatr[0-9]+-[0-9]+-[0-9]+", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
     private static partial Regex IsVariantKeyRegex();
 }

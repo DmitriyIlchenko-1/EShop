@@ -39,9 +39,9 @@ public class ProductVariantAttribute : BaseEntity
 
     public int DisplayOrder { get; set; }
 
-    [NotMapped] public bool IsMultipleChoice => AttributeControlType == AttributeControlType.DropdownList;
-
     public bool IsRequired { get; set; }
+    public bool IsActive { get; set; }
+    
 
     public Product Product { get; set; }
 
@@ -57,7 +57,17 @@ public class ProductVariantAttribute : BaseEntity
     {
         return AttributeControlType switch
         {
-            AttributeControlType.DropdownList or
+            AttributeControlType.RadioList => true,
+            AttributeControlType.Swatch => true,
+            AttributeControlType.RadioButtonPills => true,
+            _ => false
+        };
+    }
+
+    public bool IsMultipleChoices()
+    {
+        return AttributeControlType switch
+        {
             AttributeControlType.RadioList => true,
             _ => false
         };
