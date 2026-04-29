@@ -104,9 +104,10 @@ public partial class CatalogHelper
             ctx.ProductAttributeSelections.Add(product.Id, sltAttrs);
         }
 
-        //This is the prefetch method
+        //This is the prefetch method, that gets all the combination based on the pre selected values meaning it gets only one combination for one product e.g. 30 product = 30 combinations. 
         await _productAttributeMaterializer.PrefetchProductVariantAttributeCombinationsAsync(
             ctx.ProductAttributeSelections);
+        await _productAttributeMaterializer.PrefetchCombinationAvailabilityInfosAsync(ctx.ProductAttributeSelections);
     }
 
     private async Task<ProductSummaryItemModel> MapProductSummaryItem(Product product, ProductSummaryItemContext ctx)
@@ -303,7 +304,7 @@ public partial class CatalogHelper
                                    CombinationDisplayBehaviour.HighlightUnavailableWithGrey;
         var attributes = await batchContext.EssentialAttributes.GetOrLoadAsync(product.Id);
         ctx.ProductAttributeSelections.TryGetValue(product.Id, out var selection);
-        var combination = _productAttributeMaterializer.GetPrefetchedCombinationOrDefault(product.Id, selection);
+        _productAttributeMaterializer.TryGetPrefetchedCombination(product.Id, selection, out var combination);
 
         var selectedValues =
             _productAttributeMaterializer.MaterializeProductVariantAttributeValues(selection,
@@ -346,9 +347,6 @@ public partial class CatalogHelper
 
                 if (showAvailabilityInfo)
                 {
-                    // var r = await _db
-                    //     .ProductVariantAttributeCombinations.Where(x => !x.IsActive)
-                    //     .ToListAsync();
                     var availabilityInfo = await _productAttributeMaterializer.IsCombinationAvailableAsync(
                         product,
                         attributes,

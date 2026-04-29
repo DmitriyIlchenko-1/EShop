@@ -4,6 +4,7 @@ using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Configuration;
 using EShop.Core.Catalog.Products;
 using EShop.Core.Catalog.Products.Domain;
+using EShop.Core.Catalog.Products.Extensions;
 using EShop.Core.Catalog.Products.Services;
 using EShop.Core.Common.Services;
 using EShop.Core.Content.Media.Services;
@@ -260,81 +261,84 @@ public partial class CatalogHelper
 
         if (query != null && (query.Variants.Count > 0))
         {
-            var sltAttrs =
-                _productAttributeMaterializer.CreateAttributeSelectionAsync(query, attributes, product.Id);
-            // model.SelectedCombination =
-            //     (await _productAttributeMaterializer.FindProductVariantAttributeCombinationsAsync(
-            //         new Dictionary<int, ProductVariantAttributeSelection>() { { product.Id, sltAttrs } }))
-            //     .Select(x => x.Value)
-            //     .FirstOrDefault();
-            
-            // (Product Product, ProductCombinationMap Model, ProductLazyContext LazyCtx,
-            //     ICollection<ProductVariantAttributeModel> ProductVariantAttributes, ProductVariantAttributeSelection
-            //     Selection, ProductVariantAttributeCombination SelectedCombination) attributeMappingCtx =
-            //         (product, model, batchContext, model.ProductVariantAttributes, sltAttrs, model.SelectedCombination);
-            // await PrepareProductSummaryAttributeCombinationModelAsync(attributeMappingCtx);
+             await PrepareProductAttributeCombinationsModelAsync(context, model);
         }
     }
 
-//     private async Task PrepareProductAttributeCombinationsModelAsync(ProductDetailsModelContext context,
-//     ProductDetailVm model)
-// {
-//     var product = context.Product;
-//     var batchContext = context.LazyContext;
-//     var query = context.ProductVariantQuery;
-//     var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
-//
-//     //selection (attribute + selected value) of all the attributes displayed. 
-//     context.SelectedAttributes =
-//         _productAttributeMaterializer.CreateAttributeSelectionAsync(query, attributes, product.Id);
-//
-//     var selectedValues =
-//         _productAttributeMaterializer.MaterializeProductVariantAttributeValues(context.SelectedAttributes, attributes);
-//     var selectedValueIds = selectedValues
-//         .Select(x => x.Id)
-//         .ToArray();
-//
-//
-//     model.SelectedCombination =
-//         (await _productAttributeMaterializer.FindProductVariantAttributeCombinationsAsync(
-//             new Dictionary<int, ProductVariantAttributeSelection>() { { product.Id, context.SelectedAttributes } }))
-//         .FirstOrDefault();
-//
-//     //more out to a mapper
-//     // if (model.SelectedCombination != null && !model.SelectedCombination.IsActive && model.SelectedCombination.StockQuantity == 0)
-//     // {
-//     //     model.IsAvailable = false;
-//     // }
-//
-//     //TODO: Come up with an idea about how to merge the data between the product and the selection. 
-//     // MergeWithCombination();
-//
-//     foreach (var attribute in model.ProductVariantAttributes.Where(x => x.IsActive))
-//     {
-//         //any value of the attribute intersects with any user chosen value for this attribute.
-//         // In other words, has the user selected a particular value for this attribute? 
-//         var updatePreselection = selectedValueIds.Length > 0 && selectedValueIds
-//             .Intersect(attribute.Values.Select(x => x.Id))
-//             .Any();
-//
-//
-//         foreach (ProductVariantAttributeValueModel value in
-//                  attribute.Values.Cast<ProductVariantAttributeValueModel>())
-//         {
-//             var isSelected = selectedValueIds.Contains(value.Id);
-//             if (updatePreselection)
-//             {
-//                 //set to false or true depending on which value the user has chosen. 
-//                 value.IsPreSelected = isSelected;
-//             }
-//
-//             if (isSelected)
-//             {
-//                 // model.Weight += value.ProductVariantAttributeValue.WeightAdjustment;
-//             }
-//         }
-//     }
-// }
+    private async Task PrepareProductAttributeCombinationsModelAsync(ProductDetailsModelContext context,
+    ProductDetailVm model)
+{
+    var product = context.Product;
+    var batchContext = context.LazyContext;
+    var query = context.ProductVariantQuery;
+    var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
+
+    //selection (attribute + selected value) of all the attributes displayed. 
+    var selection = _productAttributeMaterializer.CreateAttributeSelectionAsync(query, attributes, product.Id);
+    context.Selection = selection;
+    var selectedValues =
+        _productAttributeMaterializer.MaterializeProductVariantAttributeValues(selection, attributes);
+    var selectedValueIds = selectedValues
+        .Select(x => x.Id)
+        .ToArray();
+
+    model.SelectedCombination =
+        await _productAttributeMaterializer.FindAttributeCombinationAsync(product.Id, selection);
+    
+    if (model.SelectedCombination != null && !model.SelectedCombination.IsActive && model.SelectedCombination.StockQuantity == 0)
+    {
+        model.IsAvailable = false;
+    }
+
+    product.MergeDataWithCombination(model.SelectedCombination);
+
+    foreach (var attribute in model.ProductVariantAttributes.Where(x => x.IsActive))
+    {
+        //any value of the attribute intersects with any user chosen value for this attribute.
+        // In other words, has the user selected a particular value for this attribute? 
+        var updatePreselection = selectedValueIds.Length > 0 && selectedValueIds
+            .Intersect(attribute.Values.Select(x => x.Id))
+            .Any();
+
+
+        foreach (ProductVariantAttributeValueModel value in
+                 attribute.Values.Cast<ProductVariantAttributeValueModel>())
+        {
+            var isSelected = selectedValueIds.Contains(value.Id);
+            if (updatePreselection)
+            {
+                //set to false or true depending on which value the user has chosen. 
+                value.IsPreSelected = isSelected;
+            }
+
+            if (isSelected)
+            {
+                // model.Weight += value.ProductVariantAttributeValue.WeightAdjustment;
+            }
+            
+            if (true)
+            {
+                var availabilityInfo = await _productAttributeMaterializer.IsCombinationAvailableAsync(
+                    product,
+                    attributes,
+                    selectedValues,
+                    value.ProductVariantAttributeValue);
+                if (availabilityInfo != null)
+                {
+                    value.IsUnavailable = true;
+                    if (availabilityInfo.IsOutOfStock && availabilityInfo.IsActive)
+                    {
+                        value.Title = "Out of Stock";
+                    }
+                    else
+                    {
+                        value.Title = "Not Available";
+                    }
+                }
+            }
+        }
+    }
+}
 
 
     private async Task PrepareProductPropertiesModelAsync(ProductDetailsModelContext context, ProductDetailVm model)

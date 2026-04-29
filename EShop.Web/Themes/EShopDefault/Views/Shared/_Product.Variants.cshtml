@@ -58,6 +58,7 @@
                         <div class="variant__set color-swatches__color-container">
                             @foreach (var item in attrValues)
                             {
+                                var @checked = preSelectedVal == item;
                                 var controlId = containerId + "_" + item.Id;
                                 <label class="color-swatch__label"
                                        for="@controlId">
@@ -65,7 +66,8 @@
                                     <span eh-if="item.IsUnavailable" class="visually-hidden">@item.Title</span>
                                     <input
                                         class="color-swatch__control
- @(item.IsUnavailable ? " color-swatch__control--unavailable" : "")"
+                                        @(item.IsUnavailable ? " color-swatch__control--unavailable" : "")"
+                                        @(@checked ? "checked" : "")
                                         type="radio"
                                         style="--swatch-image: @item.Color"
                                         id="@controlId" name="@containerId" value="@item.Id"/>

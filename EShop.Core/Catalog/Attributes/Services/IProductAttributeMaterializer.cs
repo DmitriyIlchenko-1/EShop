@@ -33,7 +33,9 @@ public interface IProductAttributeMaterializer
         IEnumerable<ProductVariantAttributeValue> selectedVariantAttributeValues,
         ProductVariantAttributeValue currentVariantValue);
 
-    ProductVariantAttributeCombination GetPrefetchedCombinationOrDefault(int productId,
-        ProductVariantAttributeSelection selection);
+    bool TryGetPrefetchedCombination(int productId, ProductVariantAttributeSelection selection,
+        out ProductVariantAttributeCombination combination);
     Task<IDictionary<int, int>> GetEssentialVariantAttributeValueCountsAsync(bool isRequiredOnly);
+
+    Task<int> PrefetchCombinationAvailabilityInfosAsync(IDictionary<int, ProductVariantAttributeSelection> selections);
 }

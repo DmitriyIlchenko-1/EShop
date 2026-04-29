@@ -3,6 +3,7 @@ using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Data;
 using EShop.Core.Platform.Caching;
+using EShop.Core.Platform.Common;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Collections;
 using EShop.Infrastructure.Extensions;
@@ -17,19 +18,24 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
     private readonly ApplicationDbContext _db;
     private readonly ICacheManager _cache;
     private readonly IRequestCache _requestCache;
+    private readonly PerformanceSettings _performanceSettings;
     private const string AttributeCombinationByIdHashCodeKey = "attributecombination:byproductid-{0}-{1}";
 
     private const string AttributeCombinationAvailabilityByIdCacheKey =
         "attributecombinationavailability:byproductid-{0}";
 
     private const string AttributeValueCountKey = "variantattributevalue:count:{0}";
+    private bool _isCombinationAvailabilityPrefetchedSuccess;
+    private bool _isCombinationAvailabilityPrefetchCalled;
 
 
-    public ProductAttributeMaterializer(ApplicationDbContext db, ICacheManager cache, IRequestCache requestCache)
+    public ProductAttributeMaterializer(ApplicationDbContext db, ICacheManager cache, IRequestCache requestCache,
+        PerformanceSettings performanceSettings)
     {
         _db = db;
         _cache = cache;
         _requestCache = requestCache;
+        _performanceSettings = performanceSettings;
     }
 
     public ProductVariantAttributeSelection CreateAttributeSelectionAsync(ProductVariantQuery query,
@@ -172,25 +178,31 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
         {
             return null;
         }
-        
+
         int hashCode = selection.GetHashCode();
-        return await _db
-            .ProductVariantAttributeCombinations.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.ProductId == productId && x.HashCode == hashCode);
+        var cache = string.Format(AttributeCombinationByIdHashCodeKey, productId, hashCode);
+        return await _requestCache.GetOrCreateAsync<ProductVariantAttributeCombination>(cache,
+                async () =>
+                {
+                    return await _db
+                        .ProductVariantAttributeCombinations.AsNoTracking()
+                        .FirstOrDefaultAsync(x => x.ProductId == productId && x.HashCode == hashCode);
+                });
     }
 
-    public virtual ProductVariantAttributeCombination GetPrefetchedCombinationOrDefault(int productId,
-        ProductVariantAttributeSelection selection)
+
+    public virtual bool TryGetPrefetchedCombination(int productId, ProductVariantAttributeSelection selection,
+        out ProductVariantAttributeCombination combination)
     {
         if (productId == 0 || selection.IsNullOrEmpty())
         {
-            return null;
+            combination = null;
+            return false;
         }
 
         int hashCode = selection.GetHashCode();
         var cacheKey = string.Format(AttributeCombinationByIdHashCodeKey, productId, hashCode);
-        _requestCache.TryGet<ProductVariantAttributeCombination>(cacheKey, out var result);
-        return result;
+        return _requestCache.TryGet<ProductVariantAttributeCombination>(cacheKey, out combination);
     }
 
 
@@ -217,60 +229,104 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
         Guard.NotNull(currentVariantValue);
         if (!productVariantAttributes.Any() || !selectedVariantAttributeValues.Any())
             return null;
+        if (_performanceSettings.MaxUnavailableCombinations <= 0)
+            return null;
 
-        var cacheKey = string.Format(AttributeCombinationAvailabilityByIdCacheKey, product.Id);
-        var unavailableComb = await _cache.GetOrCreateAsync(cacheKey,
-            async () =>
-            {
-                return await _db
-                    .ProductVariantAttributeCombinations.AsNoTracking()
-                    .Where(x => x.ProductId == product.Id)
-                    .Where(x => !x.IsActive || x.StockQuantity <= 0)
-                    .Select(x => new CombinationAvailabilityInfo()
+        bool isLoaded = _isCombinationAvailabilityPrefetchedSuccess;
+        IDictionary<int, CombinationAvailabilityInfo> combinationAvailabilityInfos;
+        if (_isCombinationAvailabilityPrefetchedSuccess)
+        {
+            TryGetPrefetchedCombinationAvailabilityInfos(product.Id, out combinationAvailabilityInfos);
+        }
+        else if (!_isCombinationAvailabilityPrefetchCalled)
+        {
+            var cacheKey = string.Format(AttributeCombinationAvailabilityByIdCacheKey, product.Id);
+            combinationAvailabilityInfos =
+                await _cache.GetOrCreateAsync(cacheKey,
+                    async () =>
                     {
-                        HashCode = x.HashCode,
-                        IsActive = x.IsActive,
-                        IsOutOfStock = x.StockQuantity <= 0,
-                    })
-                    .ToDictionaryAsync(x => x.HashCode, x => x);
-            },
-            new CacheEntryOptions() { AbsoluteExpiration = TimeSpan.FromSeconds(60) });
+                        var query = _db
+                            .ProductVariantAttributeCombinations.AsNoTracking()
+                            .Where(x => x.ProductId == product.Id)
+                            .Where(x => !x.IsActive || x.StockQuantity <= 0)
+                            .Select(x => new CombinationAvailabilityInfo()
+                            {
+                                ProductId = x.ProductId,
+                                HashCode = x.HashCode,
+                                IsActive = x.IsActive,
+                                IsOutOfStock = x.StockQuantity <= 0,
+                            });
+                        var availableInfoCount = await query.CountAsync();
+                        if (_performanceSettings.MaxUnavailableCombinations <= availableInfoCount)
+                        {
+                            isLoaded = true;
+                            return await query.ToDictionaryAsync(x => x.HashCode, x => x);
+                        }
 
-        if (unavailableComb.Count == 0 && !product.AttributeCombinationRequired)
+                        isLoaded = false;
+                        return [];
+                    },
+                    new CacheEntryOptions() { AbsoluteExpiration = TimeSpan.FromSeconds(60) });
+        }
+        else
+        {
+            combinationAvailabilityInfos = new Dictionary<int, CombinationAvailabilityInfo>();
+        }
+
+        if (combinationAvailabilityInfos.Count == 0 && !product.AttributeCombinationRequired)
             return null;
         var selection = new ProductVariantAttributeSelection();
-        var selectedAttributesMap =
+        
+        
+        var selectedValuesMap =
             selectedVariantAttributeValues.ToMultiMap(x => x.ProductVariantAttributeId, x => x.Id);
         foreach (var productVariantAttribute in productVariantAttributes.Where(x => x.IsListTypeAttribute()))
         {
-            var selectedValues = selectedAttributesMap.TryGetValue(productVariantAttribute.Id, out var valueIds)
+
+            IEnumerable<int> chosenValueIds;
+            var selectedValues = selectedValuesMap.TryGetValue(productVariantAttribute.Id, out var valueIds)
                 ? valueIds
-                : [];
+                : null;
+             
             if (productVariantAttribute.Id == currentVariantValue.ProductVariantAttributeId)
             {
-                if (productVariantAttribute.IsMultipleChoices())
+                if (selectedValues != null && productVariantAttribute.IsMultipleChoices())
                 {
-                    selectedValues = selectedValues
+                    chosenValueIds = selectedValues
                         .Append(currentVariantValue.Id)
                         .Distinct();
                 }
                 else
                 {
-                    selectedValues = new[] { currentVariantValue.Id };
+                    chosenValueIds = new[] { currentVariantValue.Id };
                 }
             }
-
-            selection.AddAttribute(productVariantAttribute.Id, selectedValues);
+            else
+            {
+                if (selectedValues == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    chosenValueIds = selectedValues;
+                }
+            }
+            
+            
+            // if the current variant value is from any other variant attribute that's not the current one, we just add all its choise value in here
+            // (uually only one value, though, unless it's a multi choice)
+            selection.AddAttribute(productVariantAttribute.Id, chosenValueIds);
         }
 
         var hashCode = selection.GetHashCode();
-        if (unavailableComb.TryGetValue(hashCode, out var combination))
+        if (combinationAvailabilityInfos.TryGetValue(hashCode, out var combination))
         {
             return combination;
         }
 
-        if (product.AttributeCombinationRequired
-            && await FindAttributeCombinationAsync(product.Id, selection) == null)
+        if (isLoaded || product.AttributeCombinationRequired
+            && await FindAttributeCombinationAsync(product.Id, selection) != null)
         {
             return new()
             {
@@ -282,6 +338,97 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
             return null;
         }
     }
+
+    protected virtual bool TryGetPrefetchedCombinationAvailabilityInfos(int productId,
+        out IDictionary<int, CombinationAvailabilityInfo> infos)
+    {
+        var cacheKey = string.Format(AttributeCombinationAvailabilityByIdCacheKey, productId);
+        var result =
+            _requestCache.TryGet<IDictionary<int, CombinationAvailabilityInfo>>(cacheKey, out var cachedResult);
+        infos = cachedResult ?? new Dictionary<int, CombinationAvailabilityInfo>();
+        return result;
+    }
+
+    public virtual async Task<int> PrefetchCombinationAvailabilityInfosAsync(
+        IDictionary<int, ProductVariantAttributeSelection> selections)
+    {
+        Guard.NotNull(selections);
+        if (_performanceSettings.MaxUnavailableCombinations <= 0)
+            return 0;
+        if (!selections.Any())
+            return 0;
+        var alreadyCollectedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        List<(int productId, int hashCode, string cacheKey)> availabilityCacheInfos = new();
+
+        foreach (var selection in selections)
+        {
+            if (selection.Value.IsNullOrEmpty())
+            {
+                continue;
+            }
+
+            var cacheKey = string.Format(AttributeCombinationAvailabilityByIdCacheKey, selection.Key);
+
+            if (!alreadyCollectedKeys.Contains(cacheKey) || !_requestCache.Contains(cacheKey))
+            {
+                //add the ones that haven't been loaded.
+                availabilityCacheInfos.Add(
+                    new ValueTuple<int, int, string>(selection.Key, selection.Value.GetHashCode(), cacheKey));
+                alreadyCollectedKeys.Add(cacheKey);
+            }
+        }
+
+        //Contains(x.ProductId)
+        var allProductIds = availabilityCacheInfos
+            .Select(x => x.productId)
+            .Where(x => x != 0)
+            .Distinct()
+            .ToArray();
+
+        var hashCodes = availabilityCacheInfos
+            .Select(x => x.hashCode)
+            .Where(x => x != 0)
+            .Distinct()
+            .ToArray();
+
+        // Load all values in one go.
+        var query = _db
+            .ProductVariantAttributeCombinations.AsNoTracking()
+            .Where(x => allProductIds.Contains(x.ProductId) && hashCodes.Contains(x.HashCode))
+            .Where(x => !x.IsActive || x.StockQuantity <= 0)
+            .Select(x => new CombinationAvailabilityInfo()
+            {
+                ProductId = x.ProductId,
+                HashCode = x.HashCode,
+                IsActive = x.IsActive,
+                IsOutOfStock = x.StockQuantity <= 0,
+            });
+
+        var anavailableCombCount = await query.CountAsync();
+
+        if (_performanceSettings.MaxUnavailableCombinations < anavailableCombCount)
+        {
+            _isCombinationAvailabilityPrefetchCalled = true;
+            return 0;
+        }
+
+        var anavailableComb = await query.ToListAsync();
+
+        var anavailableCombMap = anavailableComb.ToMultiMap(x => x.ProductId, x => x);
+
+
+        foreach (var info in availabilityCacheInfos)
+        {
+            if (anavailableCombMap.TryGetValue(info.productId, out var combination))
+            {
+                _requestCache.Put(info.cacheKey, combination.ToDictionary(x => x.HashCode, x => x));
+            }
+        }
+
+        _isCombinationAvailabilityPrefetchedSuccess = true;
+        return availabilityCacheInfos.Count;
+    }
+
 
     public virtual async Task<IDictionary<int, int>> GetEssentialVariantAttributeValueCountsAsync(
         bool isRequiredOnly = false)
@@ -308,6 +455,7 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
 
 public class CombinationAvailabilityInfo
 {
+    public int ProductId { get; set; }
     public int HashCode { get; set; }
     public bool IsActive { get; set; }
     public bool IsOutOfStock { get; set; }

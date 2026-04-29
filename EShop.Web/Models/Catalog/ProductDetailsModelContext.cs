@@ -17,6 +17,7 @@ public class ProductDetailsModelContext
     public Product Product { get; set; }
     public ProductVariantQuery ProductVariantQuery { get; set; }
     public ProductLazyContext LazyContext { get; set; }
+    public ProductVariantAttributeSelection Selection { get; set; }
      
 }
 

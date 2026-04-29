@@ -51,9 +51,9 @@ public class DefaultRequestCache : Disposable, IRequestCache
     public bool TryGet<T>(object key, out T result)
     {
         var requestCache = EnsureCreated();
-        if (requestCache.TryGetValue(key, out var res) && res is T typedRes)
+        if (requestCache.TryGetValue(key, out var res))
         {
-            result = typedRes;
+            result = (T)res;
             return true;
         }
 

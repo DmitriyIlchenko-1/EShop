@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Data;
+using EShop.Core.Platform.Common;
+using EShop.Core.Platform.Configuration.Domain;
 using EShop.Infrastructure.Utilities;
 
 public class DataSeeder
@@ -46,6 +48,20 @@ public class DataSeeder
         await SeedSpecificationsAsync();
         await SeedAttributesAsync();
         await SeedCombinationsAsync();
+        
+        await SeedSettingsAsync();
+    }
+
+    private async Task SeedSettingsAsync()
+    {
+        var performanceSettings = new Setting()
+        {
+           Name = "PerformanceSettings.MaxUnavailableCombinations",
+           Value = "1"
+        };
+
+        await _dbContext.Settings.AddAsync(performanceSettings);
+        await _dbContext.SaveChangesAsync();
     }
 
     private async Task SeedUsersAsync()
@@ -718,7 +734,7 @@ public class DataSeeder
                     x.ProductAttributeId == productVariantAttribute.ProductAttributeId);
                 if (attributeOptionsSet != null && attributeOptionsSet.ProductAttributeOptions != null)
                 {
-                    bool preselected = true;
+                    bool preselected = false;
                     foreach (var option in attributeOptionsSet.ProductAttributeOptions)
                     {
                         _dbContext.ProductVariantAttributeValues.Add(new ProductVariantAttributeValue
@@ -727,7 +743,7 @@ public class DataSeeder
                             Name = option.Name,
                             Alias = option.Alias,
                             Color = option.Color,
-                            IsEssential = Random.Shared.Next(1, 10) < 5,
+                            IsEssential = true,
                             PriceAdjustment = option.PriceAdjustment,
                             WeightAdjustment = option.WeightAdjustment,
                             DisplayOrder = option.DisplayOrder,
@@ -763,7 +779,7 @@ public class DataSeeder
             var combination = new ProductVariantAttributeCombination
             {
                 ProductId = product.Id,
-                IsActive = Random.Shared.Next(1,10) > 5, 
+                IsActive = false,
                 Price = product.Price, // Start with product's base price
                 Weight = product.Weight, // Start with product's base weight
                 StockQuantity = product.StockQuantity,
