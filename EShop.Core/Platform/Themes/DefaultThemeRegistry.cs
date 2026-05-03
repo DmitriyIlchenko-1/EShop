@@ -9,11 +9,11 @@ namespace EShop.Core.Platform.Themes;
 
 public class DefaultThemeRegistry : IThemeRegistry
 {
-    private readonly IEShopFileProvider _fileProvider;
+    private readonly ILocalFileProvider _fileProvider;
     private IDictionary<string, ThemeDescriptor> _themeCache;
     private static readonly object _locker = new();
 
-    public DefaultThemeRegistry(IEShopFileProvider fileProvider)
+    public DefaultThemeRegistry(ILocalFileProvider fileProvider)
     {
         _fileProvider = fileProvider;
         Initialize();

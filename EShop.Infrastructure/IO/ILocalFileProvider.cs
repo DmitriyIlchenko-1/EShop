@@ -4,10 +4,12 @@ using Microsoft.Extensions.FileProviders;
 namespace EShop.Infrastructure.FileSystem;
 
 
-public interface IEShopFileProvider : IFileProvider
+public interface ILocalFileProvider : IFileProvider
 {
     public string Root { get; }
     string MapPath(string path);
+    
+    
 
      
 }

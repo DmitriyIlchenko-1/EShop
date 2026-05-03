@@ -63,8 +63,7 @@ public class CoreStartup : BaseStartup
         services.AddSingleton<IThemeRegistry, DefaultThemeRegistry>();
         services.AddScoped<IThemeVariableService, DefaultThemeVariableService>();
         services.AddScoped<IViewHelper, DefaultViewHelper>();
-        services.AddSingleton<IEShopFileProvider, DefaultEShopFileProvider>();
-        services.AddScoped<IRequestCache, DefaultRequestCache>();
+         services.AddScoped<IRequestCache, DefaultRequestCache>();
         /*
          * Caching
          */

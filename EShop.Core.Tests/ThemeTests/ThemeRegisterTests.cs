@@ -34,7 +34,7 @@ public class ThemeRegisterTests
             .Setup(x => x.ContentRootPath)
             .Returns(currentLocation);
         var webEnv = envMock.Object;
-        IEShopFileProvider fileProvider = new DefaultEShopFileProvider(webEnv);
+        ILocalFileProvider fileProvider = new DefaultLocalFileProvider(webEnv.WebRootPath);
         _themeRegistry = new DefaultThemeRegistry(fileProvider);
     }
 

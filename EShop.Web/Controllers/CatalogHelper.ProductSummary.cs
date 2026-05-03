@@ -35,10 +35,10 @@ public partial class CatalogHelper
             ProductVariantQuery = variantQuery,
         };
 
-        if (mappingSettings.MapVariants)
+        if (mappingSettings.MapColorAttributes)
         {
             //TODO: Can we cache product batch context results? look into this.
-            await lazyProductCtx.EssentialAttributes.LoadAllAsync();
+            await lazyProductCtx.Attributes.LoadAllAsync();
             await PreloadAttributeCombinationsAsync(products, itemCtx);
         }
 
@@ -126,7 +126,7 @@ public partial class CatalogHelper
             item.ShortDescription = product.ShortDescription;
         }
 
-        if (settings.MapVariants)
+        if (settings.MapColorAttributes)
         {
             await MapProductSummaryAttributesAsync(product, item, ctx);
         }
@@ -483,7 +483,7 @@ public partial class CatalogHelper
         public bool MapPrices { get; set; } = true;
         public bool MapPictures { get; set; } = true;
         public bool MapDimensions { get; set; } = true;
-        public bool MapVariants { get; set; } = true;
+        public bool MapColorAttributes { get; set; } = true;
 
         public bool MapSpecificationAttributes { get; set; } = true;
 

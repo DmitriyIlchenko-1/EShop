@@ -3,6 +3,7 @@ using EShop.Infrastructure.FileSystem;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.Extensions.Hosting.Internal;
 
 namespace EShop.Infrastructure.IO;
@@ -10,9 +11,9 @@ namespace EShop.Infrastructure.IO;
 /// <summary>
 /// The abstraction over EShop's file system. 
 /// </summary>
-public class DefaultEShopFileProvider : PhysicalFileProvider, IEShopFileProvider
+public class DefaultLocalFileProvider : PhysicalFileProvider, ILocalFileProvider
 {
-    public DefaultEShopFileProvider(IWebHostEnvironment hostEnv) : base(hostEnv.ContentRootPath)
+    public DefaultLocalFileProvider(string rootPath) : base(rootPath)
     {
     }
 
@@ -27,4 +28,6 @@ public class DefaultEShopFileProvider : PhysicalFileProvider, IEShopFileProvider
 
         return Path.Combine(Root, path) + pathEnd;
     }
+
+    
 }

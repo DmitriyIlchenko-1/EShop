@@ -116,11 +116,13 @@ public abstract class EngineStartup<TEngine> : Disposable, IEngineStartup where 
         var coreAssemblies = ResolveCoreAssemblies();
         var typeScanner = new DefaultTypeScanner(coreAssemblies);
         Singleton<ITypeScanner>.Instance = typeScanner;
-        RegisterModules();
+        var modules = FindAllModules();
+        
     }
 
-    protected virtual void RegisterModules()
+    protected virtual IEnumerable<IModuleDescriptor> FindAllModules()
     {
+        return [];
     }
 
     protected override void Dispose(bool disposing)
@@ -213,7 +215,7 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
         }
     }
 
-    protected override void RegisterModules()
+    protected override IEnumerable<IModuleDescriptor> FindAllModules()
     {
         GlobalConfiguration.ContentRootPath = Engine.Environment.ContentRootPath;
 
@@ -222,5 +224,7 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
             moduleInfo.Assembly = Assembly.Load(new AssemblyName(moduleInfo.Name));
             GlobalConfiguration.Modules.Add(moduleInfo);
         }
+
+        return [];
     }
 }

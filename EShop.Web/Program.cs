@@ -29,9 +29,9 @@ using ZiggyCreatures.Caching.Fusion;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
-var startup = EngineContext
-    .Create()
-    .Startup(builder.Environment);
+var appContext = new DefaultApplicationContext(builder.Environment);
+var engine = EngineContext.Create();
+var startup = engine.Startup(appContext);
 //Add services to Microsoft's IServiceCollection. The services will still end up in the same container, which is likely to be Autofac's container, though it depends on the settings.
 startup.ConfigureServices(builder.Services, builder.Configuration);
 
@@ -40,8 +40,7 @@ startup.ConfigureServices(builder.Services, builder.Configuration);
 builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);
 var app = builder.Build();
 
-
-EngineContext.Current.ChildLifetimeScopeAccessor
+engine.ChildLifetimeScopeAccessor
     = app.Services.GetRequiredService<IChildLifetimeScopeAccessor>();
 
 app.Lifetime.ApplicationStarted.Register(() =>
@@ -52,7 +51,7 @@ app.Lifetime.ApplicationStarted.Register(() =>
  
 startup.ConfigureApplicationPipeline(app);
 
-using var d = EngineContext.Current.ChildLifetimeScopeAccessor.CreateManualChildLifetimeScope(out var scope);
+using var d = engine.ChildLifetimeScopeAccessor.CreateManualChildLifetimeScope(out var scope);
 var dbContext = scope.Resolve<ApplicationDbContext>();
 var userManager = scope.Resolve<UserManager<User>>();
 var roleManager = scope.Resolve<RoleManager<Role>>();

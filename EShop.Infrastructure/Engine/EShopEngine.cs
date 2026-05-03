@@ -12,12 +12,16 @@ namespace EShop.Infrastructure.Engine;
 
 public class EShopEngine : IEngine
 {
+    public bool IsStarted { get; private set; }
+    public IApplicationContext ApplicationContext { get; private set; }
     public IChildLifetimeScopeAccessor ChildLifetimeScopeAccessor { get; set; }
-    public IHostEnvironment Environment { get; set; }
-
-    public IEngineStartup Startup(IHostEnvironment environment)
+    public IHostEnvironment Environment { get; private set; }
+    public IEngineStartup Startup(IApplicationContext applicationContext)
     {
-        Environment = environment;
+        Guard.NotNull(applicationContext);
+        Environment = applicationContext.Environment;
+        ApplicationContext = applicationContext;
+        IsStarted = true;
         return new EShopEngineStartup(this);
     }
 
