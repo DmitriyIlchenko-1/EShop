@@ -350,37 +350,37 @@ public class DataSeeder
             {
                 new SpecificationAttribute
                 {
-                    Name = "Screen Size", Alias = "Screen Size", DisplayOrder = 1, IsEssential = true,
-                    ShowOnProductPage = true
+                    Name = "Screen Size", Alias = "Screen Size", DisplayOrder = 1,  
+                  
                 },
                 new SpecificationAttribute
                 {
-                    Name = "Resolution", Alias = "Resolution", DisplayOrder = 2, IsEssential = true,
-                    ShowOnProductPage = true
+                    Name = "Resolution", Alias = "Resolution", DisplayOrder = 2, 
+                  
                 },
                 new SpecificationAttribute
-                    { Name = "RAM", Alias = "RAM", DisplayOrder = 3, IsEssential = true, ShowOnProductPage = true },
+                    { Name = "RAM", Alias = "RAM", DisplayOrder = 3,  },
                 new SpecificationAttribute
                 {
-                    Name = "Storage", Alias = "Storage", DisplayOrder = 4, IsEssential = true, ShowOnProductPage = true
-                },
-                new SpecificationAttribute
-                {
-                    Name = "Processor", Alias = "Processor", DisplayOrder = 5, IsEssential = false,
-                    ShowOnProductPage = true
+                    Name = "Storage", Alias = "Storage", DisplayOrder = 4, 
                 },
                 new SpecificationAttribute
                 {
-                    Name = "Operating System", Alias = "OS", DisplayOrder = 6, IsEssential = false,
-                    ShowOnProductPage = true
+                    Name = "Processor", Alias = "Processor", DisplayOrder = 5, 
+                   
                 },
                 new SpecificationAttribute
                 {
-                    Name = "Color", Alias = "Color", DisplayOrder = 7, IsEssential = false, ShowOnProductPage = true
+                    Name = "Operating System", Alias = "OS", DisplayOrder = 6, 
+                   
                 },
                 new SpecificationAttribute
                 {
-                    Name = "Weight", Alias = "Weight", DisplayOrder = 8, IsEssential = false, ShowOnProductPage = false
+                    Name = "Color", Alias = "Color", DisplayOrder = 7,  
+                },
+                new SpecificationAttribute
+                {
+                    Name = "Weight", Alias = "Weight", DisplayOrder = 8,  
                 },
             };
 

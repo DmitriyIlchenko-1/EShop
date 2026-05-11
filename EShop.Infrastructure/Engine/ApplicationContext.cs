@@ -9,6 +9,7 @@ public class DefaultApplicationContext : IApplicationContext
 {
     public ILocalFileProvider AppDataRoot { get; private set; }
     public ILocalFileProvider WebRoot { get; private set; }
+   
     public IWebHostEnvironment Environment { get; init; }
 
     public DefaultApplicationContext(IWebHostEnvironment env)

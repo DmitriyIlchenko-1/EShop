@@ -186,98 +186,98 @@ public partial class CatalogHelper
     }
 
     //not working at the moment cuz in the middle of refactoring
-    private async Task MapProductSummaryAttributesAsync(Product product, ProductSummaryItemModel model,
-        ProductSummaryItemContext ctx)
-    {
-        var batchContext = ctx.LazyProductContext;
-        var query = ctx.ProductVariantQuery;
-        var attributes = await batchContext.EssentialAttributes.GetOrLoadAsync(model.Id);
-        var weightAdjustment = 0m;
-        var valueCountDict = await _productAttributeMaterializer.GetEssentialVariantAttributeValueCountsAsync(false);
-        foreach (var attribute in attributes)
-        {
-            var attributeVm = new ProductVariantAttributeModel()
-            {
-                Id = attribute.Id,
-                ProductId = attribute.ProductId,
-                ProductAttributeId = attribute.ProductAttributeId,
-                ProductVariantAttribute = attribute,
-                Alias = attribute.ProductAttribute.Alias,
-                Name = attribute.ProductAttribute.Name,
-                Description = attribute.ProductAttribute.Description,
-                TextPrompt = attribute.ProductAttribute.TextPrompt,
-                IsRequired = attribute.IsRequired,
-                AttributeControlType = attribute.AttributeControlType,
-                IsActive = attribute.IsActive,
-                TotalAttributeCount = valueCountDict.Get(attribute.Id)
-            };
-            if (query.Variants.Count != 0)
-            {
-                // we work on the 'variant' attribute level in here, not just attributes.
-                var selectedAttribute = query.Variants.FirstOrDefault(x =>
-                    x.AttributeId == attribute.Id
-                    && x.ProductId == attribute.ProductId
-                    && x.VariantAttributeId == attribute.Id
-                    && x.AttributeId == attribute.ProductAttributeId);
-
-                if (selectedAttribute != null)
-                {
-                }
-            }
-
-            if (attribute.IsListTypeAttribute())
-            {
-                List<ProductVariantAttributeValueModel> attrValueVms = attribute
-                    .ProductVariantAttributeValues
-                    .Select(value =>
-                    {
-                        var valueVm = new ProductVariantAttributeValueModel()
-                        {
-                            Id = value.Id,
-                            ProductVariantAttributeValue = value,
-                            PriceAdjustment = string.Empty,
-                            Name = value.Name,
-                            Alias = value.Alias,
-                            Color = value.Color,
-                            IsPreSelected = value.IsPreSelected,
-                            DisplayOrder = value.DisplayOrder,
-                            QuantityInfo = value.Quantity,
-                            IsEssential = value.IsEssential
-                        };
-
-                        // If the attribute value is pre-selected, it means that it's the default value chosen even if the user hasn't selected any value for this attribute.
-                        // That means we have to find the preselected values, which is what we do in here, and then we call AddVariant() for the so-called default aka preselected attribute values,
-                        // so that later, if all the preselected attribute values are part of a specific attribute selection, we can then retrieve the combination by using this selection made of all the preselected values.
-                        // If you don't try to determine all the preselected values, then it'd be impossible on the first load to determine if any product variant combination matches the default selected attribute values,
-                        // so that we can adjust price of the product and other properties accordingly.
-                        if (value.IsPreSelected)
-                        {
-                            weightAdjustment += value.WeightAdjustment;
-                        }
-
-                        return valueVm;
-                    })
-                    .OrderBy(x => x.DisplayOrder)
-                    .ThenBy(x => x.Name)
-                    .ToList();
-
-                attributeVm.Values = attrValueVms
-                    .Select(x => (ChoiceItemModel)x)
-                    .ToList();
-            }
-
-            // model.ProductVariantAttributes.Add(attributeVm);
-        }
-
-        if (query != null && (query.Variants.Count > 0))
-        {
-            // await PrepareProductSummaryAttributeCombinationModelAsync(product, model, ctx);
-        }
-        else
-        {
-            model.Weight += weightAdjustment;
-        }
-    }
+    // private async Task MapProductSummaryAttributesAsync(Product product, ProductSummaryItemModel model,
+    //     ProductSummaryItemContext ctx)
+    // {
+    //     var batchContext = ctx.LazyProductContext;
+    //     var query = ctx.ProductVariantQuery;
+    //     var attributes = await batchContext.EssentialAttributes.GetOrLoadAsync(model.Id);
+    //     var weightAdjustment = 0m;
+    //     var valueCountDict = await _productAttributeMaterializer.GetEssentialVariantAttributeValueCountsAsync(false);
+    //     foreach (var attribute in attributes)
+    //     {
+    //         var attributeVm = new ProductVariantAttributeModel()
+    //         {
+    //             Id = attribute.Id,
+    //             ProductId = attribute.ProductId,
+    //             ProductAttributeId = attribute.ProductAttributeId,
+    //             ProductVariantAttribute = attribute,
+    //             Alias = attribute.ProductAttribute.Alias,
+    //             Name = attribute.ProductAttribute.Name,
+    //             Description = attribute.ProductAttribute.Description,
+    //             TextPrompt = attribute.ProductAttribute.TextPrompt,
+    //             IsRequired = attribute.IsRequired,
+    //             AttributeControlType = attribute.AttributeControlType,
+    //             IsActive = attribute.IsActive,
+    //             TotalAttributeCount = valueCountDict.Get(attribute.Id)
+    //         };
+    //         if (query.Variants.Count != 0)
+    //         {
+    //             // we work on the 'variant' attribute level in here, not just attributes.
+    //             var selectedAttribute = query.Variants.FirstOrDefault(x =>
+    //                 x.AttributeId == attribute.Id
+    //                 && x.ProductId == attribute.ProductId
+    //                 && x.VariantAttributeId == attribute.Id
+    //                 && x.AttributeId == attribute.ProductAttributeId);
+    //
+    //             if (selectedAttribute != null)
+    //             {
+    //             }
+    //         }
+    //
+    //         if (attribute.IsListTypeAttribute())
+    //         {
+    //             List<ProductVariantAttributeValueModel> attrValueVms = attribute
+    //                 .ProductVariantAttributeValues
+    //                 .Select(value =>
+    //                 {
+    //                     var valueVm = new ProductVariantAttributeValueModel()
+    //                     {
+    //                         Id = value.Id,
+    //                         ProductVariantAttributeValue = value,
+    //                         PriceAdjustment = string.Empty,
+    //                         Name = value.Name,
+    //                         Alias = value.Alias,
+    //                         Color = value.Color,
+    //                         IsPreSelected = value.IsPreSelected,
+    //                         DisplayOrder = value.DisplayOrder,
+    //                         QuantityInfo = value.Quantity,
+    //                         IsEssential = value.IsEssential
+    //                     };
+    //
+    //                     // If the attribute value is pre-selected, it means that it's the default value chosen even if the user hasn't selected any value for this attribute.
+    //                     // That means we have to find the preselected values, which is what we do in here, and then we call AddVariant() for the so-called default aka preselected attribute values,
+    //                     // so that later, if all the preselected attribute values are part of a specific attribute selection, we can then retrieve the combination by using this selection made of all the preselected values.
+    //                     // If you don't try to determine all the preselected values, then it'd be impossible on the first load to determine if any product variant combination matches the default selected attribute values,
+    //                     // so that we can adjust price of the product and other properties accordingly.
+    //                     if (value.IsPreSelected)
+    //                     {
+    //                         weightAdjustment += value.WeightAdjustment;
+    //                     }
+    //
+    //                     return valueVm;
+    //                 })
+    //                 .OrderBy(x => x.DisplayOrder)
+    //                 .ThenBy(x => x.Name)
+    //                 .ToList();
+    //
+    //             attributeVm.Values = attrValueVms
+    //                 .Select(x => (ChoiceItemModel)x)
+    //                 .ToList();
+    //         }
+    //
+    //         // model.ProductVariantAttributes.Add(attributeVm);
+    //     }
+    //
+    //     if (query != null && (query.Variants.Count > 0))
+    //     {
+    //         // await PrepareProductSummaryAttributeCombinationModelAsync(product, model, ctx);
+    //     }
+    //     else
+    //     {
+    //         model.Weight += weightAdjustment;
+    //     }
+    // }
 
 
     // private async Task PrepareProductSummaryAttributeCombinationModelAsync(Product product, ProductCombinationMap model,
@@ -405,8 +405,8 @@ public partial class CatalogHelper
                     {
                         // Url = await _mediaService.GetMediaUrlAsync(image),
                         Alt = image?.Alt,
-                        Width = image?.Width,
-                        Height = image?.Height,
+                        Width = image.Width,
+                        Height = image.Height,
                     }
                 };
 

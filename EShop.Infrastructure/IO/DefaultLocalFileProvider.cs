@@ -1,3 +1,4 @@
+using System.Globalization;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.FileSystem;
 using EShop.Infrastructure.Utilities;
@@ -24,7 +25,7 @@ public class DefaultLocalFileProvider : PhysicalFileProvider, ILocalFileProvider
         path = path
             .Replace("~/", string.Empty)
             .TrimStart('/');
-        var pathEnd = path.EndsWith('/') ? Path.DirectorySeparatorChar.ToString() : string.Empty;
+        var pathEnd = path.EndsWith('/') ? Path.DirectorySeparatorChar.ToString(CultureInfo.InvariantCulture) : string.Empty;
 
         return Path.Combine(Root, path) + pathEnd;
     }

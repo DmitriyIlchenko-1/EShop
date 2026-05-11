@@ -124,8 +124,8 @@ public partial class CatalogHelper
                     {
                         Id = b.Id,
                         Alt = image?.Alt,
-                        Height = image?.Height,
-                        Width = image?.Width,
+                        Height = image.Height,
+                        Width = image.Width,
                         Url = await _urlService.GetActiveSlugAsync(b.Id, b.Name)
                     }
                 };
@@ -423,7 +423,6 @@ public partial class CatalogHelper
             {
                 SpecificationAttributeId = x.SpecificationAttributeOption.SpecificationAttributeId,
                 SpecificationAttributeName = x.SpecificationAttributeOption.SpecificationAttribute.Name,
-                Essential = x.SpecificationAttributeOption.SpecificationAttribute.IsEssential,
                 SpecificationAttributeOption = x.SpecificationAttributeOption.Name
             })
             .ToList();
