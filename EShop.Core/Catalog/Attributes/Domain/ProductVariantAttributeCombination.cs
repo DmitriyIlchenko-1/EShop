@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Common.Domain;
 using EShop.Infrastructure.Domain;
@@ -44,13 +45,10 @@ public class ProductVariantAttributeCombination : BaseEntity
 
     public string ManufacturerPartNumber { get; set; }
 
-    public decimal? Price { get; set; }
-    public decimal? OldPrice { get; set; }
-    public decimal? SpecialPrice { get; set; }
-    public DateTime? SpecialPriceEnd { get; set; }
-
-    public DateTime? SpecialPriceStarts { get; set; }
+    public decimal Price { get; set; }
+ 
     public int HashCode { get; set; }
+    [Column(TypeName = "jsonb")]
     public string RawAttributes { get; set; }
 
     public Product Product { get; set; }

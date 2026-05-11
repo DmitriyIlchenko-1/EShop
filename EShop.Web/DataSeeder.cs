@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Categories.Domain;
+using EShop.Core.Catalog.Configuration;
 using EShop.Core.Data;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Configuration.Domain;
@@ -36,6 +37,7 @@ public class DataSeeder
 
         await _dbContext.Database.EnsureDeletedAsync();
         await _dbContext.Database.MigrateAsync();
+        await _dbContext.Database.EnsureCreatedAsync();
          
         await SeedUsersAsync();
         await SeedBrandsAsync();
@@ -61,7 +63,27 @@ public class DataSeeder
         };
 
         await _dbContext.Settings.AddAsync(performanceSettings);
+      
+        
+        var catalogSetting = new Setting()
+        {
+            Name = "CatalogSettings.ShowDescriptionProductList",
+            Value = "true"
+        };
+        var catalogSetting2 = new Setting()
+        {
+            Name = "CatalogSettings.ShowColorAttributesInLists",
+            Value = "true"
+        };
+        var catalogSetting3 = new Setting()
+        {
+            Name = "CatalogSettings.ShowReviewsProductList",
+            Value = "true"
+        };
+      
+        await _dbContext.Settings.AddRangeAsync([catalogSetting, catalogSetting2, catalogSetting3]);
         await _dbContext.SaveChangesAsync();
+         
     }
 
     private async Task SeedUsersAsync()
@@ -224,7 +246,7 @@ public class DataSeeder
                     Published = true,
                     ShowOnHomePage = true,
                     AttributeCombinationRequired = true,
-                    Price = decimal.Parse((new Random().Next(10, 1000) + new Random().NextDouble())
+                    Price = i == 1 ? 0 : decimal.Parse((new Random().Next(10, 1000) + new Random().NextDouble())
                         .ToString()), // Random price
                     Weight = (decimal)new Random().NextDouble() * 10,
                     Height = (decimal)new Random().NextDouble() * 5,
@@ -734,7 +756,7 @@ public class DataSeeder
                     x.ProductAttributeId == productVariantAttribute.ProductAttributeId);
                 if (attributeOptionsSet != null && attributeOptionsSet.ProductAttributeOptions != null)
                 {
-                    bool preselected = false;
+                    bool preselected = true;
                     foreach (var option in attributeOptionsSet.ProductAttributeOptions)
                     {
                         _dbContext.ProductVariantAttributeValues.Add(new ProductVariantAttributeValue
@@ -807,7 +829,7 @@ public class DataSeeder
 // product 1: attributeId: [109,110,111, 112] : valueidL 325, 328, 331, 334  (selection)
 // hashcode: -64235192
             combination.HashCode = selection.GetHashCode();
-            combination.RawAttributes = string.Join(",", rawAttributes);
+            combination.RawAttributes = "[{\"Key\":5,\"Value\":[18]},{\"Key\":4,\"Value\":[22]}]";
             _dbContext.ProductVariantAttributeCombinations.Add(combination);
         }
 

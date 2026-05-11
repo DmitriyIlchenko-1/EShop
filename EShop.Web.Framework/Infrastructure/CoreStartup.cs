@@ -2,6 +2,7 @@ using Autofac;
 using EShop.Core.Catalog.Attributes.Modeling;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Brands.Domain;
+using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Catalog.Products.Services;
 using EShop.Core.Common.Services;
 using EShop.Core.Content.Media.Services;
@@ -63,7 +64,11 @@ public class CoreStartup : BaseStartup
         services.AddSingleton<IThemeRegistry, DefaultThemeRegistry>();
         services.AddScoped<IThemeVariableService, DefaultThemeVariableService>();
         services.AddScoped<IViewHelper, DefaultViewHelper>();
-         services.AddScoped<IRequestCache, DefaultRequestCache>();
+        services.AddSingleton<IEShopFileProvider, DefaultEShopFileProvider>();
+        services.AddScoped<IRequestCache, DefaultRequestCache>();
+        services.AddScoped<IProductPriceService, DefaultProductPriceService>();
+        services.AddScoped<IPriceCalculatorFactory, DefaultPriceCalculatorFactory>();
+        services.AddScoped<IDiscountService, DefaultDiscountService>();
         /*
          * Caching
          */
@@ -98,5 +103,6 @@ public class CoreStartup : BaseStartup
     public override void ConfigureContainer(ContainerBuilder builder)
     {
         builder.RegisterModule(new DbHandlerModule());
+        builder.RegisterModule(new PriceModule());
     }
 }

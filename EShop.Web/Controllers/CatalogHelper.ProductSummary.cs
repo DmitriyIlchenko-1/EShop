@@ -6,6 +6,7 @@ using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Products;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Catalog.Products.Extensions;
+using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Content.Media.Domain;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
@@ -19,31 +20,35 @@ namespace EShop.Web.Controllers;
 public partial class CatalogHelper
 {
     public virtual async Task<ProductSummaryModel> PrepareProductSummaryModelAsync(IList<Product> products,
-        ProductSummaryMappingSettings mappingSettings, ProductVariantQuery? variantQuery)
+        ProductVariantQuery? variantQuery, ProductSummaryMappingSettings mappingSettings)
     {
         Guard.NotNull(products);
         if (!(products.Count > 0))
             return ProductSummaryModel.Empty;
-        mappingSettings ??= new ProductSummaryMappingSettings();
+
 
         var model = new ProductSummaryModel();
         var lazyProductCtx = _productService.CreateProductBatchContext(products);
         var itemCtx = new ProductSummaryItemContext(model)
         {
             LazyProductContext = lazyProductCtx,
-            MappingSettings = mappingSettings,
+            MappingSettings = mappingSettings ??= new ProductSummaryMappingSettings(),
             ProductVariantQuery = variantQuery,
         };
 
         if (mappingSettings.MapColorAttributes)
         {
-            //TODO: Can we cache product batch context results? look into this.
             await lazyProductCtx.Attributes.LoadAllAsync();
-            await PreloadAttributeCombinationsAsync(products, itemCtx);
+        }
+
+        if (mappingSettings.MapPictures)
+        {
+            await lazyProductCtx.ProductMedia.LoadAllAsync();
         }
 
         if (mappingSettings.MapBrands)
         {
+            //do not change to use lazyProductCtx. Leave this as it is! 
             var brandIds = products
                 .Select(p => p.BrandId ?? 0)
                 .Where(x => x != 0)
@@ -62,54 +67,6 @@ public partial class CatalogHelper
         return model;
     }
 
-    private async Task PreloadAttributeCombinationsAsync(IEnumerable<Product> products,
-        ProductSummaryItemContext ctx)
-    {
-        var lazyProductContext = ctx.LazyProductContext;
-        var query = ctx.ProductVariantQuery;
-        ctx.ProductAttributeSelections = new Dictionary<int, ProductVariantAttributeSelection>();
-        foreach (var product in products)
-        {
-            var attributes = await lazyProductContext.EssentialAttributes.GetOrLoadAsync(product.Id);
-            Console.WriteLine();
-            foreach (var attribute in attributes)
-            {
-                Console.WriteLine();
-                foreach (var value in attribute.ProductVariantAttributeValues)
-                {
-                    if (value.IsPreSelected)
-                    {
-                        //TODO: do we need to see if VariantQuery already has a value that matches AttributeId, ProductId and so on so we can avoid adding these default variants when not necessary?
-                        // It doesn't break the logic, it's just, I wonder if the overhead of having this kind of check is worth it rather than just add the defaults and then grab the first one
-                        // (firstOrDefault) in CreateAttributeSelectionAsync
-                        query.AddVariant(new ProductVariantQueryItem()
-                        {
-                            AttributeId = attribute.ProductAttributeId,
-                            ProductId = product.Id,
-                            Value = value.Id.ToString(),
-                            VariantAttributeId = attribute.Id
-                        });
-                    }
-                }
-            }
-//avg - 700
-// cold 4.38
-
-
-//avg - 700
-// cold 4.38
-
-            var sltAttrs =
-                _productAttributeMaterializer.CreateAttributeSelectionAsync(query, attributes, product.Id);
-            ctx.ProductAttributeSelections.Add(product.Id, sltAttrs);
-        }
-
-        //This is the prefetch method, that gets all the combination based on the pre selected values meaning it gets only one combination for one product e.g. 30 product = 30 combinations. 
-        await _productAttributeMaterializer.PrefetchProductVariantAttributeCombinationsAsync(
-            ctx.ProductAttributeSelections);
-        await _productAttributeMaterializer.PrefetchCombinationAvailabilityInfosAsync(ctx.ProductAttributeSelections);
-    }
-
     private async Task<ProductSummaryItemModel> MapProductSummaryItem(Product product, ProductSummaryItemContext ctx)
     {
         var lazyContext = ctx.LazyProductContext;
@@ -118,25 +75,52 @@ public partial class CatalogHelper
         {
             Id = product.Id,
             Name = product.Name,
-            // SeName = await _urlService.GetActiveSlugAsync(product.Id, product.Name),
+            SeName = await _urlService.GetActiveSlugAsync(product.Id, product.Name),
         };
 
+        //ready
         if (settings.MapShortDescription)
         {
             item.ShortDescription = product.ShortDescription;
         }
 
+        //ready
         if (settings.MapColorAttributes)
         {
-            await MapProductSummaryAttributesAsync(product, item, ctx);
+            var attributes = await lazyContext.Attributes.GetOrLoadAsync(product.Id);
+            if (attributes.Any())
+            {
+                var colorAttributes = attributes
+                    .Where(x => x.IsListTypeAttribute())
+                    .SelectMany(x => x.ProductVariantAttributeValues)
+                    .Where(x => x.Color.HasValue() &&
+                                x.Color.Equals("transparent", StringComparison.OrdinalIgnoreCase))
+                    .Take(20)
+                    .Select(x => new ProductSummaryItemModel.ColorAttributeValue
+                    {
+                        Id = x.Id,
+                        AttributeId = x.ProductVariantAttributeId,
+                        Color = x.Color,
+                        Name = x.Name
+                    })
+                    .ToList();
+                item.ColorAttributeValues = colorAttributes;
+
+               
+                
+            }
         }
 
         if (settings.MapPrices)
         {
-            var price = _productPricingService.CalculateProductPrice(product);
+            var price = await _productPriceService.CalculatePriceAsync(new PriceCalculatorContext()
+            {
+                Product = product
+            });
             MapPriceModel(price, item.PriceModel);
         }
 
+        //ready
         if (settings.MapBrands)
         {
             if (ctx.Brands.TryGetValue(product.BrandId ?? 0, out var brand) && brand != null)
@@ -147,11 +131,12 @@ public partial class CatalogHelper
 
         if (settings.MapPictures)
         {
-            // item.Images = await PrepareProductSummaryImageModelAsync(product);
+            var productMedia = await lazyContext.ProductMedia.GetOrLoadAsync(product.Id);
+            item.Images = await PrepareProductSummaryImageModelAsync(product, productMedia);
         }
 
 
-        if (true)
+        if (settings.MapDimensions && (product.Width != 0 || product.Height != 0 || product.Length != 0))
         {
             item.Dimensions = string.Format(CultureInfo.InvariantCulture,
                 CatalogMessages.Product.DimensionValues,
@@ -281,12 +266,12 @@ public partial class CatalogHelper
                     .ToList();
             }
 
-            model.ProductVariantAttributes.Add(attributeVm);
+            // model.ProductVariantAttributes.Add(attributeVm);
         }
 
         if (query != null && (query.Variants.Count > 0))
         {
-            await PrepareProductSummaryAttributeCombinationModelAsync(product, model, ctx);
+            // await PrepareProductSummaryAttributeCombinationModelAsync(product, model, ctx);
         }
         else
         {
@@ -295,79 +280,79 @@ public partial class CatalogHelper
     }
 
 
-    private async Task PrepareProductSummaryAttributeCombinationModelAsync(Product product, ProductCombinationMap model,
-        ProductSummaryItemContext ctx)
-    {
-        var batchContext = ctx.LazyProductContext;
-        var parent = ctx.Model;
-        var showAvailabilityInfo = product.CombinationDisplayBehaviour ==
-                                   CombinationDisplayBehaviour.HighlightUnavailableWithGrey;
-        var attributes = await batchContext.EssentialAttributes.GetOrLoadAsync(product.Id);
-        ctx.ProductAttributeSelections.TryGetValue(product.Id, out var selection);
-        _productAttributeMaterializer.TryGetPrefetchedCombination(product.Id, selection, out var combination);
-
-        var selectedValues =
-            _productAttributeMaterializer.MaterializeProductVariantAttributeValues(selection,
-                attributes);
-        var selectedValueIds = selectedValues
-            .Select(x => x.Id)
-            .ToArray();
-        model.SelectedCombination = combination;
-
-        if (combination != null && !combination.IsActive)
-        {
-            model.AdjustForCombinationActive(isActive: false);
-        }
-
-        product.MergeDataWithCombination(combination);
-
-        foreach (var attribute in model.ProductVariantAttributes.Where(x => x.IsActive))
-        {
-            //any value of the attribute intersects with any user chosen value for this attribute.
-            // In other words, has the user selected a particular value for this attribute? 
-            var updatePreselection = selectedValueIds.Length > 0 && selectedValueIds
-                .Intersect(attribute.Values.Select(x => x.Id))
-                .Any();
-
-
-            foreach (ProductVariantAttributeValueModel value in
-                     attribute.Values.Cast<ProductVariantAttributeValueModel>())
-            {
-                var isSelected = selectedValueIds.Contains(value.Id);
-                if (updatePreselection)
-                {
-                    //set to false or true depending on which value the user has chosen. 
-                    value.IsPreSelected = isSelected;
-                }
-
-                if (isSelected)
-                {
-                    model.AdjustForAttributeValue(value);
-                }
-
-                if (showAvailabilityInfo)
-                {
-                    var availabilityInfo = await _productAttributeMaterializer.IsCombinationAvailableAsync(
-                        product,
-                        attributes,
-                        selectedValues,
-                        value.ProductVariantAttributeValue);
-                    if (availabilityInfo != null)
-                    {
-                        value.IsUnavailable = true;
-                        if (availabilityInfo.IsOutOfStock && availabilityInfo.IsActive)
-                        {
-                            value.Title = "Out of Stock";
-                        }
-                        else
-                        {
-                            value.Title = "Not Available";
-                        }
-                    }
-                }
-            }
-        }
-    }
+    // private async Task PrepareProductSummaryAttributeCombinationModelAsync(Product product, ProductCombinationMap model,
+    //     ProductSummaryItemContext ctx)
+    // {
+    //     var batchContext = ctx.LazyProductContext;
+    //     var parent = ctx.Model;
+    //     var showAvailabilityInfo = product.CombinationDisplayBehaviour ==
+    //                                CombinationDisplayBehaviour.HighlightUnavailableWithGrey;
+    //     var attributes = await batchContext.EssentialAttributes.GetOrLoadAsync(product.Id);
+    //     ctx.ProductAttributeSelections.TryGetValue(product.Id, out var selection);
+    //     _productAttributeMaterializer.TryGetPrefetchedCombination(product.Id, selection, out var combination);
+    //
+    //     var selectedValues =
+    //         _productAttributeMaterializer.MaterializeProductVariantAttributeValues(selection,
+    //             attributes);
+    //     var selectedValueIds = selectedValues
+    //         .Select(x => x.Id)
+    //         .ToArray();
+    //     model.SelectedCombination = combination;
+    //
+    //     if (combination != null && !combination.IsActive)
+    //     {
+    //         model.AdjustForCombinationActive(isActive: false);
+    //     }
+    //
+    //     product.MergeDataWithCombination(combination);
+    //
+    //     foreach (var attribute in model.ProductVariantAttributes.Where(x => x.IsActive))
+    //     {
+    //         //any value of the attribute intersects with any user chosen value for this attribute.
+    //         // In other words, has the user selected a particular value for this attribute? 
+    //         var updatePreselection = selectedValueIds.Length > 0 && selectedValueIds
+    //             .Intersect(attribute.Values.Select(x => x.Id))
+    //             .Any();
+    //
+    //
+    //         foreach (ProductVariantAttributeValueModel value in
+    //                  attribute.Values.Cast<ProductVariantAttributeValueModel>())
+    //         {
+    //             var isSelected = selectedValueIds.Contains(value.Id);
+    //             if (updatePreselection)
+    //             {
+    //                 //set to false or true depending on which value the user has chosen. 
+    //                 value.IsPreSelected = isSelected;
+    //             }
+    //
+    //             if (isSelected)
+    //             {
+    //                 model.AdjustForAttributeValue(value);
+    //             }
+    //
+    //             if (showAvailabilityInfo)
+    //             {
+    //                 var availabilityInfo = await _productAttributeMaterializer.IsCombinationAvailableAsync(
+    //                     product,
+    //                     attributes,
+    //                     selectedValues,
+    //                     value.ProductVariantAttributeValue);
+    //                 if (availabilityInfo != null)
+    //                 {
+    //                     value.IsUnavailable = true;
+    //                     if (availabilityInfo.IsOutOfStock && availabilityInfo.IsActive)
+    //                     {
+    //                         value.Title = "Out of Stock";
+    //                     }
+    //                     else
+    //                     {
+    //                         value.Title = "Not Available";
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
 
     public async Task<BrandSummaryModel> MapBrandSummaryModelAsync(Brand productBrand,
@@ -386,11 +371,11 @@ public partial class CatalogHelper
         return model;
     }
 
-    protected void MapPriceModel(CalculatedProductPrice price, ProductSummaryPriceModel model)
+    protected void MapPriceModel(ProductPriceContext price, ProductSummaryPriceModel model)
     {
-        model.Price = price.Price;
+        model.FinalPrice = price.FinalPrice;
         model.OldPrice = price.OldPrice;
-        model.PercentOfSaving = price.PercentOfSaving;
+        model.PercentOfSaving = price.PriceDiscountContext.PercentOfSaving;
     }
 
     public async Task<IList<CategorySummaryModel>> PrepareCategorySummaryModelAsync(IList<Category> categories)
@@ -430,28 +415,33 @@ public partial class CatalogHelper
             .ToListAsync();
     }
 
-    protected virtual async Task<IList<MediaModel>> PrepareProductSummaryImageModelAsync(Product product)
+    protected virtual async Task<IList<MediaModel>> PrepareProductSummaryImageModelAsync(Product product, IEnumerable<ProductMedia> mediaFiles)
     {
-        ArgumentNullException.ThrowIfNull(product);
-        //TODO: add caching.
-
-        async Task<MediaModel> MapToMediaModelAsync(MediaFile mediaFile)
+        if (!mediaFiles.Any())
         {
+            return [];
+        }
+        //TODO: add caching.
+        
+
+        async Task<MediaModel> MapToMediaModelAsync(ProductMedia productMedia)
+        {
+            var mediaFile = productMedia.MediaFile;
             var mediaUrl = await _mediaService.GetMediaUrlAsync(mediaFile);
             return new MediaModel()
             {
-                Url = mediaUrl,
+                FileName = mediaFile.FileName,
+                MimeType = mediaFile.MimeType,
+                MediaType = mediaFile.MediaType,
+                Size = mediaFile.Size,
                 Alt = mediaFile.Alt,
                 Width = mediaFile.Width,
                 Height = mediaFile.Height,
+                Url = mediaUrl
             };
         }
-
-        var images =
-            await _mediaService.GetFilesByProductIdAsync(product.Id,
-                999999,
-                false);
-        var imageModels = await images
+        
+        var imageModels = await mediaFiles
             .SelectAsync(async image => await MapToMediaModelAsync(image))
             .ToListAsync();
         return imageModels;
@@ -464,33 +454,30 @@ public partial class CatalogHelper
         var settings = new ProductSummaryMappingSettings()
         {
             MapPictures = true,
-            MapPrices = true
+            MapPrices = true,
+            MapBrands = true
         };
-        //TODO: temp
-        // settings.MapShortDescription = _catalogSettings.ShowDescriptionProductList;
-        // settings.MapAttributes = _catalogSettings.ShowVariantsProductList;
-        // settings.MapReviews = _catalogSettings.ShowReviewsProductList;
-        // settings.MapDimensions = _catalogSettings.ShowDescriptionProductList;
-        // settings.MapBrands = _catalogSettings.ShowBrandProductList;
-        // settings.MapVariants = _catalogSettings.ShowVariantsProductList;
-        //
-        // conf?.Invoke(settings);
+        settings.MapShortDescription = _catalogSettings.ShowDescriptionProductList;
+        settings.MapReviews = _catalogSettings.ShowReviewsProductList;
+        settings.MapDimensions = _catalogSettings.ShowDimensionsInLists;
+        settings.MapColorAttributes = _catalogSettings.ShowColorAttributesInLists;
+
+        conf?.Invoke(settings);
         return settings;
     }
 
     public class ProductSummaryMappingSettings
     {
-        public bool MapPrices { get; set; } = true;
-        public bool MapPictures { get; set; } = true;
-        public bool MapDimensions { get; set; } = true;
-        public bool MapColorAttributes { get; set; } = true;
+        //TODO: Remove =true from all of these after testing
+        public bool MapPrices { get; set; } 
+        public bool MapPictures { get; set; }  
+        public bool MapDimensions { get; set; } 
+        public bool MapColorAttributes { get; set; }  
 
-        public bool MapSpecificationAttributes { get; set; } = true;
+        public bool MapSpecificationAttributes { get; set; }  
+        public bool MapBrands { get; set; } 
 
-        public bool MapAttributes { get; set; } = true;
-        public bool MapBrands { get; set; } = true;
-
-        public bool MapShortDescription { get; set; } = true;
-        public bool MapReviews { get; set; } = true;
+        public bool MapShortDescription { get; set; }  
+        public bool MapReviews { get; set; } 
     }
 }

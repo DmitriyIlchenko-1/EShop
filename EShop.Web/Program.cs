@@ -6,6 +6,7 @@ using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Catalog.Products.Extensions;
+using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Common.Services;
 using EShop.Core.Data;
 using EShop.Core.Data.DbHandlers;
@@ -58,6 +59,18 @@ var roleManager = scope.Resolve<RoleManager<Role>>();
 var dataSeeder = new DataSeeder(dbContext, userManager, roleManager);
 await dataSeeder.SeedDataAsync();
 
-
- 
+// var scope = EngineContext
+//     .Create()
+//     .ChildLifetimeScopeAccessor.GetChildLifetimeScope;
+// var factory = new DefaultPriceCalculatorFactory(scope);
+// var calculators = factory.Create(new PriceCalculatorContext());
+//
+// var dispatcher = new DefaultCalculatorDispatcher(calculators.ToArray(), new PriceCalculatorContext()
+// {
+//     Product = new Product()
+//     {
+//         Price = 999m
+//     }
+// });
+// await dispatcher.InvokeAsync();
 app.Run();

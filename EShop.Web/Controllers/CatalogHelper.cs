@@ -5,6 +5,7 @@ using EShop.Core.Catalog.Configuration;
 using EShop.Core.Catalog.Products;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Catalog.Products.Extensions;
+using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Catalog.Products.Services;
 using EShop.Core.Common.Services;
 using EShop.Core.Content.Media.Services;
@@ -23,7 +24,7 @@ public partial class CatalogHelper
 {
     private readonly IMediaService _mediaService;
     private readonly IProductService _productService;
-    private readonly IProductPricingService _productPricingService;
+    private readonly IProductPriceService _productPriceService;
     private readonly IProductAttributeMaterializer _productAttributeMaterializer;
     private readonly IDeliveryTimeService _deliveryTimeService;
     private readonly IDateTimeService _dateTimeService;
@@ -32,13 +33,12 @@ public partial class CatalogHelper
     private readonly ApplicationDbContext _db;
     private readonly CatalogSettings _catalogSettings;
 
-    public CatalogHelper(IMediaService mediaService, IProductPricingService productPricingService,
+    public CatalogHelper(IMediaService mediaService,
         IProductService productService, IProductAttributeMaterializer productAttributeMaterializer,
         IDeliveryTimeService deliveryTimeService, ApplicationDbContext db, IDateTimeService dateTimeService,
-        IUrlService urlService, CatalogSettings catalogSettings, IBrandService brandService)
+        IUrlService urlService, CatalogSettings catalogSettings, IBrandService brandService, IProductPriceService productPriceService)
     {
         _mediaService = mediaService;
-        _productPricingService = productPricingService;
         _productService = productService;
         _productAttributeMaterializer = productAttributeMaterializer;
         _deliveryTimeService = deliveryTimeService;
@@ -47,6 +47,7 @@ public partial class CatalogHelper
         _urlService = urlService;
         _catalogSettings = catalogSettings;
         _brandService = brandService;
+        _productPriceService = productPriceService;
     }
 
     public ProductDetailsModelContext CreateModelContext(Product product, ProductVariantQuery query)
@@ -360,13 +361,13 @@ public partial class CatalogHelper
         model.ReviewsCount = product.ApprovedReviewCount;
 
 
-        model.CalculatedProductPrice = combination is { Price: not null }
-            ? _productPricingService.CalculateProductPrice(price: combination.Price.Value,
-                oldPrice: combination.OldPrice,
-                specialPrice: combination.SpecialPrice,
-                specialPriceEnd: combination.SpecialPriceEnd,
-                specialPriceStart: combination.SpecialPriceStarts)
-            : _productPricingService.CalculateProductPrice(product);
+        // model.CalculatedProductPrice = combination is { Price: not null }
+        //     ? _productPricingService.CalculateProductPrice(price: combination.Price.Value,
+        //         oldPrice: combination.OldPrice,
+        //         specialPrice: combination.SpecialPrice,
+        //         specialPriceEnd: combination.SpecialPriceEnd,
+        //         specialPriceStart: combination.SpecialPriceStarts)
+        //     : _productPricingService.CalculateProductPrice(product);
 
         model.Sku = combination is { Sku: not null } ? combination.Sku : product.Sku;
         model.Gtin = combination is { Sku: not null } ? combination.Sku : product.Sku;
@@ -394,20 +395,20 @@ public partial class CatalogHelper
 
     private async Task PrepareRelatedProductModelAsync(ProductDetailsModelContext context, ProductDetailVm model)
     {
-        ArgumentNullException.ThrowIfNull(model);
-        ArgumentNullException.ThrowIfNull(context);
-        var product = context.Product;
-        var batchContext = context.LazyContext;
-        var relatedProducts = await batchContext.RelatedProducts.GetOrLoadAsync(product.Id);
-
-        foreach (ProductLink productLink in relatedProducts)
-        {
-            var relProduct = productLink.LinkedProduct;
-            var relProductVm = ProductThumbnail.FromProduct(relProduct);
-            //relProductVm.ThumbnailUrl = _mediaService.GetMediaUrl(relProduct.ThumbnailImage);
-            relProductVm.CalculatedProductPrice = _productPricingService.CalculateProductPrice(relProduct);
-            model.RelatedProducts.Add(relProductVm);
-        }
+        // ArgumentNullException.ThrowIfNull(model);
+        // ArgumentNullException.ThrowIfNull(context);
+        // var product = context.Product;
+        // var batchContext = context.LazyContext;
+        // var relatedProducts = await batchContext.RelatedProducts.GetOrLoadAsync(product.Id);
+        //
+        // foreach (ProductLink productLink in relatedProducts)
+        // {
+        //     var relProduct = productLink.LinkedProduct;
+        //     var relProductVm = ProductThumbnail.FromProduct(relProduct);
+        //     //relProductVm.ThumbnailUrl = _mediaService.GetMediaUrl(relProduct.ThumbnailImage);
+        //     relProductVm.CalculatedProductPrice = _productPricingService.CalculateProductPrice(relProduct);
+        //     model.RelatedProducts.Add(relProductVm);
+        // }
     }
 
     private async Task PrepareProductSpecificationModelAsync(ProductDetailsModelContext context,

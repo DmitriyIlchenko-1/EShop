@@ -14,11 +14,9 @@ public class SpecificationAttribute : BaseEntity
 
     public int DisplayOrder { get; set; }
 
-    public bool IsEssential { get; set; }
-
     public string Name { get; set; }
 
-    public bool ShowOnProductPage { get; set; }
+    
 
     public ICollection<SpecificationAttributeOption> SpecificationAttributeOptions { get; set; }
 }

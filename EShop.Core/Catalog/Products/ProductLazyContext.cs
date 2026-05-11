@@ -3,6 +3,7 @@ using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Products.Domain;
+using EShop.Core.Content.Media.Domain;
 using EShop.Core.Data;
 using EShop.Infrastructure.Collections;
 using EShop.Infrastructure.Extensions;
@@ -21,11 +22,12 @@ namespace EShop.Core.Catalog.Products;
 public class ProductLazyContext
 {
     private readonly List<int> _productIds = [];
+    private readonly bool _includeHidden;
     private readonly ApplicationDbContext _db;
     protected readonly IComponentContext _componentContext;
 
     private LazyMultimap<ProductVariantAttribute> _attributes;
-    private LazyMultimap<ProductVariantAttribute> _essentialAttributes;
+    private LazyMultimap<ProductMedia> _productMedia;
     private LazyMultimap<ProductVariantAttributeCombination> _attributeCombinations;
     private LazyMultimap<ProductLink> _relatedProducts;
     private LazyMultimap<ProductSpecificationAttribute> _specifications { get; set; }
@@ -37,6 +39,7 @@ public class ProductLazyContext
         Guard.NotNull(componentContext);
         _db = db;
         _componentContext = componentContext;
+        _includeHidden = includeHidden;
 
         if (products != null)
         {
@@ -56,8 +59,7 @@ public class ProductLazyContext
     public LazyMultimap<ProductVariantAttribute> Attributes
         => _attributes ??= new LazyMultimap<ProductVariantAttribute>(LoadVariantAttributes, _productIds);
 
-    public LazyMultimap<ProductVariantAttribute> EssentialAttributes
-        => _essentialAttributes ??= new LazyMultimap<ProductVariantAttribute>(LoadEssentialVariantAttributes, _productIds);
+   
 
     public LazyMultimap<ProductSpecificationAttribute> ProductSpecification
         => _specifications ??=
@@ -65,38 +67,37 @@ public class ProductLazyContext
 
     public LazyMultimap<ProductLink> RelatedProducts
         => _relatedProducts ??= new LazyMultimap<ProductLink>(LoadRelatedProducts, _productIds);
+    
+    public LazyMultimap<ProductMedia> ProductMedia
+    => _productMedia ??= new LazyMultimap<ProductMedia>(LoadProductMedia, _productIds);
 
-
-    protected virtual async Task<MultiMap<int, ProductVariantAttribute>> LoadEssentialVariantAttributes(int[] ids)
+    protected virtual async Task<MultiMap<int, ProductMedia>> LoadProductMedia(int[] ids)
     {
-        if (Attributes.IsFullyLoaded)
-        {
-            return Attributes
-                .SelectMany(x => x.Value)
-                .Where(x => x.ProductVariantAttributeValues.Any(y => y.IsEssential))
-                .ToMultiMap(x => x.ProductId, x => x);
-        }
-
-        var attributes = await BuildVariantAttributeQuery(_db, ids, true).ToListAsync();
-        return attributes.ToMultiMap(x => x.ProductId, x => x);
-
+        return (await _db
+            .ProductMedias.AsNoTracking()
+            .Include(x => x.MediaFile)
+            .Where(x => ids.Contains(x.ProductId))
+            .OrderBy(x => x.DisplayOrder)
+            .ThenBy(x => x.ProductId)
+            .ToListAsync()).ToMultiMap(x => x.ProductId, x => x);
     }
+
+   
 
     private async Task<MultiMap<int, ProductVariantAttribute>> LoadVariantAttributes(int[] ids)
     {
-        var attributes = await BuildVariantAttributeQuery(_db, ids, false).ToListAsync();
+        var attributes = await BuildVariantAttributeQuery(_db, ids).ToListAsync();
         return attributes.ToMultiMap(x => x.ProductId, x => x);
     }
     
-    private static IQueryable<ProductVariantAttribute> BuildVariantAttributeQuery(ApplicationDbContext db, int[] ids, bool isEssential = false)
+    private static IQueryable<ProductVariantAttribute> BuildVariantAttributeQuery(ApplicationDbContext db, int[] ids)
     {
         return db
             .ProductVariantAttributes
             .AsNoTracking()
             .Include(x => x.ProductAttribute)
-            .Include(x => x.ProductVariantAttributeValues.Where(x => !isEssential || x.IsEssential))
+            .Include(x => x.ProductVariantAttributeValues)
             .Where(x => ids.Contains(x.ProductId))
-            .Where(x => !isEssential || x.ProductVariantAttributeValues.Any(y => y.IsEssential))
             .OrderBy(x => x.ProductId)
             .ThenBy(x => x.DisplayOrder);
     }
@@ -117,24 +118,23 @@ public class ProductLazyContext
         return relatedProducts.ToMultiMap(x => x.ProductId, x => x);
     }
 
+     
+
     private async Task<MultiMap<int, ProductSpecificationAttribute>> LoadSpecificationAttributes(int[] ids)
     {
         //TODO: cache the results
-        var specifications = await BuildSpecificationQuery(_db, ids, null)
+        var specifications = await BuildSpecificationQuery(_db, ids)
             .ToListAsync();
         return specifications.ToMultiMap(x => x.ProductId, x => x);
     }
 
-    private static IQueryable<ProductSpecificationAttribute> BuildSpecificationQuery(Data.ApplicationDbContext db,
-        int[] ids,
-        bool? essentialAttributes)
+    private static IQueryable<ProductSpecificationAttribute> BuildSpecificationQuery(ApplicationDbContext db,
+        int[] ids)
     {
         return db
             .ProductSpecificationAttributes
             .AsNoTracking()
-            .Where(x => ids.Contains(x.ProductId) &&
-                        x.SpecificationAttributeOption.SpecificationAttribute.IsEssential ||
-                        x.SpecificationAttributeOption.SpecificationAttribute.ShowOnProductPage)
+            .Where(x => ids.Contains(x.ProductId))
             .Include(x => x.SpecificationAttributeOption)
             .ThenInclude(x => x.SpecificationAttribute)
             .OrderBy(x => x.ProductId)

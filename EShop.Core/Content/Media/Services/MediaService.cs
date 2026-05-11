@@ -34,14 +34,14 @@ public class MediaService : IMediaService
         return DeleteMediaAsync(mediaFile.FileName);
     }
 
-    public async Task<IList<MediaFile>> GetMediaFilesByIdsAsync(int[] ids, bool track = false)
+    public async Task<ICollection<MediaFile>> GetMediaFilesByIdsAsync(int[] ids, bool track = false)
     {
         ArgumentNullException.ThrowIfNull(ids);
         if (ids.Length == 0)
         {
             return [];
         }
-
+        
         var result = await _db
             .MediaFiles.ApplyTracking(track)
             .Where(x => ids.Contains(x.Id))
@@ -52,29 +52,7 @@ public class MediaService : IMediaService
                 select entity).ToList();
     }
 
-    public async Task<List<MediaFile>> GetFilesByProductIdAsync(int productId, int count, bool track = false)
-    {
-        if (productId == 0 || count <= 0)
-        {
-            return [];
-        }
-
-        var query = _db.MediaFiles.AsQueryable();
-        if (!track)
-            query = query.AsNoTracking();
-
-        query = from p in query
-            join pm in _db.ProductMedias on p.Id equals pm.MediaId
-            orderby pm.DisplayOrder, pm.Id
-            where pm.ProductId == productId
-            select p;
-
-        var images = await query
-            .Take(count)
-            .ToListAsync();
-
-        return images;
-    }
+     
 
     public async Task<string> GetMediaUrlAsync(MediaFile mediaFile) =>
         mediaFile != null ? await GetMediaUrlAsync(mediaFile.FileName) : await GetMediaUrlAsync("not-found-image.png");

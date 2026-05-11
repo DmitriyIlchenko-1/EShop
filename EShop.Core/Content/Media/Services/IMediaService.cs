@@ -9,8 +9,8 @@ namespace EShop.Core.Content.Media.Services;
 /// </summary>
 public interface IMediaService
 {
-    Task<IList<MediaFile>> GetMediaFilesByIdsAsync(int[] ids, bool track);
-    Task<List<MediaFile>> GetFilesByProductIdAsync(int productId, int count, bool track);
+    Task<ICollection<MediaFile>> GetMediaFilesByIdsAsync(int[] ids, bool track);
+    
 
     Task<string> GetMediaUrlAsync(MediaFile mediaFile);
 

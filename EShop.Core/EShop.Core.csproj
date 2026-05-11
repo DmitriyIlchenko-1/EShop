@@ -6,7 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Checkout\Shipping\" />
         <Folder Include="Content\Menus\" />
         <Folder Include="Platform\Identity\External\" />
         <Folder Include="Platform\Infructructure\" />

@@ -26,9 +26,7 @@ public static class ProductDomainExtensions
         if (combination.Sku.HasValue())
             values.Add(nameof(Product.Sku), combination.Sku);
 
-        if (combination.Price.HasValue)
-            values.Add(nameof(Product.Price), combination.Price);
-        //map all price properties??
+        values.Add(nameof(Product.Price), combination.Price);
 
         if (combination.Gtin.HasValue())
             values.Add(nameof(Product.Gtin), combination.Gtin);

@@ -22,6 +22,12 @@ internal class ProductMap : IEntityTypeConfiguration<Product>
             .WithMany(x => x.Products)
             .HasForeignKey(x => x.BrandId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder
+            .HasMany<MediaFile>()
+            .WithMany()
+            .UsingEntity<ProductMedia>("Media_ProductMedia_Mapping");
+
     }
 }
 

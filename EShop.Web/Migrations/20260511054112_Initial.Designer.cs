@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EShop.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260423070846_Initial")]
+    [Migration("20260511054112_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -20,10 +20,40 @@ namespace EShop.Web.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "9.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Discount_ProductDiscount_Mapping", b =>
+                {
+                    b.Property<int>("DiscountId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("DiscountId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Discount_ProductDiscount_Mapping");
+                });
+
+            modelBuilder.Entity("Discount_ShippingDiscount_Mapping", b =>
+                {
+                    b.Property<int>("DiscountId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ShippingId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("DiscountId", "ShippingId");
+
+                    b.HasIndex("ShippingId");
+
+                    b.ToTable("Discount_ShippingDiscount_Mapping");
+                });
 
             modelBuilder.Entity("EShop.Core.Catalog.Attributes.Domain.ProductAttribute", b =>
                 {
@@ -206,10 +236,7 @@ namespace EShop.Web.Migrations
                     b.Property<string>("ManufacturerPartNumber")
                         .HasColumnType("text");
 
-                    b.Property<decimal?>("OldPrice")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Price")
+                    b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
                     b.Property<int>("ProductId")
@@ -219,19 +246,10 @@ namespace EShop.Web.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("RawAttributes")
-                        .HasColumnType("text");
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("Sku")
                         .HasColumnType("text");
-
-                    b.Property<decimal?>("SpecialPrice")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime?>("SpecialPriceEnd")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("SpecialPriceStarts")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("StockQuantity")
                         .HasColumnType("integer");
@@ -753,6 +771,94 @@ namespace EShop.Web.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Catalog_Reply", (string)null);
+                });
+
+            modelBuilder.Entity("EShop.Core.Catalog.Products.Price.Discount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BadgeId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CouponCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("CouponUsageAmount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CouponUsageType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("DiscountType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("EndsOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsCouponRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("StartsOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("UsePercentage")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BadgeId");
+
+                    b.ToTable("Catalog_Discount", (string)null);
+                });
+
+            modelBuilder.Entity("EShop.Core.Catalog.Products.Price.DiscountBadge", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Label")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Catalog_DiscountBadge", (string)null);
+                });
+
+            modelBuilder.Entity("EShop.Core.Checkout.Shipping.Domain.Shipping", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Checkout_Shipping", (string)null);
                 });
 
             modelBuilder.Entity("EShop.Core.Common.Domain.Address", b =>
@@ -1405,6 +1511,36 @@ namespace EShop.Web.Migrations
                     b.ToTable("Platform_ThemeVariable", (string)null);
                 });
 
+            modelBuilder.Entity("Discount_ProductDiscount_Mapping", b =>
+                {
+                    b.HasOne("EShop.Core.Catalog.Products.Price.Discount", null)
+                        .WithMany()
+                        .HasForeignKey("DiscountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EShop.Core.Catalog.Products.Domain.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Discount_ShippingDiscount_Mapping", b =>
+                {
+                    b.HasOne("EShop.Core.Catalog.Products.Price.Discount", null)
+                        .WithMany()
+                        .HasForeignKey("DiscountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EShop.Core.Checkout.Shipping.Domain.Shipping", null)
+                        .WithMany()
+                        .HasForeignKey("ShippingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("EShop.Core.Catalog.Attributes.Domain.ProductAttributeOption", b =>
                 {
                     b.HasOne("EShop.Core.Catalog.Attributes.Domain.ProductAttributeOptionsSet", "ProductAttributeOptionsSet")
@@ -1616,6 +1752,16 @@ namespace EShop.Web.Migrations
                     b.Navigation("ProductReview");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EShop.Core.Catalog.Products.Price.Discount", b =>
+                {
+                    b.HasOne("EShop.Core.Catalog.Products.Price.DiscountBadge", "Badge")
+                        .WithMany()
+                        .HasForeignKey("BadgeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Badge");
                 });
 
             modelBuilder.Entity("EShop.Core.Common.Domain.Address", b =>

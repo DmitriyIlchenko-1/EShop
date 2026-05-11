@@ -1,7 +1,7 @@
 @model EShop.Web.Models.Catalog.ProductSummaryItemModel
 
 @{
-    var showVariants = Model.ProductVariantAttributes is { Count: > 0 };
+    var showVariants = false;
     var parent = Model.Parent;
 }
 <li class="resource-list__item">
@@ -197,7 +197,7 @@
                     Only 44 left
                 </p>
 
-                <partial name="_Product.Variants" model="Model.ProductVariantAttributes"/>
+                @* <partial name="_Product.Variants" model="Model.ProductVariantAttributes"/> *@
             </div>
 
             <div class="card__cta">

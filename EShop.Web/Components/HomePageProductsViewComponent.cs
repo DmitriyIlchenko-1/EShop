@@ -38,11 +38,11 @@ public class HomePageProductsViewComponent : BaseViewComponent
 
         
         var modelSettings = _catalogHelper.GetProductSummaryMappingSettings();
-        var model = await _catalogHelper.PrepareProductSummaryModelAsync(products, modelSettings, 
+        var model = await _catalogHelper.PrepareProductSummaryModelAsync(products, 
             new ProductVariantQuery()
             {
                 
-            });
+            }, modelSettings);
         if (!model.Items.Any())
         {
             return NoContent();

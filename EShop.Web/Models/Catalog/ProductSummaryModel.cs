@@ -32,8 +32,6 @@ public class ProductSummaryItemContext
     public ProductLazyContext LazyProductContext { get; set; }
     public ProductVariantQuery ProductVariantQuery { get; set; }
     
-    // Keys: Product ids.
-    public Dictionary<int, ProductVariantAttributeSelection> ProductAttributeSelections { get; set; } = new();
     
     // Keys: Brand ids.
     public Dictionary<int, Brand> Brands { get; set; } = new();
@@ -65,7 +63,7 @@ public abstract class ProductCombinationMap : BaseModel
     public abstract void AdjustForCombinationActive(bool isActive);
     public abstract void AdjustForAttributeValue(ProductVariantAttributeValueModel chosenAttribute);
 }
-public class ProductSummaryItemModel : ProductCombinationMap
+public class ProductSummaryItemModel : BaseModel
 {
     private readonly WeakReference<ProductSummaryModel> _parent;
 
@@ -97,18 +95,16 @@ public class ProductSummaryItemModel : ProductCombinationMap
     public decimal? Weight { get; set; }
     public BrandSummaryModel Brand { get; set; }
     public List<ProductSpecificationModel> Specifications { get; set; }
-    
+    public IList<ColorAttributeValue> ColorAttributeValues { get; set; }
     public ProductSummaryPriceModel PriceModel { get; set; } = new();
     public IList<MediaModel> Images { get; set; }
     public DeliveryTimeModel DeliveryTimeModel { get; set; }
-    public override void AdjustForCombinationActive(bool isActive)
+   
+    public class ColorAttributeValue
     {
-        this.IsAvailable = isActive;
-        //StockAvailability = ... 
-    }
-
-    public override void AdjustForAttributeValue(ProductVariantAttributeValueModel chosenAttribute)
-    {
-        this.Weight += chosenAttribute.ProductVariantAttributeValue.WeightAdjustment;
+        public int AttributeId { get; set; }
+        public int Id { get; set; }
+        public string Color { get; set; }
+        public string Name { get; set; }
     }
 }

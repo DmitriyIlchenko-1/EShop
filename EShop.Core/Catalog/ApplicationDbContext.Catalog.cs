@@ -2,6 +2,7 @@ using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Products.Domain;
+using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Common.Domain;
 using EShop.Core.Platform.Identity.Domain;
 using Microsoft.AspNetCore.Identity;
@@ -13,8 +14,8 @@ public partial class ApplicationDbContext
 {
     public DbSet<Product> Products { get; set; }
     public DbSet<Brand> Brands { get; set; }
-  
 
+    public DbSet<Discount> Discounts { get; set; }
     public DbSet<ProductReview> ProductReviews { get; set; }
     public DbSet<ProductLink> ProductLinks { get; set; }
     public DbSet<ProductVariantAttribute> ProductVariantAttributes { get; set; }
