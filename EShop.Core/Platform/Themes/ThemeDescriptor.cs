@@ -1,5 +1,5 @@
 using EShop.Core.Platform.Themes.Domain;
-using EShop.Infrastructure.IO;
+ 
 using EShop.Infrastructure.Utilities;
 
 namespace EShop.Core.Platform.Themes;

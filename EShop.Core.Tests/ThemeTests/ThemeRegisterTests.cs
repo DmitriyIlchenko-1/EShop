@@ -4,8 +4,7 @@ using NUnit.Framework;
 using EShop.Core.Platform.Themes;
 using EShop.Core.Platform.Themes.Services;
 using EShop.Infrastructure.Extensions;
-using EShop.Infrastructure.FileSystem;
-using EShop.Infrastructure.IO;
+ 
 using EShop.Tests.Framework;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
@@ -35,7 +34,7 @@ public class ThemeRegisterTests
             .Returns(currentLocation);
         var webEnv = envMock.Object;
         ILocalFileProvider fileProvider = new DefaultLocalFileProvider(webEnv.WebRootPath);
-        _themeRegistry = new DefaultThemeRegistry(fileProvider);
+        _themeRegistry = new DefaultThemeRegistry(new PhysicalFileProvider(webEnv.WebRootPath));
     }
 
     private void PrepareThemes()

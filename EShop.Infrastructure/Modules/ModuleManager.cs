@@ -64,12 +64,14 @@ public class ModuleManager
     {
         if (_installedModules.Count == 0)
         {
-            File.Delete(_applicationContext.AppDataRoot.Root + FileName);
+            var file = _applicationContext.AppDataRoot.GetFileInfo(FileName);
+            File.Delete(file.PhysicalPath);
         }
         else
         {
+            var file = _applicationContext.AppDataRoot.GetFileInfo(FileName);
             var content = string.Join(Environment.NewLine, _installedModules);
-            File.WriteAllText(_applicationContext.AppDataRoot.Root + FileName, content);
+            File.WriteAllText(file.PhysicalPath, content);
         }
     }
     public static ModuleManager Instance 

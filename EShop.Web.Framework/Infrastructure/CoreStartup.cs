@@ -23,8 +23,7 @@ using EShop.Core.Platform.Themes.Services;
 using EShop.Core.Platform.Web;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Common;
-using EShop.Infrastructure.FileSystem;
-using EShop.Infrastructure.IO;
+
 using EShop.Infrastructure.Media.Images;
 using EShop.Infrastructure.Modules;
 using EShop.Infrastructure.Storage;
@@ -66,7 +65,6 @@ public class CoreStartup : BaseStartup
         services.AddSingleton<IThemeRegistry, DefaultThemeRegistry>();
         services.AddScoped<IThemeVariableService, DefaultThemeVariableService>();
         services.AddScoped<IViewHelper, DefaultViewHelper>();
-        services.AddSingleton<ILocalFileProvider, DefaultLocalFileProvider>();
         services.AddScoped<IRequestCache, DefaultRequestCache>();
         services.AddScoped<IProductPriceService, DefaultProductPriceService>();
         services.AddScoped<IPriceCalculatorFactory, DefaultPriceCalculatorFactory>();

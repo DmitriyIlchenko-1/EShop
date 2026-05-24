@@ -1,7 +1,7 @@
 using System.Globalization;
 using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Extensions;
-using EShop.Infrastructure.FileSystem;
+ 
 using EShop.Infrastructure.Utilities;
 using Microsoft.Extensions.FileProviders;
 
@@ -34,7 +34,6 @@ public class ImageCache : IImageCache
         if (PreparePut(fileInfo))
         {
             await using var stream = File.Create(fileInfo.PhysicalPath);
-            //TODO: look into whether random query parameters in the resuest can result in the same image being processed and/or cached twice? 
             await image.SaveAsync(stream);
              
         }
@@ -91,9 +90,7 @@ public class ImageCache : IImageCache
 
     private string GenerateCachedPath(int imgId, ProcessImageQuery query)
     {
-        if (!query.NeedsProcessing())
-            return string.Empty;
-
+     
         string imageId = imgId.ToString(IdFormat, CultureInfo.InvariantCulture);
         var imgData = query.CreateHash();
         return

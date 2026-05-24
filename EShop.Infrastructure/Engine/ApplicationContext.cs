@@ -1,5 +1,4 @@
-using EShop.Infrastructure.FileSystem;
-using EShop.Infrastructure.IO;
+ 
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
@@ -8,8 +7,8 @@ namespace EShop.Infrastructure.Engine;
 
 public class DefaultApplicationContext : IApplicationContext
 {
-    public ILocalFileProvider AppDataRoot { get; private set; }
-    public ILocalFileProvider WebRoot { get; private set; }
+    public IFileProvider AppDataRoot { get; private set; }
+    public IFileProvider WebRoot { get; private set; }
     public IFileProvider ImageRoot { get; private set; }
    
     public IWebHostEnvironment Environment { get; init; }
@@ -23,12 +22,13 @@ public class DefaultApplicationContext : IApplicationContext
 
     private void EnsureFileProvidersCreated()
     {
-        WebRoot = new DefaultLocalFileProvider(Environment.ContentRootPath);
-        if (Directory.Exists(Path.Combine(WebRoot.Root, "App_Data")))
+        var webRootPath = Environment.ContentRootPath;
+        WebRoot = new PhysicalFileProvider(webRootPath);
+        if (Directory.Exists(Path.Combine(webRootPath, "App_Data")))
         {
-            AppDataRoot = new DefaultLocalFileProvider(Path.Combine(WebRoot.Root, "App_Data"));
+            AppDataRoot = new PhysicalFileProvider(Path.Combine(webRootPath, "App_Data"));
         }
         
-        ImageRoot = new DefaultLocalFileProvider(Path.Combine(WebRoot.Root, "wwwroot/images"));
+        ImageRoot = new PhysicalFileProvider(Path.Combine(webRootPath, "wwwroot/images"));
     }
 }

@@ -36,7 +36,7 @@ var engine = EngineContext.Create();
 var startup = engine.Startup(appContext);
 //Add services to Microsoft's IServiceCollection. The services will still end up in the same container, which is likely to be Autofac's container, though it depends on the settings.
 startup.ConfigureServices(builder.Services, builder.Configuration);
-
+ 
 
 //Add services directly through Autofac.
 builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);

@@ -3,14 +3,14 @@ using System.Xml;
 using EShop.Infrastructure;
 using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Extensions;
-using EShop.Infrastructure.FileSystem;
+ 
 using Microsoft.Extensions.FileProviders;
 
 namespace EShop.Core.Platform.Themes;
 
 public class DefaultThemeRegistry : IThemeRegistry
 {
-    private readonly ILocalFileProvider _fileProvider;
+    private readonly IFileProvider _fileProvider;
     private IDictionary<string, ThemeDescriptor> _themeCache;
     private static readonly object _locker = new();
 
@@ -61,11 +61,14 @@ public class DefaultThemeRegistry : IThemeRegistry
             if (_themeCache != null)
                 return;
             _themeCache = new Dictionary<string, ThemeDescriptor>(StringComparer.InvariantCultureIgnoreCase);
-            var themePath = _fileProvider.MapPath(GlobalConfiguration.ThemePath);
-            var rr = Directory.GetDirectories(themePath);
-            foreach (string dirName in Directory.GetDirectories(themePath))
+
+            var dirPaths = _fileProvider
+                .GetDirectoryContents(GlobalConfiguration.ThemePath)
+                .Where(x => x.IsDirectory)
+                .Select(x => x.PhysicalPath);
+            foreach (string dirPath in dirPaths)
             {
-                var dir = new DirectoryInfo(dirName);
+                var dir = new DirectoryInfo(dirPath);
                 var configFile = new FileInfo(Path.Join(dir.FullName, "theme.config"));
                 if (configFile.Exists)
                 {
@@ -74,7 +77,7 @@ public class DefaultThemeRegistry : IThemeRegistry
                 }
                 else
                 {
-                    throw new FileNotFoundException($"Could not file theme config file for the {dirName} theme");
+                    throw new FileNotFoundException($"Could not file theme config file for the {dirPath} theme");
                 }
             }
         }

@@ -18,12 +18,13 @@ public class DefaultMediaAccessor : IMediaAccessor
     private readonly IFileProvider _fileProvider;
     private readonly IImageProcessor _imageProcessor;
     private readonly IImageCache _imageCache;
-    public ILogger Logger { get; set; } = NullLogger.Instance;
+   private readonly ILogger _logger = NullLogger.Instance;
 
     public DefaultMediaAccessor(IApplicationContext app, IImageProcessor imageProcessor, IImageCache imageCache)
     {
         _imageProcessor = imageProcessor;
         _imageCache = imageCache;
+        
         _fileProvider = app.ImageRoot;
     }
 
@@ -48,6 +49,7 @@ public class DefaultMediaAccessor : IMediaAccessor
         var cacheImage = await _imageCache.GetAsync(ctx.ImageDescriptor.Id, query);
         if (cacheImage.Exists && cacheImage.FileInfo.Length > 0)
         {
+            _logger.ServedFromCache(cacheImage.FileInfo.Name);
             return cacheImage.FileInfo;
         }
         else
@@ -59,16 +61,12 @@ public class DefaultMediaAccessor : IMediaAccessor
                 try
                 {
                     var processedImage = await _imageProcessor.ProcessImageAsync(query);
-                    await _imageCache.PutAsync(cacheImage, processedImage);
+                     await _imageCache.PutAsync(cacheImage, processedImage);
                 }
                 catch (Exception e)
                 {
-                   // Logger.LogError();
-                   if (e is ExtractThumbnailException)
-                   {
-                       await using var stream = new MemoryStream();
-                       await _imageCache.PutAsync(cacheImage, stream);
-                   }
+                    _logger.LogError(e.Message);
+                    
                 }
             }
 
@@ -83,11 +81,4 @@ public class MediaAccessorContext
     public ImageDescriptor ImageDescriptor { get; set; }
 }
 
-public class ImageDescriptor
-{
-    public int Id { get; set; }
-    public int MaxWidth { get; set; }
-    public int MaxHeight { get; set; }
-    public string Path { get; set; }
-    public string Extension { get; set; }
-}
+ 
