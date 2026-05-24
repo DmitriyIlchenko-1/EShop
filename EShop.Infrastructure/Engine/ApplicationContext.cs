@@ -2,6 +2,7 @@ using EShop.Infrastructure.FileSystem;
 using EShop.Infrastructure.IO;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.FileProviders;
 
 namespace EShop.Infrastructure.Engine;
 
@@ -9,6 +10,7 @@ public class DefaultApplicationContext : IApplicationContext
 {
     public ILocalFileProvider AppDataRoot { get; private set; }
     public ILocalFileProvider WebRoot { get; private set; }
+    public IFileProvider ImageRoot { get; private set; }
    
     public IWebHostEnvironment Environment { get; init; }
 
@@ -26,5 +28,7 @@ public class DefaultApplicationContext : IApplicationContext
         {
             AppDataRoot = new DefaultLocalFileProvider(Path.Combine(WebRoot.Root, "App_Data"));
         }
+        
+        ImageRoot = new DefaultLocalFileProvider(Path.Combine(WebRoot.Root, "wwwroot/images"));
     }
 }

@@ -51,9 +51,7 @@ namespace EShop.Web.Migrations
                     Alias = table.Column<string>(type: "text", nullable: true),
                     AllowFiltering = table.Column<bool>(type: "boolean", nullable: false),
                     DisplayOrder = table.Column<int>(type: "integer", nullable: false),
-                    IsEssential = table.Column<bool>(type: "boolean", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    ShowOnProductPage = table.Column<bool>(type: "boolean", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -120,8 +118,8 @@ namespace EShop.Web.Migrations
                     MimeType = table.Column<string>(type: "text", nullable: true),
                     MediaType = table.Column<string>(type: "text", nullable: true),
                     Size = table.Column<int>(type: "integer", nullable: false),
-                    Width = table.Column<int>(type: "integer", nullable: true),
-                    Height = table.Column<int>(type: "integer", nullable: true),
+                    Width = table.Column<int>(type: "integer", nullable: false),
+                    Height = table.Column<int>(type: "integer", nullable: false),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Deleted = table.Column<bool>(type: "boolean", nullable: false)

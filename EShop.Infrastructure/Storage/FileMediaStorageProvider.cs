@@ -1,5 +1,6 @@
  
 
+using EShop.Core.Platform.Web;
 using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.FileSystem;
 
@@ -7,11 +8,13 @@ namespace EShop.Infrastructure.Storage;
 
 public class FileMediaStorageProvider : IMediaStorageProvider
 {
-    private readonly ILocalFileProvider _fileProvider;
-    private const string MediaFileLocation = "Media";
-    public FileMediaStorageProvider(IApplicationContext app)
+    private const string MediaFileLocation = "images";
+    private readonly IWebHelper _webHelper;
+    public string Host { get;}
+    public FileMediaStorageProvider(IWebHelper webHelper)
     {
-        _fileProvider = app.WebRoot;
+        _webHelper = webHelper;
+        Host = _webHelper.HttpContext.Request.Host.Value;
     }
 
     public async Task DeleteMediaAsync(string fileName)
@@ -21,7 +24,9 @@ public class FileMediaStorageProvider : IMediaStorageProvider
 
     public Task<string> GetMediaUrlAsync(string fileName)
     {
-        return Task.FromResult(_fileProvider.MapPath(MediaFileLocation + "/" + fileName));
+        var page = _webHelper.GetCurrentPageUrl();
+        var path = Path.Combine(page, MediaFileLocation + "/" + fileName);
+        return Task.FromResult(path);
 
     }
 
@@ -29,4 +34,6 @@ public class FileMediaStorageProvider : IMediaStorageProvider
     {
         throw new NotImplementedException();
     }
+
+    
 }

@@ -24,9 +24,10 @@ internal class ProductMap : IEntityTypeConfiguration<Product>
             .OnDelete(DeleteBehavior.SetNull);
 
         builder
-            .HasMany<MediaFile>()
+            .HasMany<MediaFile>(x => x.MediaFiles)
             .WithMany()
-            .UsingEntity<ProductMedia>("Media_ProductMedia_Mapping");
+            .UsingEntity<ProductMedia>();
+        
 
     }
 }
@@ -183,7 +184,7 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IMerg
     public ICollection<ProductLink> ProductLinks { get; set; }
 
 
-    public ICollection<ProductMedia> ProductMedias { get; set; }
+    public ICollection<MediaFile> MediaFiles { get; set; }
 
     public ICollection<ProductSpecificationAttribute> ProductSpecificationAttributes { get; set; }
 
@@ -203,11 +204,7 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IMerg
         ProductCategories.Add(category);
     }
 
-    public void AddMedia(ProductMedia productMedia)
-    {
-        productMedia.Product = this;
-        ProductMedias.Add(productMedia);
-    }
+   
 
     [NotMapped, IgnoreDataMember] public bool IgnoreMerge { get; set; }
     [NotMapped, IgnoreDataMember] public Dictionary<string, object> MergedData { get; set; }

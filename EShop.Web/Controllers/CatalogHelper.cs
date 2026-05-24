@@ -120,7 +120,7 @@ public partial class CatalogHelper
                 {
                     Id = b.Id,
                     Name = b.Name,
-                    Image = new MediaModel()
+                    Image = new ImageModel()
                     {
                         Id = b.Id,
                         Alt = image?.Alt,
@@ -135,7 +135,7 @@ public partial class CatalogHelper
         return brandModels;
     }
 
-    protected virtual async Task<MediaModel> PrepareBrandImageModelAsync(Brand brand)
+    protected virtual async Task<ImageModel> PrepareBrandImageModelAsync(Brand brand)
     {
         throw new NotImplementedException();
     }

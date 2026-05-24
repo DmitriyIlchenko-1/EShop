@@ -25,6 +25,7 @@ using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Common;
 using EShop.Infrastructure.FileSystem;
 using EShop.Infrastructure.IO;
+using EShop.Infrastructure.Media.Images;
 using EShop.Infrastructure.Modules;
 using EShop.Infrastructure.Storage;
 using EShop.Infrastructure.Utilities;
@@ -32,6 +33,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+ 
 
 namespace EShop.Web.Common.Infrastructure;
 
@@ -42,7 +44,7 @@ public class CoreStartup : BaseStartup
     {
         services.AddSingleton<IJsonSerializer, NewtonsoftJsonSerializer>();
         services.AddScoped<IWidgetInstanceService, WidgetInstanceService>();
-        services.AddScoped<IMediaStorageProvider, MockMediaStorageProvider>();
+        services.AddScoped<IMediaStorageProvider, FileMediaStorageProvider>();
         services.AddScoped<IMediaService, MediaService>();
         services.AddSingleton<IProductPricingService, ProductPricingService>();
         services.AddSingleton<ICurrencyService, CurrencyService>();
@@ -69,8 +71,12 @@ public class CoreStartup : BaseStartup
         services.AddScoped<IProductPriceService, DefaultProductPriceService>();
         services.AddScoped<IPriceCalculatorFactory, DefaultPriceCalculatorFactory>();
         services.AddScoped<IDiscountService, DefaultDiscountService>();
+        services.AddScoped<IImageProcessor, DefaultImageProcessor>();
+        services.AddScoped<IImageCache, ImageCache>();
+        services.AddScoped<IMediaAccessor, DefaultMediaAccessor>();
+        services.AddScoped<IImageFactory, DefaultImageFactory>();
         /*
-         * Caching
+         * Caching 
          */
          services.AddCaching(configuration);
           

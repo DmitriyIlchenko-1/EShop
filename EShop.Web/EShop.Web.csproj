@@ -17,7 +17,6 @@
         <Folder Include="App_Data\" />
         <Folder Include="Themes\EShopDefault\wwwroot\" />
         <Folder Include="Views\Home\Partials\" />
-        <Folder Include="wwwroot\images\" />
     </ItemGroup>
 
     <ItemGroup>

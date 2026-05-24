@@ -97,7 +97,7 @@ public class ProductSummaryItemModel : BaseModel
     public List<ProductSpecificationModel> Specifications { get; set; }
     public IList<ColorAttributeValue> ColorAttributeValues { get; set; }
     public ProductSummaryPriceModel PriceModel { get; set; } = new();
-    public IList<MediaModel> Images { get; set; }
+    public IList<ImageModel> Images { get; set; }
     public DeliveryTimeModel DeliveryTimeModel { get; set; }
    
     public class ColorAttributeValue

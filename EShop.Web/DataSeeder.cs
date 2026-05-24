@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Configuration;
+using EShop.Core.Content.Media.Domain;
 using EShop.Core.Data;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Configuration.Domain;
@@ -262,7 +263,19 @@ public class DataSeeder
                 });
             }
 
+            var first = products.FirstOrDefault(x => x.Name == "Product 1");
+            var image = new MediaFile()
+            {
+                FileName = "main_logo.jpg",
+                MediaType = ".jpg"
+            };
+            var map = new ProductMedia()
+            {
+                Product = first,
+                MediaFile = image
+            };
             _dbContext.Products.AddRange(products);
+            _dbContext.ProductMedias.Add(map);
             await _dbContext.SaveChangesAsync();
         }
     }

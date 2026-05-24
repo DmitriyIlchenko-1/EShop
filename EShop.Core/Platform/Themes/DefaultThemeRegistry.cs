@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Xml;
 using EShop.Infrastructure;
+using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.FileSystem;
 using Microsoft.Extensions.FileProviders;
@@ -13,9 +14,10 @@ public class DefaultThemeRegistry : IThemeRegistry
     private IDictionary<string, ThemeDescriptor> _themeCache;
     private static readonly object _locker = new();
 
-    public DefaultThemeRegistry(ILocalFileProvider fileProvider)
+    public DefaultThemeRegistry(IApplicationContext app)
     {
-        _fileProvider = fileProvider;
+        //todo: change to theme provider
+        _fileProvider = app.WebRoot;
         Initialize();
     }
 

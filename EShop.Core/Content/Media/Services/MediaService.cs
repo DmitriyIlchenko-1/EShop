@@ -52,7 +52,15 @@ public class MediaService : IMediaService
                 select entity).ToList();
     }
 
-     
+    public async Task<MediaFile> GetMediaFilesByIdAsync(int id, bool track = false)
+    {
+        if (id == 0)
+            return null;
+        
+        return await _db.MediaFiles.ApplyTracking(track)
+            .FirstOrDefaultAsync(x => x.Id == id);
+    }
+
 
     public async Task<string> GetMediaUrlAsync(MediaFile mediaFile) =>
         mediaFile != null ? await GetMediaUrlAsync(mediaFile.FileName) : await GetMediaUrlAsync("not-found-image.png");

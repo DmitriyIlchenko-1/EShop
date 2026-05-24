@@ -57,4 +57,18 @@ public static class DictionaryExtensions
         dictionary.TryGetValueAs(key, out TValue result);
         return result;
     }
+
+    public static bool TryGetAndConvertValue<TConvert>(this IDictionary<string, object> dictionary, string key, out TConvert value)
+        where TConvert : IConvertible
+    {
+        Guard.NotNull(dictionary);
+        if (dictionary.TryGetValue(key, out object result) && result is IConvertible convertible)
+        {
+            value = (TConvert)convertible.ToType(typeof(TConvert), null);
+            return true;
+        }
+
+        value = default(TConvert);
+        return false;
+    }
 }

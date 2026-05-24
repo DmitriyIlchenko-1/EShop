@@ -328,14 +328,8 @@ namespace EShop.Web.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsEssential")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Name")
                         .HasColumnType("text");
-
-                    b.Property<bool>("ShowOnProductPage")
-                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
@@ -1051,7 +1045,7 @@ namespace EShop.Web.Migrations
                     b.Property<string>("FileName")
                         .HasColumnType("text");
 
-                    b.Property<int?>("Height")
+                    b.Property<int>("Height")
                         .HasColumnType("integer");
 
                     b.Property<string>("MediaType")
@@ -1066,7 +1060,7 @@ namespace EShop.Web.Migrations
                     b.Property<int>("Size")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("Width")
+                    b.Property<int>("Width")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -1816,7 +1810,7 @@ namespace EShop.Web.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("EShop.Core.Catalog.Products.Domain.Product", "Product")
-                        .WithMany("ProductMedias")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1930,8 +1924,6 @@ namespace EShop.Web.Migrations
                     b.Navigation("ProductCategories");
 
                     b.Navigation("ProductLinks");
-
-                    b.Navigation("ProductMedias");
 
                     b.Navigation("ProductReviews");
 

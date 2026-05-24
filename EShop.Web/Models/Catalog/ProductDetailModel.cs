@@ -34,7 +34,7 @@ public class ProductDetailVm : ProductCombinationMap
     public Brand Brand { get; set; }
     public ProductReviewsModel? ProductReviews { get; set; }
     public CalculatedProductPrice CalculatedProductPrice { get; set; }
-    public ICollection<MediaModel> Images { get; set; } = [];
+    public ICollection<ImageModel> Images { get; set; } = [];
     public ICollection<ProductSpecificationModel> ProductSpecifications { get; set; } = [];
     public IEnumerable<ProductDetailCategoryModel> Categories { get; set; } = [];
     public ICollection<ProductThumbnail> RelatedProducts { get; set; } = [];

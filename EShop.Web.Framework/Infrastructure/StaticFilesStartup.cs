@@ -1,5 +1,6 @@
 using Autofac;
 using EShop.Infrastructure.Engine;
+using EShop.Infrastructure.Media.Images;
 using EShop.Infrastructure.Modules;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -13,13 +14,14 @@ public class StaticFilesStartup : BaseStartup
 {
     public override int Order => PipelineOrder.StaticFilesMiddleware;
 
-    public override void ConfigureApplication(IApplicationBuilder app)
+    public override void ConfigureApplication(IApplicationBuilder applicationBuilder)
     {
-        var mediaProvider = EngineContext.Current.ApplicationContext.WebRoot;
-        app.UseStaticFiles(new StaticFileOptions()
+        var app = EngineContext.Current.ApplicationContext;
+        
+        applicationBuilder.UseStaticFiles(new StaticFileOptions()
         {
-            FileProvider = mediaProvider,
-            RequestPath = new PathString("/images")
+            FileProvider = app.ImageRoot,
+            RequestPath = "/images",
         });
     }
 }

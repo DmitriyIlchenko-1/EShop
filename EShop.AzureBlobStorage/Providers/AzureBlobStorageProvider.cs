@@ -55,5 +55,7 @@ namespace EShop.AzureBlobStorage.Providers
                 await blobClient.UploadAsync(mediaBinaryStream, blobHttpHeader);
             }
         }
+
+        public string Host { get; }
     }
 }

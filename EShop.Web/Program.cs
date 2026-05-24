@@ -18,6 +18,7 @@ using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Engine;
 using EShop.Web.Common.Infrastructure;
 using EShop.Web.Common.Infrustructure;
+using EShop.Web.Common.Middleware;
 using EShop.Web.Common.Models;
 using EShop.Web.Common.Models.Choices;
 using EShop.Web.Infrastructure.DbHandlers;
@@ -40,7 +41,7 @@ startup.ConfigureServices(builder.Services, builder.Configuration);
 //Add services directly through Autofac.
 builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);
 var app = builder.Build();
-
+app.UseMiddleware<MediaMiddleware>();
 engine.ChildLifetimeScopeAccessor
     = app.Services.GetRequiredService<IChildLifetimeScopeAccessor>();
 
@@ -57,7 +58,7 @@ var dbContext = scope.Resolve<ApplicationDbContext>();
 var userManager = scope.Resolve<UserManager<User>>();
 var roleManager = scope.Resolve<RoleManager<Role>>();
 var dataSeeder = new DataSeeder(dbContext, userManager, roleManager);
-await dataSeeder.SeedDataAsync();
+//await dataSeeder.SeedDataAsync();
 
 // var scope = EngineContext
 //     .Create()

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Hashing;
 using System.Text;
 
@@ -13,6 +14,13 @@ public class HashCodeCombiner
     public int GetCombinedHash()
     {
         return _combinedHash64.GetHashCode();
+    }
+
+    public string GetCombinedHash64()
+    {
+        return _combinedHash64
+            .GetHashCode()
+            .ToString("X", CultureInfo.InvariantCulture);
     }
 
     public HashCodeCombiner Add<T>(T value, IEqualityComparer<T>? comparer = null)

@@ -35,8 +35,7 @@ public class ProductController : Controller
             .AsNoTracking()
             .AsSplitQuery()
             .Include(x => x.Brand)
-            .Include(x => x.ProductMedias)
-            .ThenInclude(x => x.MediaFile)
+            .Include(x => x.MediaFiles)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (product == null)

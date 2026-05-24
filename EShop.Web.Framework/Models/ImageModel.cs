@@ -2,7 +2,7 @@ using EShop.Web.Common.Models;
 
 namespace EShop.Web.Models.Catalog;
 
-public class MediaModel : BaseModel
+public class ImageModel : BaseModel
 {
     public string FileName { get; set; }
     public string Alt { get; set; }
@@ -12,4 +12,5 @@ public class MediaModel : BaseModel
     public int Width { get; set; }
     public int Height { get; set; }
     public string Url { get; set; }
+     
 }

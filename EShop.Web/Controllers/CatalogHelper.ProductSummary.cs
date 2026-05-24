@@ -26,7 +26,9 @@ public partial class CatalogHelper
         if (!(products.Count > 0))
             return ProductSummaryModel.Empty;
 
+        products = products.Where(x => x.Name == "Product 1").ToList();
 
+        
         var model = new ProductSummaryModel();
         var lazyProductCtx = _productService.CreateProductBatchContext(products);
         var itemCtx = new ProductSummaryItemContext(model)
@@ -401,7 +403,7 @@ public partial class CatalogHelper
                     Id = category.Id,
                     Name = category.Name,
                     // Url = await _urlService.GetActiveSlugAsync(category.Id, category.Name),
-                    Image = new MediaModel
+                    Image = new ImageModel
                     {
                         // Url = await _mediaService.GetMediaUrlAsync(image),
                         Alt = image?.Alt,
@@ -415,7 +417,7 @@ public partial class CatalogHelper
             .ToListAsync();
     }
 
-    protected virtual async Task<IList<MediaModel>> PrepareProductSummaryImageModelAsync(Product product, IEnumerable<ProductMedia> mediaFiles)
+    protected virtual async Task<IList<ImageModel>> PrepareProductSummaryImageModelAsync(Product product, IEnumerable<ProductMedia> mediaFiles)
     {
         if (!mediaFiles.Any())
         {
@@ -424,11 +426,11 @@ public partial class CatalogHelper
         //TODO: add caching.
         
 
-        async Task<MediaModel> MapToMediaModelAsync(ProductMedia productMedia)
+        async Task<ImageModel> MapToMediaModelAsync(ProductMedia productMedia)
         {
             var mediaFile = productMedia.MediaFile;
             var mediaUrl = await _mediaService.GetMediaUrlAsync(mediaFile);
-            return new MediaModel()
+            return new ImageModel()
             {
                 FileName = mediaFile.FileName,
                 MimeType = mediaFile.MimeType,

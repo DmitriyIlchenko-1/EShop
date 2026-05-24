@@ -9,6 +9,7 @@ public interface ILocalFileProvider : IFileProvider
 {
     public string Root { get; }
     string MapPath(string path);
+    
 }
 
 

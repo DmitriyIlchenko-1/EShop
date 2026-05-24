@@ -118,27 +118,21 @@
                             </div>
                             <!--TODO: aria-hidden on individual slides if not in the focus? (all of them but one currently displayed)-->
                             <div class="slideshow__slides">
-                                <div
-                                    class="slideshow__slide product-media-container media-fit product-media-container--image">
-                                    <div class="product-media">
-                                        <!--TODO: I'll add the sizes and srcset attributes when I start rendering this html though the backend.-->
-                                        <img class="product-media__image" loading="eager"
-                                             fetchpriority="auto"
-
-                                             src="assets/chris-kursikowski-aLGEWa9SOtI-unsplash(1).jpg"
-                                             alt=""/>
+                                @foreach (var img in Model.Images)
+                                {
+                                    <div class="slideshow__slide product-media-container media-fit product-media-container--image">
+                                        <div class="product-media">
+                                            <!--TODO: I'll add the sizes and srcset attributes when I start rendering this html though the backend.-->
+                                            <img  class="product-media__image" loading="eager"
+                                                 fetchpriority="auto"
+                                                 src="@img.Url"
+                                                 append-srcset="true"
+                                                 max-srcset-width="3840"
+                                                 es-model="img"
+                                                 alt="@img.Alt"/>
+                                        </div>
                                     </div>
-                                </div>
-                                <div
-                                    class="slideshow__slide product-media-container media-fit product-media-container--image">
-                                    <div class="product-media">
-                                        <img class="product-media__image" loading="lazy"
-                                             fetchpriority="auto"
-                                             width="250"
-                                             height="400"
-                                             src="assets/Apple-iPhone-15-Black-frontimage.jpg" alt=""/>
-                                    </div>
-                                </div>
+                                }
                             </div>
                         </div>
                     </div>

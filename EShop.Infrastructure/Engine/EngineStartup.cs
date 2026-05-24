@@ -154,6 +154,7 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
     protected override void ConfigureServicesCore(IServiceCollection services, IConfiguration configuration)
     {
         var mvcBuilder = services.AddControllersWithViews();
+        services.AddSingleton<IApplicationContext>(Engine.ApplicationContext);
 
         foreach (var startup in Startups)
         {

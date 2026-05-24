@@ -537,6 +537,14 @@
           }
         }
       },
+      "Microsoft.IO.RecyclableMemoryStream/3.0.1": {
+        "runtime": {
+          "lib/net6.0/Microsoft.IO.RecyclableMemoryStream.dll": {
+            "assemblyVersion": "3.0.1.0",
+            "fileVersion": "3.0.1.0"
+          }
+        }
+      },
       "Microsoft.SqlServer.Server/1.0.0": {
         "runtime": {
           "lib/netstandard2.0/Microsoft.SqlServer.Server.dll": {
@@ -593,6 +601,14 @@
           }
         }
       },
+      "NUnit/3.13.3": {
+        "runtime": {
+          "lib/netstandard2.0/nunit.framework.dll": {
+            "assemblyVersion": "3.13.3.0",
+            "fileVersion": "3.13.3.0"
+          }
+        }
+      },
       "Pipelines.Sockets.Unofficial/2.2.8": {
         "dependencies": {
           "System.IO.Pipelines": "10.0.2"
@@ -617,6 +633,29 @@
           "lib/netstandard2.0/Riok.Mapperly.Abstractions.dll": {
             "assemblyVersion": "4.3.1.0",
             "fileVersion": "4.3.1.0"
+          }
+        }
+      },
+      "SixLabors.ImageSharp/4.0.0": {
+        "dependencies": {
+          "System.IO.Hashing": "8.0.0"
+        },
+        "runtime": {
+          "lib/net8.0/SixLabors.ImageSharp.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.0.0.0"
+          }
+        }
+      },
+      "SixLabors.ImageSharp.Web/4.0.0": {
+        "dependencies": {
+          "Microsoft.IO.RecyclableMemoryStream": "3.0.1",
+          "SixLabors.ImageSharp": "4.0.0"
+        },
+        "runtime": {
+          "lib/net8.0/SixLabors.ImageSharp.Web.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.0.0.0"
           }
         }
       },
@@ -906,8 +945,10 @@
           "Microsoft.Extensions.Caching.Hybrid": "10.1.0",
           "Microsoft.Extensions.Caching.StackExchangeRedis": "10.0.1",
           "Microsoft.Extensions.DependencyModel": "10.0.2",
+          "NUnit": "3.13.3",
           "Newtonsoft.Json": "13.0.3",
           "Riok.Mapperly": "4.3.1",
+          "SixLabors.ImageSharp.Web": "4.0.0",
           "System.IO.Hashing": "8.0.0",
           "System.Linq.Async": "6.0.3",
           "ZiggyCreatures.FusionCache": "2.4.0",
@@ -1229,6 +1270,13 @@
       "path": "microsoft.identitymodel.tokens/6.35.0",
       "hashPath": "microsoft.identitymodel.tokens.6.35.0.nupkg.sha512"
     },
+    "Microsoft.IO.RecyclableMemoryStream/3.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-s/s20YTVY9r9TPfTrN5g8zPF1YhwxyqO6PxUkrYTGI2B+OGPe9AdajWZrLhFqXIvqIW23fnUE4+ztrUWNU1+9g==",
+      "path": "microsoft.io.recyclablememorystream/3.0.1",
+      "hashPath": "microsoft.io.recyclablememorystream.3.0.1.nupkg.sha512"
+    },
     "Microsoft.SqlServer.Server/1.0.0": {
       "type": "package",
       "serviceable": true,
@@ -1264,6 +1312,13 @@
       "path": "npgsql.entityframeworkcore.postgresql/9.0.4",
       "hashPath": "npgsql.entityframeworkcore.postgresql.9.0.4.nupkg.sha512"
     },
+    "NUnit/3.13.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-KNPDpls6EfHwC3+nnA67fh5wpxeLb3VLFAfLxrug6JMYDLHH6InaQIWR7Sc3y75d/9IKzMksH/gi08W7XWbmnQ==",
+      "path": "nunit/3.13.3",
+      "hashPath": "nunit.3.13.3.nupkg.sha512"
+    },
     "Pipelines.Sockets.Unofficial/2.2.8": {
       "type": "package",
       "serviceable": true,
@@ -1284,6 +1339,20 @@
       "sha512": "sha512-oSE+OVLHyiojrws0QVbQaAT2YKsYbyHqJXPdV7EhGseR/dYgeWS2x1T5qY5I4E+RJkJqMSG+FyZOq4SljWgJWQ==",
       "path": "riok.mapperly/4.3.1",
       "hashPath": "riok.mapperly.4.3.1.nupkg.sha512"
+    },
+    "SixLabors.ImageSharp/4.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-6Ft5sclM1t5bY+P0SsLLGwXIAgmDASFFD9hD0tlEcfFCU8Yj9nR7ZzaqCL/p+SIfqoe8jLKFHD7LFPRJPGXZ5w==",
+      "path": "sixlabors.imagesharp/4.0.0",
+      "hashPath": "sixlabors.imagesharp.4.0.0.nupkg.sha512"
+    },
+    "SixLabors.ImageSharp.Web/4.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/PX8zGq5w5+xfNlZSkPSv/KYVnEDBY4kD5Nfl92I0zMmqZvU2kD+JKB9hUZguJNqvlUpw869a1gfYyrDgwDouA==",
+      "path": "sixlabors.imagesharp.web/4.0.0",
+      "hashPath": "sixlabors.imagesharp.web.4.0.0.nupkg.sha512"
     },
     "StackExchange.Redis/2.8.31": {
       "type": "package",
