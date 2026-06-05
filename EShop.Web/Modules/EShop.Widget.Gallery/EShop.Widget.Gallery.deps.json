@@ -16,6 +16,28 @@
           "EShop.Widget.Gallery.dll": {}
         }
       },
+      "AngleSharp/1.4.0": {
+        "runtime": {
+          "lib/net8.0/AngleSharp.dll": {
+            "assemblyVersion": "1.4.0.0",
+            "fileVersion": "1.4.0.0"
+          }
+        }
+      },
+      "Aspose.SVG/26.4.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.1",
+          "System.Diagnostics.DiagnosticSource": "10.0.1",
+          "System.Drawing.Common": "6.0.0",
+          "System.Security.Permissions": "6.0.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Aspose.SVG.dll": {
+            "assemblyVersion": "26.4.0.0",
+            "fileVersion": "26.4.0.0"
+          }
+        }
+      },
       "Autofac/9.0.0": {
         "dependencies": {
           "System.Diagnostics.DiagnosticSource": "10.0.1"
@@ -963,6 +985,8 @@
       },
       "EShop.Web.Framework/1.0.0": {
         "dependencies": {
+          "AngleSharp": "1.4.0",
+          "Aspose.SVG": "26.4.0",
           "EShop.Core": "1.0.0",
           "EShop.Infrastructure": "1.0.0",
           "Microsoft.EntityFrameworkCore.SqlServer": "9.0.15",
@@ -982,6 +1006,20 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "AngleSharp/1.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-6ph8mpaQx0KL0COYRt0kI8MB9gSp1PtKijKMhJU//+aVFgKAJLKDesG/+26JSaVCOrHNgPf12wpfoyRcMYOeXg==",
+      "path": "anglesharp/1.4.0",
+      "hashPath": "anglesharp.1.4.0.nupkg.sha512"
+    },
+    "Aspose.SVG/26.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-iRd0STaSLMVkqtPiapBGnlayDGO6NwsgkHDmNyzig++N7u32Gq9Z9HpDmUe5Y6kqyNDvsBG89+7tAuvC6199wg==",
+      "path": "aspose.svg/26.4.0",
+      "hashPath": "aspose.svg.26.4.0.nupkg.sha512"
     },
     "Autofac/9.0.0": {
       "type": "package",

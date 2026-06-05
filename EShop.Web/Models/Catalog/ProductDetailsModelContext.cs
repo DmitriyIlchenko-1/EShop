@@ -7,16 +7,16 @@ namespace EShop.Web.Models.Catalog;
 public class ProductDetailsModelContext  
 {
     public ProductDetailsModelContext(Product product, ProductVariantQuery productVariantQuery,
-        ProductLazyContext lazyContext)
+        ProductBatchContext batchContext)
     {
         Product = product;
         ProductVariantQuery = productVariantQuery;
-        LazyContext = lazyContext;
+        BatchContext = batchContext;
     }
 
     public Product Product { get; set; }
     public ProductVariantQuery ProductVariantQuery { get; set; }
-    public ProductLazyContext LazyContext { get; set; }
+    public ProductBatchContext BatchContext { get; set; }
     public ProductVariantAttributeSelection Selection { get; set; }
      
 }

@@ -2,6 +2,7 @@ using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Products;
 using EShop.Core.Catalog.Products.Domain;
+using EShop.Core.Common.Domain;
 using EShop.Web.Common.Models;
 using EShop.Web.Controllers;
 using Riok.Mapperly.Abstractions;
@@ -13,8 +14,10 @@ public class ProductAttributeVariantContext
     // Keys: Product ids.
     public Dictionary<int, ProductVariantAttributeCombination> ProductCombinations { get; set; } = new();
 }
+
 public class ProductSummaryItemContext
-{ private readonly WeakReference<ProductSummaryModel> _parent;
+{
+    private readonly WeakReference<ProductSummaryModel> _parent;
 
     public ProductSummaryItemContext(ProductSummaryModel parent)
     {
@@ -29,14 +32,15 @@ public class ProductSummaryItemContext
             return parent;
         }
     }
-    public ProductLazyContext LazyProductContext { get; set; }
+
+    public ProductBatchContext BatchProductContext { get; set; }
     public ProductVariantQuery ProductVariantQuery { get; set; }
-    
-    
+
+
     // Keys: Brand ids.
     public Dictionary<int, Brand> Brands { get; set; } = new();
 
-     
+
     public CatalogHelper.ProductSummaryMappingSettings MappingSettings { get; set; }
 }
 
@@ -46,7 +50,7 @@ public class ProductSummaryModel : BaseModel, IDisposable
     public List<ProductSummaryItemModel> Items { get; set; } = new();
     public bool ShowBrand { get; set; }
     public bool ShowRating { get; set; }
- 
+
 
     public void Dispose()
     {
@@ -59,10 +63,11 @@ public abstract class ProductCombinationMap : BaseModel
     public int TotalAttributeCount { get; set; }
     public ProductVariantAttributeCombination SelectedCombination { get; set; }
     public ICollection<ProductVariantAttributeModel> ProductVariantAttributes { get; set; } = [];
-    
+
     public abstract void AdjustForCombinationActive(bool isActive);
     public abstract void AdjustForAttributeValue(ProductVariantAttributeValueModel chosenAttribute);
 }
+
 public class ProductSummaryItemModel : BaseModel
 {
     private readonly WeakReference<ProductSummaryModel> _parent;
@@ -80,6 +85,7 @@ public class ProductSummaryItemModel : BaseModel
             return parent;
         }
     }
+
     public string Name { get; set; }
     public string ShortDescription { get; set; }
     public string Sku { get; set; }
@@ -88,8 +94,8 @@ public class ProductSummaryItemModel : BaseModel
     public int TotalReviews { get; set; }
     public int RatingSum { get; set; }
     public bool IsAvailable { get; set; }
-    
- 
+
+
     public int StockQuantity { get; set; }
     public bool IsShippingEnabled { get; set; }
     public decimal? Weight { get; set; }
@@ -97,9 +103,10 @@ public class ProductSummaryItemModel : BaseModel
     public List<ProductSpecificationModel> Specifications { get; set; }
     public IList<ColorAttributeValue> ColorAttributeValues { get; set; }
     public ProductSummaryPriceModel PriceModel { get; set; } = new();
+    public ICollection<ProductLabelModel> ProductLabels { get; set; } = [];
     public IList<ImageModel> Images { get; set; }
     public DeliveryTimeModel DeliveryTimeModel { get; set; }
-   
+
     public class ColorAttributeValue
     {
         public int AttributeId { get; set; }

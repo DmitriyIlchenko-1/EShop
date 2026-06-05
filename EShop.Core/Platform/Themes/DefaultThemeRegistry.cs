@@ -17,7 +17,7 @@ public class DefaultThemeRegistry : IThemeRegistry
     public DefaultThemeRegistry(IApplicationContext app)
     {
         //todo: change to theme provider
-        _fileProvider = app.WebRoot;
+        _fileProvider = app.ContentRoot;
         Initialize();
     }
 

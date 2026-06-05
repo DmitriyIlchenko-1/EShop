@@ -1,8 +1,10 @@
+@using EShop.Core.Common.Domain
 @model EShop.Web.Models.Catalog.ProductSummaryItemModel
 
 @{
     var showVariants = false;
     var parent = Model.Parent;
+    var price = Model.PriceModel;
 }
 <li class="resource-list__item">
     <div class="product-card">
@@ -16,62 +18,73 @@
 
             <div class="product-card__top-content">
                 <ul class="product-card__labels list-unstyled top-0 left-0 ">
-                    <li class="product-card__label-wrapper flex">
-                                        <span
-                                            class="product-card__label product-card__label--refurbished product-card__label--rounded">
-                                        <svg class="icon" aria-hidden="true" focusable="false" width="16" height="16"
-                                             viewBox="0 0 48 48"
-                                             fill="none" xmlns="http://www.w3.org/2000/svg"><g
-                                                id="SVGRepo_bgCarrier" stroke-width="0"></g><g
+                    @foreach (var label in Model.ProductLabels)
+                    {
+                        var classNames = "product-card__label product-card__label--rounded ";
+                        switch (label.Name)
+                        {
+                            case SystemLabelNames.Sale:
+                                classNames += "product-card__label--sale";
+                                <li class="product-card__label-wrapper flex">
+                                    <span
+                                        class="@classNames">
+                                        <svg class="icon align-middle" focusable="false" aria-hidden="true"
+                                             width="16" height="16"
+                                             version="1.0"
+                                             id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                                             xmlns:xlink="http://www.w3.org/1999/xlink"
+                                             viewBox="-2.56 -2.56 69.12 69.12" enable-background="new 0 0 64 64"
+                                             xml:space="preserve" fill="#000000" transform="rotate(90)">
+                                               <g id="SVGRepo_bgCarrier" stroke-width="0"></g><g
                                                 id="SVGRepo_tracerCarrier" stroke-linecap="round"
-                                                stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <rect
-                                                    width="48" height="48" fill="white" fill-opacity="0.01"></rect> <path
-                                                    d="M33.5264 19.5L25.793 6.10544C25.01 4.74918 23.0425 4.77835 22.3 6.15723L17 16"
-                                                    stroke="#000000" stroke-width="4.8" stroke-linecap="round"
-                                                    stroke-linejoin="round"></path> <path
-                                                    d="M25 40H41.4209C42.9855 40 43.9442 38.2843 43.1242 36.9518L37 27"
-                                                    stroke="#000000" stroke-width="4.8" stroke-linecap="round"
-                                                    stroke-linejoin="round"></path> <path
-                                                    d="M13 23L4.77297 36.986C3.98869 38.3192 4.95001 40 6.49684 40H17"
-                                                    stroke="#000000" stroke-width="4.8" stroke-linecap="round"
-                                                    stroke-linejoin="round"></path> <path d="M29 36L25 40L29 44"
-                                                                                          stroke="#000000"
-                                                                                          stroke-width="4.8"
-                                                                                          stroke-linecap="round"
-                                                                                          stroke-linejoin="round"></path> <path
-                                                    d="M28 18.2004L33.4641 19.6646L34.9282 14.2004" stroke="#000000"
-                                                    stroke-width="4.8" stroke-linecap="round"
-                                                    stroke-linejoin="round"></path> <path
-                                                    d="M7.5 24.4641L12.9641 23L14.4282 28.4641" stroke="#000000"
-                                                    stroke-width="4.8" stroke-linecap="round"
-                                                    stroke-linejoin="round"></path> </g></svg>
-                                            Refurbished
-                                        </span>
-                    </li>
-                    <li class="product-card__label-wrapper  flex">
-                                        <span
-                                            class="product-card__label product-card__label--sale product-card__label--rounded">
-                                           <svg class="icon align-middle" focusable="false" aria-hidden="true"
-                                                width="16" height="16"
-                                                version="1.0"
-                                                id="Layer_1" xmlns="http://www.w3.org/2000/svg"
-                                                xmlns:xlink="http://www.w3.org/1999/xlink"
-                                                viewBox="-2.56 -2.56 69.12 69.12" enable-background="new 0 0 64 64"
-                                                xml:space="preserve" fill="#000000" transform="rotate(90)"><g
-                                                   id="SVGRepo_bgCarrier" stroke-width="0"></g><g
-                                                   id="SVGRepo_tracerCarrier" stroke-linecap="round"
-                                                   stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.128"></g><g
-                                                   id="SVGRepo_iconCarrier"> <g> <polygon fill="none" stroke="#000000"
-                                                                                          stroke-width="5.3759999999999994"
-                                                                                          stroke-miterlimit="10"
-                                                                                          points="25,1 63,39 39,63 1,25 1,1 "></polygon> <circle
-                                                           fill="none" stroke="#000000"
-                                                           stroke-width="5.3759999999999994"
-                                                           stroke-miterlimit="10" cx="17" cy="17"
-                                                           r="6"></circle> </g> </g></svg>
-                                            <span class="align-middle">Up to 15% off</span>
-                                        </span>
-                    </li>
+                                                stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.128"></g><g
+                                                id="SVGRepo_iconCarrier"> <g> <polygon fill="none" stroke="#000000"
+                                                                                       stroke-width="5.3759999999999994"
+                                                                                       stroke-miterlimit="10"
+                                                                                       points="25,1 63,39 39,63 1,25 1,1 "></polygon> <circle
+                                                        fill="none" stroke="#000000" stroke-width="5.3759999999999994"
+                                                        stroke-miterlimit="10" cx="17" cy="17"
+                                                        r="6"></circle> </g> </g></svg>
+                                        @label.Content
+                                    </span>
+                                </li>
+                                break;
+                            default:
+                                classNames += "product-card__label--custom";
+                                break;
+                        }
+                    }
+
+                    @* <li class="product-card__label-wrapper  flex"> *@
+                    @*     <span *@
+                    @*         class="product-card__label product-card__label--sale product-card__label--rounded"> *@
+                    @*         <svg class="icon align-middle" focusable="false" aria-hidden="true" *@
+                    @*              width="16" height="16" *@
+                    @*              version="1.0" *@
+                    @*              id="Layer_1" xmlns="http://www.w3.org/2000/svg" *@
+                    @*              xmlns:xlink="http://www.w3.org/1999/xlink" *@
+                    @*              viewBox="-2.56 -2.56 69.12 69.12" enable-background="new 0 0 64 64" *@
+                    @*              xml:space="preserve" fill="#000000" transform="rotate(90)"> *@
+                    @*             <g *@
+                    @*                 id="SVGRepo_bgCarrier" stroke-width="0"></g> *@
+                    @*             <g *@
+                    @*                 id="SVGRepo_tracerCarrier" stroke-linecap="round" *@
+                    @*                 stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.128"></g> *@
+                    @*             <g *@
+                    @*                 id="SVGRepo_iconCarrier"> *@
+                    @*                 <g> *@
+                    @*                     <polygon fill="none" stroke="#000000" *@
+                    @*                              stroke-width="5.3759999999999994" *@
+                    @*                              stroke-miterlimit="10" *@
+                    @*                              points="25,1 63,39 39,63 1,25 1,1 "></polygon> *@
+                    @*                     <circle *@
+                    @*                         fill="none" stroke="#000000" *@
+                    @*                         stroke-width="5.3759999999999994" *@
+                    @*                         stroke-miterlimit="10" cx="17" cy="17" *@
+                    @*                         r="6"></circle> </g> </g></svg> *@
+                    @*         <span class="align-middle">Up to 15% off</span> *@
+                    @*     </span> *@
+                    @* </li> *@
 
                 </ul>
                 <!--The Media part of the product card-->
@@ -120,14 +133,14 @@
                             <div class="slideshow__slides">
                                 @foreach (var img in Model.Images)
                                 {
-                                    <div class="slideshow__slide product-media-container media-fit product-media-container--image">
+                                    <div
+                                        class="slideshow__slide product-media-container media-fit product-media-container--image">
                                         <div class="product-media">
                                             <!--TODO: I'll add the sizes and srcset attributes when I start rendering this html though the backend.-->
-                                            <img  class="product-media__image" loading="eager"
+                                            <img class="product-media__image" loading="eager"
                                                  fetchpriority="auto"
                                                  src="@img.Url"
-                                                 append-srcset="true"
-                                                 max-srcset-width="3840"
+                                                 max-src-width="3840"
                                                  es-model="img"
                                                  alt="@img.Alt"/>
                                         </div>
@@ -144,7 +157,7 @@
             <div class="product-card__main-content">
 
 
-                <p eh-if="parent.ShowBrand" class="product-card__ribbon-text text-sm mb-1"><span
+                <p eh-if="@(parent.ShowBrand && Model.Brand != null)" class="product-card__ribbon-text text-sm mb-1"><span
                         class="visually-hidden">Brand:</span>@Model.Brand.Name
                 </p>
 
@@ -156,11 +169,14 @@
                         </a>
                     </h2>
                 </div>
+                
                 <div eh-if="@(parent.ShowRating && Model.TotalReviews > 0)" class="rating">
-                     @{
-                         var ratingPercent = ((Model.RatingSum * 100) / Model.TotalReviews) / 5;
-                     }
-                    <div role="img" aria-label="@(Model.RatingSum / Model.TotalReviews) out of 5.0 stars."
+                    @{
+                        var ratingPercent = Model.RatingSum / (decimal)Model.TotalReviews;
+                        var roundRating = decimal.Round(ratingPercent, 1);
+                        Console.WriteLine();
+                    }
+                    <div role="img" aria-label="@(roundRating) out of 5.0 stars."
                          class="rating__star-container inline-block align-middle">
                         <span style="--rating: @ratingPercent; --rating-max: 5"
                               class="rating__stars ">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
@@ -172,9 +188,13 @@
                 </div>
 
                 <p class="price mt-2">
-                                            <span class="price__current"><span
-                                                    class="visually-hidden">Sale price</span>$394.00</span>
-                    <s class="price__regular"><span class="visually-hidden">Old price</span>$455.44</s>
+                    
+                    <span class="price__current">
+                        <span class="visually-hidden">Sale price
+                        </span>@Html.Raw(price.FinalPrice)
+                    </span>
+                    <s eh-if="price.Saving.HasSaving" class="price__regular"><span
+                            class="visually-hidden">Old price</span>@Html.Raw(price.Saving.SavingPrice)</s>
                 </p>
 
                 <p data-inventory-level="normal"
@@ -188,7 +208,7 @@
 
                     </svg>
                     <span class="visually-hidden">Stock information - </span>
-                    Only 44 left
+                    @Model.DeliveryTimeModel.StockAvailability
                 </p>
 
                 @* <partial name="_Product.Variants" model="Model.ProductVariantAttributes"/> *@

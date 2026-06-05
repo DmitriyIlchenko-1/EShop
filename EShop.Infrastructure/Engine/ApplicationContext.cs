@@ -9,7 +9,7 @@ public class DefaultApplicationContext : IApplicationContext
 {
     public IFileProvider AppDataRoot { get; private set; }
     public IFileProvider WebRoot { get; private set; }
-    public IFileProvider ImageRoot { get; private set; }
+    public IFileProvider ContentRoot => Environment.ContentRootFileProvider;
    
     public IWebHostEnvironment Environment { get; init; }
 
@@ -22,13 +22,11 @@ public class DefaultApplicationContext : IApplicationContext
 
     private void EnsureFileProvidersCreated()
     {
-        var webRootPath = Environment.ContentRootPath;
-        WebRoot = new PhysicalFileProvider(webRootPath);
-        if (Directory.Exists(Path.Combine(webRootPath, "App_Data")))
+        var contentRootPath = Environment.ContentRootPath;
+        WebRoot = new PhysicalFileProvider(Path.Combine(contentRootPath, "wwwroot"));
+        if (Directory.Exists(Path.Combine(contentRootPath, "App_Data")))
         {
-            AppDataRoot = new PhysicalFileProvider(Path.Combine(webRootPath, "App_Data"));
+            AppDataRoot = new PhysicalFileProvider(Path.Combine(contentRootPath, "App_Data"));
         }
-        
-        ImageRoot = new PhysicalFileProvider(Path.Combine(webRootPath, "wwwroot/images"));
     }
 }

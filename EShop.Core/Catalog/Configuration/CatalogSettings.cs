@@ -17,4 +17,7 @@ public class CatalogSettings : ISettings
     public bool ShowSpecificationsProductList { get; set; }
     public bool ShowReviewsProductList { get; set; }
     
+    //TODO: temp - remove
+    public int? LabelAsNewForMaxDays { get; set; } 
+
 }

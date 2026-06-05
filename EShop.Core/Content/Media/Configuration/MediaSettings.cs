@@ -8,6 +8,7 @@ public class MediaSettings : ISettings
     public int MaxImageWidth { get; set; }  
     public int MaxHeight { get; set; } 
     public int HttpCacheDuration { get; set; }
+    public int MinSrcsetWidth { get; set; }
 
     public ResponseCacheLocation CacheType 
     {

@@ -18,12 +18,12 @@ public interface IImageCache
 public class ImageCache : IImageCache
 {
     private readonly IFileProvider _imageFileProvider;
-    private const string SubDirectory = "Cached";
+    private const string SubDirectory = "images/Cached";
     private const string IdFormat = "0000000";
 
     public ImageCache(IApplicationContext app)
     {
-        _imageFileProvider = app.ImageRoot;
+        _imageFileProvider = app.WebRoot;
     }
 
     public async Task PutAsync(CachedImage cacheImage, IImage image)

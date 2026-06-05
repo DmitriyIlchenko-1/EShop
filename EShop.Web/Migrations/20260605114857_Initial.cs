@@ -59,18 +59,6 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Checkout_Shipping",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Checkout_Shipping", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Common_City",
                 columns: table => new
                 {
@@ -105,6 +93,22 @@ namespace EShop.Web.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Common_DeliveryTime", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Common_Label",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
+                    Template = table.Column<string>(type: "text", nullable: true),
+                    Color = table.Column<string>(type: "text", nullable: true),
+                    IconName = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Common_Label", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -266,6 +270,7 @@ namespace EShop.Web.Migrations
                     CouponCode = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     CouponUsageType = table.Column<int>(type: "integer", nullable: false),
                     CouponUsageAmount = table.Column<int>(type: "integer", nullable: false),
+                    DiscountUsageAmount = table.Column<int>(type: "integer", nullable: false),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Deleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -392,6 +397,7 @@ namespace EShop.Web.Migrations
                     IsRootParent = table.Column<bool>(type: "boolean", nullable: false),
                     Deleted = table.Column<bool>(type: "boolean", nullable: false),
                     DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    HasDiscountsApplied = table.Column<bool>(type: "boolean", nullable: false),
                     ParentId = table.Column<int>(type: "integer", nullable: true),
                     MediaFileId = table.Column<int>(type: "integer", nullable: true)
                 },
@@ -456,7 +462,7 @@ namespace EShop.Web.Migrations
                     Slug = table.Column<string>(type: "text", nullable: true),
                     EntityId = table.Column<int>(type: "integer", nullable: false),
                     EntityName = table.Column<string>(type: "text", nullable: true),
-                    Active = table.Column<bool>(type: "boolean", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     EntityTypeId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -468,30 +474,6 @@ namespace EShop.Web.Migrations
                         principalTable: "Platform_EntityType",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Discount_ShippingDiscount_Mapping",
-                columns: table => new
-                {
-                    DiscountId = table.Column<int>(type: "integer", nullable: false),
-                    ShippingId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Discount_ShippingDiscount_Mapping", x => new { x.DiscountId, x.ShippingId });
-                    table.ForeignKey(
-                        name: "FK_Discount_ShippingDiscount_Mapping_Catalog_Discount_Discount~",
-                        column: x => x.DiscountId,
-                        principalTable: "Catalog_Discount",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Discount_ShippingDiscount_Mapping_Checkout_Shipping_Shippin~",
-                        column: x => x.ShippingId,
-                        principalTable: "Checkout_Shipping",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -566,6 +548,7 @@ namespace EShop.Web.Migrations
                     MetaKeywords = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    HasDiscountsApplied = table.Column<bool>(type: "boolean", nullable: false),
                     BasePriceAmount = table.Column<decimal>(type: "numeric", nullable: true),
                     BasePriceBaseAmount = table.Column<decimal>(type: "numeric", nullable: true),
                     CombinationDisplayBehaviour = table.Column<int>(type: "integer", nullable: false),
@@ -583,10 +566,6 @@ namespace EShop.Web.Migrations
                     IsVisibleIndividually = table.Column<bool>(type: "boolean", nullable: false),
                     IsShippingEnabled = table.Column<bool>(type: "boolean", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
-                    OldPrice = table.Column<decimal>(type: "numeric", nullable: true),
-                    SpecialPrice = table.Column<decimal>(type: "numeric", nullable: true),
-                    SpecialPriceEndsUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    SpecialPriceStartsUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ApprovedRatingSum = table.Column<int>(type: "integer", nullable: false),
                     NotApprovedRatingSum = table.Column<int>(type: "integer", nullable: false),
                     ApprovedReviewCount = table.Column<int>(type: "integer", nullable: false),
@@ -610,6 +589,30 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Discount_CategoryDiscount_Mapping",
+                columns: table => new
+                {
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    DiscountId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Discount_CategoryDiscount_Mapping", x => new { x.CategoryId, x.DiscountId });
+                    table.ForeignKey(
+                        name: "FK_Discount_CategoryDiscount_Mapping_Catalog_Category_Category~",
+                        column: x => x.CategoryId,
+                        principalTable: "Catalog_Category",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Discount_CategoryDiscount_Mapping_Catalog_Discount_Discount~",
+                        column: x => x.DiscountId,
+                        principalTable: "Catalog_Discount",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Platform_User",
                 columns: table => new
                 {
@@ -627,6 +630,7 @@ namespace EShop.Web.Migrations
                     LastUserAgent = table.Column<string>(type: "text", nullable: true),
                     LastUserDeviceType = table.Column<string>(type: "text", nullable: true),
                     LastVisitedPage = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true),
+                    DiscountCouponCode = table.Column<string>(type: "text", nullable: true),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     LatestUpdateOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     LastActivityDateUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -819,6 +823,31 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Common_ProductLabel",
+                columns: table => new
+                {
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    LabelId = table.Column<int>(type: "integer", nullable: false),
+                    Order = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Common_ProductLabel", x => new { x.LabelId, x.ProductId });
+                    table.ForeignKey(
+                        name: "FK_Common_ProductLabel_Catalog_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Common_ProductLabel_Common_Label_LabelId",
+                        column: x => x.LabelId,
+                        principalTable: "Common_Label",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Content_ProductMedia",
                 columns: table => new
                 {
@@ -902,6 +931,25 @@ namespace EShop.Web.Migrations
                         principalTable: "Platform_User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Checkout_Order",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Checkout_Order", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Checkout_Order_Platform_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Platform_User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1015,6 +1063,33 @@ namespace EShop.Web.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Catalog_DiscountUsageHistory",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DiscountId = table.Column<int>(type: "integer", nullable: false),
+                    OrderId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_DiscountUsageHistory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_DiscountUsageHistory_Catalog_Discount_DiscountId",
+                        column: x => x.DiscountId,
+                        principalTable: "Catalog_Discount",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Catalog_DiscountUsageHistory_Checkout_Order_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Checkout_Order",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Catalog_Brand_MediaFileId",
                 table: "Catalog_Brand",
@@ -1034,6 +1109,16 @@ namespace EShop.Web.Migrations
                 name: "IX_Catalog_Discount_BadgeId",
                 table: "Catalog_Discount",
                 column: "BadgeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Catalog_DiscountUsageHistory_DiscountId",
+                table: "Catalog_DiscountUsageHistory",
+                column: "DiscountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Catalog_DiscountUsageHistory_OrderId",
+                table: "Catalog_DiscountUsageHistory",
+                column: "OrderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Catalog_Product_BrandId",
@@ -1131,6 +1216,11 @@ namespace EShop.Web.Migrations
                 column: "SpecificationAttributeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Checkout_Order_UserId",
+                table: "Checkout_Order",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Common_Address_CityId",
                 table: "Common_Address",
                 column: "CityId");
@@ -1144,6 +1234,11 @@ namespace EShop.Web.Migrations
                 name: "IX_Common_District_CityId",
                 table: "Common_District",
                 column: "CityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Common_ProductLabel_ProductId",
+                table: "Common_ProductLabel",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Common_UserAddress_AddressId",
@@ -1176,14 +1271,14 @@ namespace EShop.Web.Migrations
                 column: "WidgetZoneId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Discount_CategoryDiscount_Mapping_DiscountId",
+                table: "Discount_CategoryDiscount_Mapping",
+                column: "DiscountId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Discount_ProductDiscount_Mapping_ProductId",
                 table: "Discount_ProductDiscount_Mapping",
                 column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Discount_ShippingDiscount_Mapping_ShippingId",
-                table: "Discount_ShippingDiscount_Mapping",
-                column: "ShippingId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Platform_UrlRecord_EntityTypeId",
@@ -1210,6 +1305,9 @@ namespace EShop.Web.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Catalog_DiscountUsageHistory");
+
+            migrationBuilder.DropTable(
                 name: "Catalog_ProductAttributeOption");
 
             migrationBuilder.DropTable(
@@ -1231,6 +1329,9 @@ namespace EShop.Web.Migrations
                 name: "Catalog_Reply");
 
             migrationBuilder.DropTable(
+                name: "Common_ProductLabel");
+
+            migrationBuilder.DropTable(
                 name: "Common_UserAddress");
 
             migrationBuilder.DropTable(
@@ -1240,10 +1341,10 @@ namespace EShop.Web.Migrations
                 name: "Content_WidgetInstance");
 
             migrationBuilder.DropTable(
-                name: "Discount_ProductDiscount_Mapping");
+                name: "Discount_CategoryDiscount_Mapping");
 
             migrationBuilder.DropTable(
-                name: "Discount_ShippingDiscount_Mapping");
+                name: "Discount_ProductDiscount_Mapping");
 
             migrationBuilder.DropTable(
                 name: "Platform_ActivityLog");
@@ -1264,10 +1365,10 @@ namespace EShop.Web.Migrations
                 name: "Platform_UserRole");
 
             migrationBuilder.DropTable(
-                name: "Catalog_ProductAttributeOptionsSet");
+                name: "Checkout_Order");
 
             migrationBuilder.DropTable(
-                name: "Catalog_Category");
+                name: "Catalog_ProductAttributeOptionsSet");
 
             migrationBuilder.DropTable(
                 name: "Catalog_SpecificationAttributeOption");
@@ -1282,16 +1383,19 @@ namespace EShop.Web.Migrations
                 name: "Catalog_ProductReview");
 
             migrationBuilder.DropTable(
+                name: "Common_Label");
+
+            migrationBuilder.DropTable(
                 name: "Content_WidgetZone");
 
             migrationBuilder.DropTable(
                 name: "Content_Widget");
 
             migrationBuilder.DropTable(
-                name: "Catalog_Discount");
+                name: "Catalog_Category");
 
             migrationBuilder.DropTable(
-                name: "Checkout_Shipping");
+                name: "Catalog_Discount");
 
             migrationBuilder.DropTable(
                 name: "Platform_EntityType");

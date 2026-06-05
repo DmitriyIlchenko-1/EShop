@@ -8,6 +8,7 @@ public interface IWebHelper
     HttpContext HttpContext { get; }
     string GetClientIdentity();
     IPAddress GetClientIpAddress();
+    bool IsCurrentConnectionSecured();
 
     string GetCurrentPageUrl(bool includeQueryString = false);
 

@@ -15,26 +15,26 @@ public class CombinationPriceCalculator : IPriceCalculator
 
     public int Order { get; }
 
-    public async Task CalculateAsync(ProductPriceContext context, CalculatorDelegate next)
+    public async Task CalculateAsync(CalculatorPriceContext context, CalculatorDelegate next)
     {
-        var product = context.Product;
-        if (product.Price == 0)
-        {
-            var comb = (from p in _db.Products
-                where p.Id == product.Id
-                join c in _db.ProductVariantAttributeCombinations
-                    on p.Id equals c.ProductId
-                where c.Price
-                      == _db.ProductVariantAttributeCombinations
-                          .Where(x => x.ProductId == product.Id)
-                          .Min(x => x.Price)
-                select c).FirstOrDefault();
-            
-            if (comb != null)
-            {
-                context.FinalPrice = comb.Price;
-            }
-        }
+        // var product = context.Product;
+        // if (product.BasePriceAmount == 0)
+        // {
+        //     var comb = (from p in _db.Products
+        //         where p.Id == product.Id
+        //         join c in _db.ProductVariantAttributeCombinations
+        //             on p.Id equals c.ProductId
+        //         where c.Price
+        //               == _db.ProductVariantAttributeCombinations
+        //                   .Where(x => x.ProductId == product.Id)
+        //                   .Min(x => x.Price)
+        //         select c).FirstOrDefault();
+        //     
+        //     if (comb != null)
+        //     {
+        //         context.CalculatedProductPrice.FinalPrice = comb.Price;
+        //     }
+        // }
 
         await next(context);
     }

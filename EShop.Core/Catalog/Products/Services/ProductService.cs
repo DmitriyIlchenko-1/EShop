@@ -15,8 +15,8 @@ public class ProductService : IProductService
         _componentContext = componentContext;
     }
 
-    public virtual ProductLazyContext CreateProductBatchContext(IEnumerable<Product> products, bool includeHidden = false)
+    public virtual ProductBatchContext CreateProductBatchContext(IEnumerable<Product> products, bool includeHidden = false)
     {
-         return new ProductLazyContext(_db, products,_componentContext, includeHidden);
+         return new ProductBatchContext(_db, products,_componentContext, includeHidden);
     }
 }

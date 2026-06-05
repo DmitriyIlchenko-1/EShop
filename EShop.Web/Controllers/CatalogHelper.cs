@@ -10,6 +10,7 @@ using EShop.Core.Catalog.Products.Services;
 using EShop.Core.Common.Services;
 using EShop.Core.Content.Media.Services;
 using EShop.Core.Data;
+using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Routing;
 using EShop.Infrastructure.Extensions;
 using EShop.Web.Common.Models.Choices;
@@ -32,11 +33,12 @@ public partial class CatalogHelper
     private readonly IUrlService _urlService;
     private readonly ApplicationDbContext _db;
     private readonly CatalogSettings _catalogSettings;
+    private readonly PerformanceSettings _performanceSettings;
 
     public CatalogHelper(IMediaService mediaService,
         IProductService productService, IProductAttributeMaterializer productAttributeMaterializer,
         IDeliveryTimeService deliveryTimeService, ApplicationDbContext db, IDateTimeService dateTimeService,
-        IUrlService urlService, CatalogSettings catalogSettings, IBrandService brandService, IProductPriceService productPriceService)
+        IUrlService urlService, CatalogSettings catalogSettings, IBrandService brandService, IProductPriceService productPriceService, PerformanceSettings performanceSettings)
     {
         _mediaService = mediaService;
         _productService = productService;
@@ -48,6 +50,7 @@ public partial class CatalogHelper
         _catalogSettings = catalogSettings;
         _brandService = brandService;
         _productPriceService = productPriceService;
+        _performanceSettings = performanceSettings;
     }
 
     public ProductDetailsModelContext CreateModelContext(Product product, ProductVariantQuery query)
@@ -190,7 +193,7 @@ public partial class CatalogHelper
     private async Task PrepareProductAttributeModelAsync(ProductDetailsModelContext context, ProductDetailVm model)
     {
         var product = context.Product;
-        var batchContext = context.LazyContext;
+        var batchContext = context.BatchContext;
         var query = context.ProductVariantQuery;
         var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
         var weightAdjustment = 0m;
@@ -270,7 +273,7 @@ public partial class CatalogHelper
     ProductDetailVm model)
 {
     var product = context.Product;
-    var batchContext = context.LazyContext;
+    var batchContext = context.BatchContext;
     var query = context.ProductVariantQuery;
     var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
 
@@ -416,7 +419,7 @@ public partial class CatalogHelper
     {
         ArgumentNullException.ThrowIfNull(context);
         var product = context.Product;
-        var batchContext = context.LazyContext;
+        var batchContext = context.BatchContext;
         var specs = await batchContext.ProductSpecification.GetOrLoadAsync(product.Id);
         model.ProductSpecifications = specs
             .Select(x => new ProductSpecificationModel()

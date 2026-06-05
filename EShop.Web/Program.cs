@@ -41,7 +41,7 @@ startup.ConfigureServices(builder.Services, builder.Configuration);
 //Add services directly through Autofac.
 builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);
 var app = builder.Build();
-app.UseMiddleware<MediaMiddleware>();
+ 
 engine.ChildLifetimeScopeAccessor
     = app.Services.GetRequiredService<IChildLifetimeScopeAccessor>();
 
@@ -58,20 +58,6 @@ var dbContext = scope.Resolve<ApplicationDbContext>();
 var userManager = scope.Resolve<UserManager<User>>();
 var roleManager = scope.Resolve<RoleManager<Role>>();
 var dataSeeder = new DataSeeder(dbContext, userManager, roleManager);
-//await dataSeeder.SeedDataAsync();
-
-// var scope = EngineContext
-//     .Create()
-//     .ChildLifetimeScopeAccessor.GetChildLifetimeScope;
-// var factory = new DefaultPriceCalculatorFactory(scope);
-// var calculators = factory.Create(new PriceCalculatorContext());
-//
-// var dispatcher = new DefaultCalculatorDispatcher(calculators.ToArray(), new PriceCalculatorContext()
-// {
-//     Product = new Product()
-//     {
-//         Price = 999m
-//     }
-// });
-// await dispatcher.InvokeAsync();
+await dataSeeder.SeedDataAsync();
+ 
 app.Run();

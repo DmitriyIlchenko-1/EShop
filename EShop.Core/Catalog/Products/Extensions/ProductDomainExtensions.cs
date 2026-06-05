@@ -1,4 +1,5 @@
 using EShop.Core.Catalog.Attributes.Domain;
+using EShop.Core.Catalog.Configuration;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
@@ -53,5 +54,15 @@ public static class ProductDomainExtensions
         {
             values.Add(nameof(Product.DeliveryTimeId), combination.DeliveryTimeId);
         }
+    }
+
+    public static bool IsNew(this Product product, CatalogSettings settings)
+    {
+        if (settings.LabelAsNewForMaxDays.HasValue && settings.LabelAsNewForMaxDays > 0)
+        {
+            return (DateTime.UtcNow - product.CreatedOnUtc).Days <= settings.LabelAsNewForMaxDays.Value;
+        }
+
+        return false;
     }
 }

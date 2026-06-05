@@ -2,5 +2,5 @@ namespace EShop.Core.Catalog.Products.Price;
 
 public interface IPriceCalculatorFactory
 {
-    ICollection<IPriceCalculator> Create(PriceCalculatorContext context);
+    ICollection<IPriceCalculator> Create(CalculatorPriceContext context);
 }

@@ -12,6 +12,7 @@ public partial class ApplicationDbContext
 {
     public DbSet<Address> Addresses { get; set; }
     public DbSet<City> Cities { get; set; }
+    public DbSet<Label> Labels { get; set; }
     public DbSet<DeliveryTime> DeliveryTimes { get; set; }
     public DbSet<District> Districts { get; set; }
     public DbSet<UserAddress> UserAddresses { get; set; }

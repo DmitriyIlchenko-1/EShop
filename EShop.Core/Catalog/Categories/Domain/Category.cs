@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Content.Media.Domain;
 using EShop.Infrastructure.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EShop.Core.Catalog.Categories.Domain;
 
-internal class BrandMap : IEntityTypeConfiguration<Category>
+internal class CategoryMap : IEntityTypeConfiguration<Category>
 {
     public void Configure(EntityTypeBuilder<Category> builder)
     {
@@ -24,6 +25,7 @@ internal class BrandMap : IEntityTypeConfiguration<Category>
             .WithMany()
             .HasForeignKey(x => x.MediaFileId)
             .OnDelete(DeleteBehavior.SetNull);
+        
     }
 }
 
@@ -47,6 +49,7 @@ public class Category : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IDis
     public bool IsRootParent { get; set; }
     public bool Deleted { get; set; }
     public int DisplayOrder { get; set; }
+    public bool HasDiscountsApplied { get; set; }
     public Category Parent { get; set; }
 
     public int? ParentId { get; set; }
@@ -56,4 +59,5 @@ public class Category : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IDis
     public int? MediaFileId { get; set; }
 
     public MediaFile MediaFile { get; set; }
+    public ICollection<Discount> AppliedDiscounts { get; set; } = [];
 }

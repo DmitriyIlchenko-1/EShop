@@ -10,7 +10,7 @@ public interface IApplicationContext
 {
     public IFileProvider AppDataRoot { get; }
     public IFileProvider WebRoot { get; }
-    public IFileProvider ImageRoot { get; }
+    public IFileProvider ContentRoot { get; }
     public IWebHostEnvironment Environment { get; }
 }
 

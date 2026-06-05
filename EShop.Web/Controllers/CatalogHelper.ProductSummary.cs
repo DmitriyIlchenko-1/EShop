@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Policy;
 using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Attributes.Extensions;
 using EShop.Core.Catalog.Brands.Domain;
@@ -7,6 +8,7 @@ using EShop.Core.Catalog.Products;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Catalog.Products.Extensions;
 using EShop.Core.Catalog.Products.Price;
+using EShop.Core.Common.Domain;
 using EShop.Core.Content.Media.Domain;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
@@ -26,17 +28,37 @@ public partial class CatalogHelper
         if (!(products.Count > 0))
             return ProductSummaryModel.Empty;
 
-        products = products.Where(x => x.Name == "Product 1").ToList();
 
-        
-        var model = new ProductSummaryModel();
+        mappingSettings ??= new ProductSummaryMappingSettings();
+        var model = new ProductSummaryModel()
+        {
+            ShowBrand = mappingSettings.MapBrands,
+            ShowRating = mappingSettings.MapReviews
+        };
         var lazyProductCtx = _productService.CreateProductBatchContext(products);
         var itemCtx = new ProductSummaryItemContext(model)
         {
-            LazyProductContext = lazyProductCtx,
-            MappingSettings = mappingSettings ??= new ProductSummaryMappingSettings(),
+            BatchProductContext = lazyProductCtx,
+            MappingSettings = mappingSettings,
             ProductVariantQuery = variantQuery,
         };
+
+        //TODO: continue await lazyProductCtx.ProductLabels.LoadAllAsync();
+
+        var prefetchSlugs = mappingSettings.PrefetchUrlSlugs.HasValue
+            ? mappingSettings.PrefetchUrlSlugs.Value
+            : _performanceSettings.AlwaysPrefetchUrlSlugs;
+
+        int[] productIds = prefetchSlugs
+            ? products
+                .Select(p => p.Id)
+                .ToArray()
+            : Array.Empty<int>();
+
+        if (prefetchSlugs)
+        {
+            await _urlService.PrefetchUrlRecordsAsync(nameof(Product), productIds, false);
+        }
 
         if (mappingSettings.MapColorAttributes)
         {
@@ -71,14 +93,29 @@ public partial class CatalogHelper
 
     private async Task<ProductSummaryItemModel> MapProductSummaryItem(Product product, ProductSummaryItemContext ctx)
     {
-        var lazyContext = ctx.LazyProductContext;
+        var batchContext = ctx.BatchProductContext;
         var settings = ctx.MappingSettings;
         var item = new ProductSummaryItemModel(ctx.Model)
         {
             Id = product.Id,
             Name = product.Name,
-            SeName = await _urlService.GetActiveSlugAsync(product.Id, product.Name),
+            SeName = await _urlService.GetActiveSlugAsync(product.Id, product.GetEntityName()),
         };
+
+
+        // var labels = await lazyContext.ProductLabels.GetOrLoadAsync(product.Id);
+        // foreach (var productLabel in labels)
+        // {
+        //     var label = productLabel.Label;
+        //     var labelModel = new ProductLabelModel()
+        //     {
+        //         Name = label.Name,
+        //         Color = label.Color,
+        //         SvgName = label.SvgPath
+        //     };
+        //     
+        //     item.ProductLabels.Add(labelModel);
+        // }
 
         //ready
         if (settings.MapShortDescription)
@@ -89,7 +126,7 @@ public partial class CatalogHelper
         //ready
         if (settings.MapColorAttributes)
         {
-            var attributes = await lazyContext.Attributes.GetOrLoadAsync(product.Id);
+            var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
             if (attributes.Any())
             {
                 var colorAttributes = attributes
@@ -107,22 +144,15 @@ public partial class CatalogHelper
                     })
                     .ToList();
                 item.ColorAttributeValues = colorAttributes;
-
-               
-                
             }
         }
 
         if (settings.MapPrices)
         {
-            var price = await _productPriceService.CalculatePriceAsync(new PriceCalculatorContext()
-            {
-                Product = product
-            });
-            MapPriceModel(price, item.PriceModel);
+            await MapPriceModel(product, item, ctx);
         }
 
-        //ready
+
         if (settings.MapBrands)
         {
             if (ctx.Brands.TryGetValue(product.BrandId ?? 0, out var brand) && brand != null)
@@ -133,7 +163,7 @@ public partial class CatalogHelper
 
         if (settings.MapPictures)
         {
-            var productMedia = await lazyContext.ProductMedia.GetOrLoadAsync(product.Id);
+            var productMedia = await batchContext.ProductMedia.GetOrLoadAsync(product.Id);
             item.Images = await PrepareProductSummaryImageModelAsync(product, productMedia);
         }
 
@@ -147,11 +177,19 @@ public partial class CatalogHelper
                 product.Length.ToString("G29"));
         }
 
-        // item.DeliveryTimeModel = await PrepareDeliveryTimeModelAsync(product, settings);
+        item.DeliveryTimeModel = await PrepareDeliveryTimeModelAsync(product, settings);
+       
+        if (product.IsNew(_catalogSettings))
+        {
+            item.ProductLabels.Add(new ProductLabelModel()
+            {
+                Name = SystemLabelNames.NewArrival,
+                Content = SystemLabelNames.NewArrivalTemplate
+            });
+        }
 
         item.Sku = product.Sku;
         item.IsAvailable = product.IsAvailable;
-        item.StockQuantity = product.StockQuantity;
         item.TotalReviews = product.ApprovedReviewCount;
         item.RatingSum = product.ApprovedRatingSum;
         item.ShortDescription = product.ShortDescription;
@@ -166,23 +204,37 @@ public partial class CatalogHelper
         var model = new DeliveryTimeModel
         {
             Id = product.DeliveryTimeId ?? 0,
-            ShowDeliveryTime = product.IsShippingEnabled
+            ShowDeliveryTime = settings.ShowDeliveryTime,
         };
-        if (!model.ShowDeliveryTime)
-            return model;
-
-        var deliveryTime = await _deliveryTimeService.GetDeliveryTimeAsync(model.Id);
-        if (deliveryTime != null)
+        
+        if (model.ShowDeliveryTime)
         {
-            model.DeliveryTimeName = deliveryTime.Name;
-            model.DeliveryTimeDate = _deliveryTimeService.GetFormattedDeliveryDate(deliveryTime);
+            var deliveryTime = await _deliveryTimeService.GetDeliveryTimeAsync(model.Id);
+            if (deliveryTime != null)
+            {
+                model.DeliveryTimeName = deliveryTime.Name;
+                model.DeliveryTimeDate = _deliveryTimeService.GetFormattedDeliveryDate(deliveryTime);
+            }
+
+            model.StatusLabel = model.DeliveryTimeName;
+            if (model.StatusLabel.IsEmpty())
+            {
+                model.ShowDeliveryTime = false;
+            }
         }
 
-        model.StatusLabel = model.DeliveryTimeName;
-        if (model.StatusLabel.IsEmpty())
+        if (product.DisplayStockQuantity)
         {
-            model.ShowDeliveryTime = false;
+            if (product.StockQuantity > 0)
+            {
+                model.StockAvailability = string.Format(CatalogMessages.Product.StockAvailability, product.StockQuantity);
+            }
+            else
+            {
+                model.StockAvailability = CatalogMessages.Product.OutOfStock;
+            }
         }
+
 
         return model;
     }
@@ -369,15 +421,36 @@ public partial class CatalogHelper
 
         model.Id = productBrand.Id;
         model.Name = productBrand.Name;
+        model.SeName = _urlService
+            .GetActiveSlugAsync(productBrand.Id, productBrand.GetEntityName())
+            .GetAwaiter()
+            .GetResult();
 
         return model;
     }
 
-    protected void MapPriceModel(ProductPriceContext price, ProductSummaryPriceModel model)
+    protected async Task MapPriceModel(Product product, ProductSummaryItemModel item, ProductSummaryItemContext ctx)
     {
-        model.FinalPrice = price.FinalPrice;
-        model.OldPrice = price.OldPrice;
-        model.PercentOfSaving = price.PriceDiscountContext.PercentOfSaving;
+        var calculatedPrice = await _productPriceService.CalculatePriceAsync(new PriceCalculationContext()
+        {
+            Product = product,
+            BatchContext = ctx.BatchProductContext
+        });
+        var priceModel = item.PriceModel;
+        var labelModel = item.ProductLabels;
+        priceModel.FinalPrice = calculatedPrice.FinalPrice;
+        priceModel.RegularPrice = calculatedPrice.PriceSaving.SavingPrice;
+        priceModel.Saving = calculatedPrice.PriceSaving;
+        if (calculatedPrice.PriceSaving.HasSaving)
+        {
+            labelModel.Add(new ProductLabelModel()
+            {
+                Name = SystemLabelNames.Sale,
+                Content = string.Format(CultureInfo.InvariantCulture,
+                    SystemLabelNames.SaleTemplate,
+                    calculatedPrice.PriceSaving.SavingPercent.ToString("N0"))
+            });
+        }
     }
 
     public async Task<IList<CategorySummaryModel>> PrepareCategorySummaryModelAsync(IList<Category> categories)
@@ -417,19 +490,20 @@ public partial class CatalogHelper
             .ToListAsync();
     }
 
-    protected virtual async Task<IList<ImageModel>> PrepareProductSummaryImageModelAsync(Product product, IEnumerable<ProductMedia> mediaFiles)
+    protected virtual async Task<IList<ImageModel>> PrepareProductSummaryImageModelAsync(Product product,
+        IEnumerable<ProductMedia> mediaFiles)
     {
         if (!mediaFiles.Any())
         {
             return [];
         }
         //TODO: add caching.
-        
+
 
         async Task<ImageModel> MapToMediaModelAsync(ProductMedia productMedia)
         {
             var mediaFile = productMedia.MediaFile;
-            var mediaUrl = await _mediaService.GetMediaUrlAsync(mediaFile);
+            (string url, string subpath) = await _mediaService.GetMediaUrlAsync(mediaFile);
             return new ImageModel()
             {
                 FileName = mediaFile.FileName,
@@ -439,10 +513,11 @@ public partial class CatalogHelper
                 Alt = mediaFile.Alt,
                 Width = mediaFile.Width,
                 Height = mediaFile.Height,
-                Url = mediaUrl
+                Url = url,
+                Subpath = subpath
             };
         }
-        
+
         var imageModels = await mediaFiles
             .SelectAsync(async image => await MapToMediaModelAsync(image))
             .ToListAsync();
@@ -471,15 +546,17 @@ public partial class CatalogHelper
     public class ProductSummaryMappingSettings
     {
         //TODO: Remove =true from all of these after testing
-        public bool MapPrices { get; set; } 
-        public bool MapPictures { get; set; }  
-        public bool MapDimensions { get; set; } 
-        public bool MapColorAttributes { get; set; }  
+        public bool MapPrices { get; set; }
+        public bool MapPictures { get; set; }
+        public bool MapDimensions { get; set; }
+        public bool MapColorAttributes { get; set; }
 
-        public bool MapSpecificationAttributes { get; set; }  
-        public bool MapBrands { get; set; } 
+        public bool MapSpecificationAttributes { get; set; }
+        public bool MapBrands { get; set; }
 
-        public bool MapShortDescription { get; set; }  
-        public bool MapReviews { get; set; } 
+        public bool MapShortDescription { get; set; }
+        public bool MapReviews { get; set; }
+        public bool? PrefetchUrlSlugs { get; set; }
+        public bool ShowDeliveryTime { get; set; }
     }
 }

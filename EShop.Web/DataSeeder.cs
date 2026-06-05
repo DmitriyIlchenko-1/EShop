@@ -13,10 +13,12 @@ using System.Threading.Tasks;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Configuration;
+using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Content.Media.Domain;
 using EShop.Core.Data;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Configuration.Domain;
+using EShop.Core.Platform.Routing.Domain;
 using EShop.Infrastructure.Utilities;
 
 public class DataSeeder
@@ -35,37 +37,128 @@ public class DataSeeder
 
     public async Task SeedDataAsync()
     {
-
         await _dbContext.Database.EnsureDeletedAsync();
         await _dbContext.Database.MigrateAsync();
         await _dbContext.Database.EnsureCreatedAsync();
-         
+
+        await SeedLabels();
         await SeedUsersAsync();
         await SeedBrandsAsync();
+        await SeedDiscountsAsync();
         await SeedProductsAsync();
         await SeedProductReviewsAsync();
         await SeedDeliveriesAsync();
         await SeedProductCategoriesAsync();
+        await SeedSlugsAsync();
 
         //Must be after product and attributes are created
         await SeedSpecificationsAsync();
         await SeedAttributesAsync();
         await SeedCombinationsAsync();
-        
+
         await SeedSettingsAsync();
+    }
+
+    private async Task SeedSlugsAsync()
+    {
+        var products = await _dbContext.Products.ToListAsync();
+        var brands = await _dbContext.Brands.ToListAsync();
+        var categories = await _dbContext.Categories.ToListAsync();
+        List<UrlRecord> urlRecords = new List<UrlRecord>();
+        foreach (var product in products)
+        {
+            urlRecords.Add(new UrlRecord
+            {
+                EntityId = product.Id,
+                EntityName = product.GetEntityName(),
+                Slug = $"FriendlySlugFor-{product.GetEntityName()}-{product.Id}",
+                IsActive = true
+            });
+        }
+
+        foreach (var brand in brands)
+        {
+            urlRecords.Add(new UrlRecord
+            {
+                EntityId = brand.Id,
+                EntityName = brand.GetEntityName(),
+                Slug = $"FriendlySlugFor-{brand.GetEntityName()}-{brand.Id}",
+                IsActive = true
+            });
+        }
+
+        foreach (var category in categories)
+        {
+            urlRecords.Add(new UrlRecord
+            {
+                EntityId = category.Id,
+                EntityName = category.GetEntityName(),
+                Slug = $"FriendlySlugFor-{category.GetEntityName()}-{category.Id}",
+                IsActive = true
+            });
+        }
+
+        await _dbContext.UrlRecords.AddRangeAsync(urlRecords);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    private async Task SeedDiscountsAsync()
+    {
+        var discounts = new List<Discount>();
+        for (var i = 0; i < 10; i++)
+        {
+            var d = new Discount()
+            {
+                Name = $"Discount {i}",
+                DiscountType = i < 5 ? DiscountType.CategoryDiscount : DiscountType.ProductDiscount,
+                UsePercentage = i % 2 == 0 ? true : false,
+                StartsOnUtc = DateTime.UtcNow.AddMonths(-1),
+                EndsOnUtc = DateTime.UtcNow.AddMonths(1),
+            };
+            var amount = d.UsePercentage
+                ? ((decimal)Random.Shared.NextSingle()) * 100
+                : (decimal)Random.Shared.Next(10, 300);
+            d.DiscountAmount = decimal.Round(amount, 4);
+            discounts.Add(d);
+        }
+
+        await _dbContext.Discounts.AddRangeAsync(discounts);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    private async Task SeedLabels()
+    {
+        var labels = new List<Label>()
+        {
+            new Label()
+            {
+                Name = SystemLabelNames.Sale,
+                IconName = "discount-svgrepo-com.svg",
+                Template = SystemLabelNames.SaleTemplate,
+            },
+            new Label()
+            {
+                Name = "Refurbished",
+                IconName = "recycling-svgrepo-com.svg",
+                Template = "Refurbished",
+            }
+        };
+
+        await _dbContext.Labels.AddRangeAsync(labels);
+        await _dbContext.SaveChangesAsync();
     }
 
     private async Task SeedSettingsAsync()
     {
         var performanceSettings = new Setting()
         {
-           Name = "PerformanceSettings.MaxUnavailableCombinations",
-           Value = "1"
+            Name = "PerformanceSettings.MaxUnavailableCombinations",
+            Value = "1"
         };
 
         await _dbContext.Settings.AddAsync(performanceSettings);
-      
-        
+
+
         var catalogSetting = new Setting()
         {
             Name = "CatalogSettings.ShowDescriptionProductList",
@@ -81,10 +174,9 @@ public class DataSeeder
             Name = "CatalogSettings.ShowReviewsProductList",
             Value = "true"
         };
-      
+
         await _dbContext.Settings.AddRangeAsync([catalogSetting, catalogSetting2, catalogSetting3]);
         await _dbContext.SaveChangesAsync();
-         
     }
 
     private async Task SeedUsersAsync()
@@ -120,8 +212,8 @@ public class DataSeeder
 
             var roles = new List<Role>
             {
-                new Role { Name = "Administrator", NormalizedName = "ADMINISTRATOR" },
-                new Role { Name = "Customer", NormalizedName = "CUSTOMER" }
+                new Role { Name = UserRoleNameConstants.Guest },
+                new Role { Name = UserRoleNameConstants.Registered }
             };
 
             foreach (var role in roles)
@@ -132,28 +224,28 @@ public class DataSeeder
                 }
             }
 
-            //Assign users to roles
-            var userRoles = new List<UserRole>();
-            var customerRole = _dbContext.Roles.FirstOrDefault(r => r.Name == "Customer");
-            var adminRole = _dbContext.Roles.FirstOrDefault(r => r.Name == "Administrator");
+            // //Assign users to roles
+            // var userRoles = new List<UserRole>();
+            // var customerRole = _dbContext.Roles.FirstOrDefault(r => r.Name == "Customer");
+            // var adminRole = _dbContext.Roles.FirstOrDefault(r => r.Name == "Administrator");
 
 
             _dbContext.Users.AddRange(users);
 
             await _dbContext.SaveChangesAsync();
 
-            if (customerRole != null)
-            {
-                userRoles.Add(new UserRole { UserId = users[0].Id, RoleId = customerRole.Id }); // John is customer
-                userRoles.Add(new UserRole { UserId = users[1].Id, RoleId = customerRole.Id }); // Jane is customer
-            }
-
-            if (adminRole != null)
-            {
-                userRoles.Add(new UserRole { UserId = users[0].Id, RoleId = adminRole.Id }); //John is also admin
-            }
-
-            _dbContext.UserRoles.AddRange(userRoles);
+            // if (customerRole != null)
+            // {
+            //     userRoles.Add(new UserRole { UserId = users[0].Id, RoleId = customerRole.Id }); // John is customer
+            //     userRoles.Add(new UserRole { UserId = users[1].Id, RoleId = customerRole.Id }); // Jane is customer
+            // }
+            //
+            // if (adminRole != null)
+            // {
+            //     userRoles.Add(new UserRole { UserId = users[0].Id, RoleId = adminRole.Id }); //John is also admin
+            // }
+            //
+            // _dbContext.UserRoles.AddRange(userRoles);
 
 
             await _dbContext.SaveChangesAsync();
@@ -237,6 +329,8 @@ public class DataSeeder
                 var description = $"This is a description for {productName}.  It is a high-quality product.";
                 var shortDescription = $"Short description for {productName}.";
                 var brand = brands.ElementAt(i % brands.Count); // Random brand assignment
+                var approvedReviewCount = Random.Shared.Next(0, 20);
+                var approvedRatingSum = approvedReviewCount == 0 ? 0 : Random.Shared.Next(approvedReviewCount, approvedReviewCount * 5);
                 products.Add(new Product
                 {
                     Name = productName,
@@ -247,8 +341,14 @@ public class DataSeeder
                     Published = true,
                     ShowOnHomePage = true,
                     AttributeCombinationRequired = true,
-                    Price = i == 1 ? 0 : decimal.Parse((new Random().Next(10, 1000) + new Random().NextDouble())
-                        .ToString()), // Random price
+                    DisplayStockQuantity = true,
+                    ApprovedReviewCount = approvedReviewCount,
+                    ApprovedRatingSum = approvedRatingSum,
+                    Price = i == 1
+                        ? 0
+                        : decimal.Round(
+                            decimal.Parse((new Random().Next(10, 1000) + new Random().NextDouble()).ToString()),
+                            4),
                     Weight = (decimal)new Random().NextDouble() * 10,
                     Height = (decimal)new Random().NextDouble() * 5,
                     Width = (decimal)new Random().NextDouble() * 5,
@@ -263,19 +363,70 @@ public class DataSeeder
                 });
             }
 
-            var first = products.FirstOrDefault(x => x.Name == "Product 1");
-            var image = new MediaFile()
+            //Image mapping
+            string[] images =
+                ("pexels-supliful-14029288.jpg, pexels-makrufinmuhammad-33538457.jpg, pexels-rubaitulazad-17220082.jpg, " +
+                 "pexels-afterave-essentials-2011504051-29107590.jpg, pexels-karola-g-4735904.jpg, pexels-dogu-tuncer-339534179-16749129.jpg, " +
+                 "pexels-shvetsa-5953781.jpg, pexels-sales-trust-162265874-10825665.jpg, pexels-haipham07-13549321.jpg, pexels-cup-of-couple-8015487.jpg, " +
+                 "pexels-karola-g-5632335.jpg, pexels-deise-elen-2149983761-31406906.jpg, pexels-karola-g-4735905.jpg, pexels-ogutomacedo-13013761.jpg, " +
+                 "pexels-azka-nandya-91944639-9507137.jpg, pexels-roman-odintsov-7691161.jpg, pexels-cup-of-couple-8015482.jpg, pexels-alesiakozik-7796593.jpg, " +
+                 "pexels-roman-odintsov-7691117.jpg, pexels-karola-g-4202325.jpg")
+                .Split([' ', ','], StringSplitOptions.RemoveEmptyEntries);
+
+            var imageModels = new List<MediaFile>();
+            foreach (var imageName in images)
             {
-                FileName = "main_logo.jpg",
-                MediaType = ".jpg"
-            };
-            var map = new ProductMedia()
+                var mediaFile = new MediaFile()
+                {
+                    FileName = imageName,
+                    MediaType = ".jpg"
+                };
+                imageModels.Add(mediaFile);
+            }
+
+            _dbContext.MediaFiles.AddRange(imageModels);
+            await _dbContext.SaveChangesAsync();
+
+            for (int i = 0; i < products.Count; i++)
             {
-                Product = first,
-                MediaFile = image
-            };
+                var map = new ProductMedia
+                {
+                    Product = products[i],
+                    MediaFile = imageModels[Random.Shared.Next(0, imageModels.Count)],
+                };
+                _dbContext.ProductMedias.Add(map);
+            }
+
+
+            //LABELS
+            var refurbished = await _dbContext.Labels.SingleOrDefaultAsync(x => x.Name == "Refurbished");
+            foreach (var product in products)
+            {
+                product.Labels.Add(refurbished);
+            }
+
+
+            //DISCOUNTS
+            var discounts = await _dbContext
+                .Discounts.Where(x => x.DiscountType == DiscountType.ProductDiscount)
+                .ToListAsync();
+            for (int i = 0; i < products.Count; i++)
+            {
+                var numberToApply = Random.Shared.Next(0, 3);
+                var selectedDiscounts = discounts
+                    .OrderBy((x) => Guid.NewGuid())
+                    .Take(numberToApply)
+                    .ToList();
+
+                foreach (var discount in selectedDiscounts)
+                {
+                    products[i]
+                        .AppliedDiscounts.Add(discount);
+                    products[i].HasDiscountsApplied = true;
+                }
+            }
+
             _dbContext.Products.AddRange(products);
-            _dbContext.ProductMedias.Add(map);
             await _dbContext.SaveChangesAsync();
         }
     }
@@ -363,37 +514,33 @@ public class DataSeeder
             {
                 new SpecificationAttribute
                 {
-                    Name = "Screen Size", Alias = "Screen Size", DisplayOrder = 1,  
-                  
+                    Name = "Screen Size", Alias = "Screen Size", DisplayOrder = 1,
                 },
                 new SpecificationAttribute
                 {
-                    Name = "Resolution", Alias = "Resolution", DisplayOrder = 2, 
-                  
+                    Name = "Resolution", Alias = "Resolution", DisplayOrder = 2,
                 },
                 new SpecificationAttribute
-                    { Name = "RAM", Alias = "RAM", DisplayOrder = 3,  },
+                    { Name = "RAM", Alias = "RAM", DisplayOrder = 3, },
                 new SpecificationAttribute
                 {
-                    Name = "Storage", Alias = "Storage", DisplayOrder = 4, 
-                },
-                new SpecificationAttribute
-                {
-                    Name = "Processor", Alias = "Processor", DisplayOrder = 5, 
-                   
+                    Name = "Storage", Alias = "Storage", DisplayOrder = 4,
                 },
                 new SpecificationAttribute
                 {
-                    Name = "Operating System", Alias = "OS", DisplayOrder = 6, 
-                   
+                    Name = "Processor", Alias = "Processor", DisplayOrder = 5,
                 },
                 new SpecificationAttribute
                 {
-                    Name = "Color", Alias = "Color", DisplayOrder = 7,  
+                    Name = "Operating System", Alias = "OS", DisplayOrder = 6,
                 },
                 new SpecificationAttribute
                 {
-                    Name = "Weight", Alias = "Weight", DisplayOrder = 8,  
+                    Name = "Color", Alias = "Color", DisplayOrder = 7,
+                },
+                new SpecificationAttribute
+                {
+                    Name = "Weight", Alias = "Weight", DisplayOrder = 8,
                 },
             };
 
@@ -558,12 +705,12 @@ public class DataSeeder
                 },
                 new ProductAttribute
                 {
-                    Name = "Size",Alias = "Size", Description = "Product size", DisplayOrder = 2,
+                    Name = "Size", Alias = "Size", Description = "Product size", DisplayOrder = 2,
                     TextPrompt = "Select size"
                 },
                 new ProductAttribute
                 {
-                    Name = "Material",  Alias = "Material", Description = "Product material",
+                    Name = "Material", Alias = "Material", Description = "Product material",
                     DisplayOrder = 3, TextPrompt = "Select material"
                 },
                 new ProductAttribute
@@ -819,7 +966,7 @@ public class DataSeeder
                 Weight = product.Weight, // Start with product's base weight
                 StockQuantity = product.StockQuantity,
             };
-            
+
             decimal priceAdjustment = 0;
             decimal weightAdjustment = 0;
             var rawAttributes = new List<string>(); // Used to create raw attributes JSON
@@ -838,7 +985,8 @@ public class DataSeeder
                 selection.AddAttribute(variantAttribute.Id, randomValue.Id);
                 // Optionally, set IsPreSelected for the value in the combination
             }
-             //1 ,24   
+
+            //1 ,24   
 // product 1: attributeId: [109,110,111, 112] : valueidL 325, 328, 331, 334  (selection)
 // hashcode: -64235192
             combination.HashCode = selection.GetHashCode();
@@ -857,10 +1005,35 @@ public class DataSeeder
             var products = _dbContext.Products.ToList();
             var categories = new List<Category>
             {
-                new Category { Name = "Electronics", DisplayOrder = 1, Description = "Electronics category" },
-                new Category { Name = "Clothing", DisplayOrder = 2, Description = "Clothing category" },
-                new Category { Name = "Books", DisplayOrder = 3, Description = "Books category" }
+                new Category
+                {
+                    Name = "Electronics", DisplayOrder = 1, Description = "Electronics category", IsPublished = true
+                },
+                new Category
+                    { Name = "Clothing", DisplayOrder = 2, Description = "Clothing category", IsPublished = true },
+                new Category { Name = "Books", DisplayOrder = 3, Description = "Books category", IsPublished = true }
             };
+
+            //DISCOUNTS
+            var discounts = await _dbContext
+                .Discounts.Where(x => x.DiscountType == DiscountType.CategoryDiscount)
+                .ToListAsync();
+
+            for (int i = 0; i < categories.Count; i++)
+            {
+                var numberToApply = Random.Shared.Next(0, 3);
+                var selectedDiscounts = discounts
+                    .OrderBy((x) => Guid.NewGuid())
+                    .Take(numberToApply)
+                    .ToList();
+
+                foreach (var discount in selectedDiscounts)
+                {
+                    categories[i]
+                        .AppliedDiscounts.Add(discount);
+                    categories[i].HasDiscountsApplied = true;
+                }
+            }
 
             await _dbContext.Categories.AddRangeAsync(categories);
             await _dbContext.SaveChangesAsync();

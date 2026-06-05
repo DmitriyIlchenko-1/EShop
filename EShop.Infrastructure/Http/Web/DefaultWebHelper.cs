@@ -37,6 +37,9 @@ public class DefaultWebHelper : IWebHelper
         return null;
     }
 
+    public bool IsCurrentConnectionSecured()
+        => HttpContext?.Request.IsHttps == true;
+
     public HttpContext? HttpContext => _httpContextAccessor.HttpContext;
 
     public IPAddress GetClientIpAddress()

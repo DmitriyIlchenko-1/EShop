@@ -78,4 +78,7 @@ public abstract class BaseEntity : IEquatable<BaseEntity>
     {
         return Id != 0;
     }
+
+    public virtual string GetEntityName() => GetType()
+        .Name;
 }

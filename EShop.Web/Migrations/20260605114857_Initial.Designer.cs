@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EShop.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260511204118_Initial")]
+    [Migration("20260605114857_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -24,6 +24,21 @@ namespace EShop.Web.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Discount_CategoryDiscount_Mapping", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DiscountId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CategoryId", "DiscountId");
+
+                    b.HasIndex("DiscountId");
+
+                    b.ToTable("Discount_CategoryDiscount_Mapping");
+                });
 
             modelBuilder.Entity("Discount_ProductDiscount_Mapping", b =>
                 {
@@ -38,21 +53,6 @@ namespace EShop.Web.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("Discount_ProductDiscount_Mapping");
-                });
-
-            modelBuilder.Entity("Discount_ShippingDiscount_Mapping", b =>
-                {
-                    b.Property<int>("DiscountId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ShippingId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("DiscountId", "ShippingId");
-
-                    b.HasIndex("ShippingId");
-
-                    b.ToTable("Discount_ShippingDiscount_Mapping");
                 });
 
             modelBuilder.Entity("EShop.Core.Catalog.Attributes.Domain.ProductAttribute", b =>
@@ -431,6 +431,9 @@ namespace EShop.Web.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("HasDiscountsApplied")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IncludeInMenu")
                         .HasColumnType("boolean");
 
@@ -553,6 +556,9 @@ namespace EShop.Web.Migrations
                         .HasMaxLength(400)
                         .HasColumnType("character varying(400)");
 
+                    b.Property<bool>("HasDiscountsApplied")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("HasOptions")
                         .HasColumnType("boolean");
 
@@ -600,9 +606,6 @@ namespace EShop.Web.Migrations
                     b.Property<int>("NotApprovedReviewCount")
                         .HasColumnType("integer");
 
-                    b.Property<decimal?>("OldPrice")
-                        .HasColumnType("numeric");
-
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
@@ -622,15 +625,6 @@ namespace EShop.Web.Migrations
                     b.Property<string>("Sku")
                         .HasMaxLength(400)
                         .HasColumnType("character varying(400)");
-
-                    b.Property<decimal?>("SpecialPrice")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime?>("SpecialPriceEndsUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("SpecialPriceStartsUtc")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("StockQuantity")
                         .HasColumnType("integer");
@@ -800,6 +794,9 @@ namespace EShop.Web.Migrations
                     b.Property<int>("DiscountType")
                         .HasColumnType("integer");
 
+                    b.Property<int>("DiscountUsageAmount")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("EndsOnUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -842,7 +839,7 @@ namespace EShop.Web.Migrations
                     b.ToTable("Catalog_DiscountBadge", (string)null);
                 });
 
-            modelBuilder.Entity("EShop.Core.Checkout.Shipping.Domain.Shipping", b =>
+            modelBuilder.Entity("EShop.Core.Catalog.Products.Price.DiscountUsageHistory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -850,9 +847,40 @@ namespace EShop.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DiscountId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Checkout_Shipping", (string)null);
+                    b.HasIndex("DiscountId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Catalog_DiscountUsageHistory", (string)null);
+                });
+
+            modelBuilder.Entity("EShop.Core.Checkout.Order.Domain.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Checkout_Order", (string)null);
                 });
 
             modelBuilder.Entity("EShop.Core.Common.Domain.Address", b =>
@@ -1000,6 +1028,50 @@ namespace EShop.Web.Migrations
                     b.HasIndex("CityId");
 
                     b.ToTable("Common_District", (string)null);
+                });
+
+            modelBuilder.Entity("EShop.Core.Common.Domain.Label", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IconName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(15)
+                        .HasColumnType("character varying(15)");
+
+                    b.Property<string>("Template")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Common_Label", (string)null);
+                });
+
+            modelBuilder.Entity("EShop.Core.Common.Domain.ProductLabel", b =>
+                {
+                    b.Property<int>("LabelId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.HasKey("LabelId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Common_ProductLabel", (string)null);
                 });
 
             modelBuilder.Entity("EShop.Core.Common.Domain.UserAddress", b =>
@@ -1275,6 +1347,9 @@ namespace EShop.Web.Migrations
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("DiscountCouponCode")
+                        .HasColumnType("text");
+
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
@@ -1455,9 +1530,6 @@ namespace EShop.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean");
-
                     b.Property<int>("EntityId")
                         .HasColumnType("integer");
 
@@ -1466,6 +1538,9 @@ namespace EShop.Web.Migrations
 
                     b.Property<string>("EntityTypeId")
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -1505,6 +1580,21 @@ namespace EShop.Web.Migrations
                     b.ToTable("Platform_ThemeVariable", (string)null);
                 });
 
+            modelBuilder.Entity("Discount_CategoryDiscount_Mapping", b =>
+                {
+                    b.HasOne("EShop.Core.Catalog.Categories.Domain.Category", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EShop.Core.Catalog.Products.Price.Discount", null)
+                        .WithMany()
+                        .HasForeignKey("DiscountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Discount_ProductDiscount_Mapping", b =>
                 {
                     b.HasOne("EShop.Core.Catalog.Products.Price.Discount", null)
@@ -1516,21 +1606,6 @@ namespace EShop.Web.Migrations
                     b.HasOne("EShop.Core.Catalog.Products.Domain.Product", null)
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Discount_ShippingDiscount_Mapping", b =>
-                {
-                    b.HasOne("EShop.Core.Catalog.Products.Price.Discount", null)
-                        .WithMany()
-                        .HasForeignKey("DiscountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EShop.Core.Checkout.Shipping.Domain.Shipping", null)
-                        .WithMany()
-                        .HasForeignKey("ShippingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1758,6 +1833,36 @@ namespace EShop.Web.Migrations
                     b.Navigation("Badge");
                 });
 
+            modelBuilder.Entity("EShop.Core.Catalog.Products.Price.DiscountUsageHistory", b =>
+                {
+                    b.HasOne("EShop.Core.Catalog.Products.Price.Discount", "Discount")
+                        .WithMany()
+                        .HasForeignKey("DiscountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EShop.Core.Checkout.Order.Domain.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Discount");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("EShop.Core.Checkout.Order.Domain.Order", b =>
+                {
+                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("EShop.Core.Common.Domain.Address", b =>
                 {
                     b.HasOne("EShop.Core.Common.Domain.City", "City")
@@ -1784,6 +1889,25 @@ namespace EShop.Web.Migrations
                         .IsRequired();
 
                     b.Navigation("City");
+                });
+
+            modelBuilder.Entity("EShop.Core.Common.Domain.ProductLabel", b =>
+                {
+                    b.HasOne("EShop.Core.Common.Domain.Label", "Label")
+                        .WithMany()
+                        .HasForeignKey("LabelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EShop.Core.Catalog.Products.Domain.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Label");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("EShop.Core.Common.Domain.UserAddress", b =>

@@ -1,9 +1,11 @@
+using EShop.Core.Catalog.Products.Domain;
+using EShop.Core.Catalog.Products.Price;
+
 namespace EShop.Web.Models.Catalog;
 
 public class ProductSummaryPriceModel
 {
-    public decimal FinalPrice { get; set; }
-    public decimal? OldPrice { get; set; }
-    
-    public int PercentOfSaving { get; set; }
+    public Money FinalPrice { get; set; }
+    public Money RegularPrice { get; set; }
+    public PriceSaving Saving { get; set; }
 }

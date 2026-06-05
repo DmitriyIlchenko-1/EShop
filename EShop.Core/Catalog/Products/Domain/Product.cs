@@ -4,6 +4,8 @@ using System.Runtime.Serialization;
 using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Categories.Domain;
+using EShop.Core.Catalog.Products.Price;
+using EShop.Core.Common.Domain;
 using EShop.Core.Content.Media.Domain;
 using EShop.Infrastructure.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +30,11 @@ internal class ProductMap : IEntityTypeConfiguration<Product>
             .WithMany()
             .UsingEntity<ProductMedia>();
         
+        builder.HasMany<Label>(x => x.Labels)
+            .WithMany()
+            .UsingEntity<ProductLabel>();
 
+        
     }
 }
 
@@ -44,6 +50,7 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IMerg
     [StringLength(400)] public string MetaKeywords { get; set; }
     public DateTime CreatedOnUtc { get; set; }
     public DateTime ModifiedOnUtc { get; set; }
+    public bool HasDiscountsApplied { get; set; }
 
     private decimal? _basePriceAmount;
 
@@ -65,6 +72,7 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IMerg
 
     public bool IsAvailable { get; set; }
     public bool AttributeCombinationRequired { get; set; }
+    public bool DisplayStockQuantity { get; set; }
     public bool Published { get; set; }
     public bool Deleted { get; set; }
     private int? _deliveryTimeId;
@@ -119,12 +127,7 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IMerg
         set => _price = value;
     }
 
-    public decimal? OldPrice { get; set; }
-    public decimal? SpecialPrice { get; set; }
-
-    public DateTime? SpecialPriceEndsUtc { get; set; }
-
-    public DateTime? SpecialPriceStartsUtc { get; set; }
+    
 
     public int ApprovedRatingSum { get; set; }
     public int NotApprovedRatingSum { get; set; }
@@ -191,6 +194,8 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IMerg
     public ICollection<ProductVariantAttributeCombination> ProductVariantAttributeCombinations { get; set; }
 
     public ICollection<ProductVariantAttribute> ProductVariantAttributes { get; set; }
+    public ICollection<Label> Labels { get; set; } = [];
+    public ICollection<Discount> AppliedDiscounts { get; set; } = [];
 
     public void AddAttributeCombination(ProductVariantAttributeCombination combination)
     {

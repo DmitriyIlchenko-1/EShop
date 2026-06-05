@@ -2,6 +2,7 @@ using Autofac;
 using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Media.Images;
 using EShop.Infrastructure.Modules;
+using EShop.Web.Common.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -17,11 +18,8 @@ public class StaticFilesStartup : BaseStartup
     public override void ConfigureApplication(IApplicationBuilder applicationBuilder)
     {
         var app = EngineContext.Current.ApplicationContext;
-        
-        applicationBuilder.UseStaticFiles(new StaticFileOptions()
-        {
-            FileProvider = app.ImageRoot,
-            RequestPath = "/images",
-        });
+
+        applicationBuilder.UseMiddleware<MediaMiddleware>();
+        applicationBuilder.UseStaticFiles();
     }
 }

@@ -9,6 +9,7 @@ using EShop.Core.Content.Media.Services;
 using EShop.Core.Content.Widgets.Services;
 using EShop.Core.Data;
 using EShop.Core.Data.Brands.Services;
+using EShop.Core.Data.Categories.Services;
 using EShop.Core.Data.DbHandlers;
 using EShop.Core.Data.Launch;
 using EShop.Core.Platform.Common;
@@ -23,11 +24,12 @@ using EShop.Core.Platform.Themes.Services;
 using EShop.Core.Platform.Web;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Common;
-
+using EShop.Infrastructure.Media;
 using EShop.Infrastructure.Media.Images;
 using EShop.Infrastructure.Modules;
 using EShop.Infrastructure.Storage;
 using EShop.Infrastructure.Utilities;
+using EShop.Web.Common.TagHelpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -45,9 +47,9 @@ public class CoreStartup : BaseStartup
         services.AddScoped<IWidgetInstanceService, WidgetInstanceService>();
         services.AddScoped<IMediaStorageProvider, FileMediaStorageProvider>();
         services.AddScoped<IMediaService, MediaService>();
-        services.AddSingleton<IProductPricingService, ProductPricingService>();
         services.AddSingleton<ICurrencyService, CurrencyService>();
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<ICategoryService, DefaultCategoryService>();
         services.AddScoped<IBrandService, DefaultBrandService>();
         services.AddSingleton<IDateTimeService, DateTimeService>();
         services.AddScoped<IActivityLogger, ActivityLogger>();
@@ -69,10 +71,7 @@ public class CoreStartup : BaseStartup
         services.AddScoped<IProductPriceService, DefaultProductPriceService>();
         services.AddScoped<IPriceCalculatorFactory, DefaultPriceCalculatorFactory>();
         services.AddScoped<IDiscountService, DefaultDiscountService>();
-        services.AddScoped<IImageProcessor, DefaultImageProcessor>();
-        services.AddScoped<IImageCache, ImageCache>();
-        services.AddScoped<IMediaAccessor, DefaultMediaAccessor>();
-        services.AddScoped<IImageFactory, DefaultImageFactory>();
+        services.AddSingleton<ILabelManager, DefaultLabelManager>();
         /*
          * Caching 
          */
@@ -108,5 +107,6 @@ public class CoreStartup : BaseStartup
     {
         builder.RegisterModule(new DbHandlerModule());
         builder.RegisterModule(new PriceModule());
+        builder.RegisterModule(new MediaModule());
     }
 }

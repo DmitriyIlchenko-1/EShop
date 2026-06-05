@@ -2,7 +2,8 @@ using EShop.Core.Catalog.Products.Domain;
 
 namespace EShop.Core.Catalog.Products.Price;
 
-public class PriceCalculatorContext
+public class PriceCalculationContext
 {
     public Product Product { get; set; }
+    public ProductBatchContext BatchContext { get; set; }
 }

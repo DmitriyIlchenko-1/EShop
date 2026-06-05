@@ -25,14 +25,14 @@ public class DefaultMediaAccessor : IMediaAccessor
         _imageProcessor = imageProcessor;
         _imageCache = imageCache;
         
-        _fileProvider = app.ImageRoot;
+        _fileProvider = app.WebRoot;
     }
 
     public async Task<IFileInfo> GetMediaFile(MediaAccessorContext ctx)
     {
         Guard.NotNull(ctx);
         var info = ctx.ImageDescriptor;
-        var originalFile = _fileProvider.GetFileInfo(info.Path);
+        var originalFile = _fileProvider.GetFileInfo("images/" + info.Path);
 
         if (!originalFile.Exists)
         {

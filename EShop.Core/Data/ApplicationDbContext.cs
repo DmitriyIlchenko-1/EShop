@@ -30,19 +30,15 @@ public partial class ApplicationDbContext : DbHandlerContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
-        
     }
-    
-    
- 
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var assemblies = Singleton<ITypeScanner>.Instance.Assemblies;
         base.OnModelCreating(modelBuilder);
-
-        
         RegisterConvention(modelBuilder);
+
 
         RegisterCustomMappings(modelBuilder, assemblies);
         Console.WriteLine();
@@ -52,6 +48,12 @@ public partial class ApplicationDbContext : DbHandlerContext
     {
         var entityTypes = modelBuilder.Model.GetEntityTypes();
         foreach (var entityType in entityTypes)
+        {
+            if (entityType.IsPropertyBag)
+            {
+                continue;
+            }
+
             if (entityType.ClrType.Namespace != null)
             {
                 string[] nameParts = entityType.ClrType.Namespace.Split('.');
@@ -60,6 +62,7 @@ public partial class ApplicationDbContext : DbHandlerContext
                     .Entity(entityType.Name)
                     .ToTable(tableName);
             }
+        }
 
         foreach (var foreignKey in entityTypes.SelectMany(x => x.GetForeignKeys()))
             foreignKey.DeleteBehavior = DeleteBehavior.Restrict;

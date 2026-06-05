@@ -25,6 +25,10 @@ public static partial class StringExtensions
     {
         return value ?? string.Empty;
     }
+    public static string NullIfEmpty(this string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value;
+    }
     
     public static string Reduce(this string str, int maxLength, string postFix = null)
     {

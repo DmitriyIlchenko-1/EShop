@@ -2,9 +2,13 @@ using Autofac;
 using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Brands.Domain;
+using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Products.Domain;
+using EShop.Core.Catalog.Products.Price;
+using EShop.Core.Common.Domain;
 using EShop.Core.Content.Media.Domain;
 using EShop.Core.Data;
+using EShop.Core.Data.Categories.Services;
 using EShop.Infrastructure.Collections;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
@@ -19,7 +23,7 @@ namespace EShop.Core.Catalog.Products;
 /// We've got groups of fields that, if accessed, will load all the related data and return it.
 /// Subsequent calls will then not trigger calls to the database.
 /// </summary>
-public class ProductLazyContext
+public class ProductBatchContext
 {
     private readonly List<int> _productIds = [];
     private readonly bool _includeHidden;
@@ -30,9 +34,12 @@ public class ProductLazyContext
     private LazyMultimap<ProductMedia> _productMedia;
     private LazyMultimap<ProductVariantAttributeCombination> _attributeCombinations;
     private LazyMultimap<ProductLink> _relatedProducts;
+    private LazyMultimap<ProductLabel> _productLabels;
+    private LazyMultimap<Discount> _productDiscounts;
+    private LazyMultimap<ProductCategory> _productCategories;
     private LazyMultimap<ProductSpecificationAttribute> _specifications { get; set; }
 
-    public ProductLazyContext(ApplicationDbContext db, IEnumerable<Product> products,
+    public ProductBatchContext(ApplicationDbContext db, IEnumerable<Product> products,
         IComponentContext componentContext, bool includeHidden = false)
     {
         Guard.NotNull(db);
@@ -55,11 +62,32 @@ public class ProductLazyContext
         set => _brandService = value;
     }
 
+    protected ICategoryService _categoryService;
+
+    internal ICategoryService CategoryService
+    {
+        get => _categoryService ??= _componentContext.Resolve<ICategoryService>();
+        set => _categoryService = value;
+    }
+
 
     public LazyMultimap<ProductVariantAttribute> Attributes
         => _attributes ??= new LazyMultimap<ProductVariantAttribute>(LoadVariantAttributes, _productIds);
 
-   
+    public LazyMultimap<ProductLabel> ProductLabels
+        => _productLabels ??= new LazyMultimap<ProductLabel>(LoadProductLabels, _productIds);
+
+    private async Task<MultiMap<int, ProductLabel>> LoadProductLabels(int[] productIds)
+    {
+        return (await _db
+            .ProductLabels.AsNoTracking()
+            .Include(x => x.Label)
+            .Where(x => productIds.Contains(x.ProductId))
+            .OrderBy(x => x.ProductId)
+            .ThenBy(x => x.Order)
+            .ThenBy(x => x.LabelId)
+            .ToListAsync()).ToMultiMap(x => x.ProductId, x => x);
+    }
 
     public LazyMultimap<ProductSpecificationAttribute> ProductSpecification
         => _specifications ??=
@@ -67,9 +95,21 @@ public class ProductLazyContext
 
     public LazyMultimap<ProductLink> RelatedProducts
         => _relatedProducts ??= new LazyMultimap<ProductLink>(LoadRelatedProducts, _productIds);
-    
+
     public LazyMultimap<ProductMedia> ProductMedia
-    => _productMedia ??= new LazyMultimap<ProductMedia>(LoadProductMedia, _productIds);
+        => _productMedia ??= new LazyMultimap<ProductMedia>(LoadProductMedia, _productIds);
+
+    public LazyMultimap<Discount> ProductDiscounts
+        => _productDiscounts ??= new LazyMultimap<Discount>(LoadProductDiscounts, _productIds);
+
+    public LazyMultimap<ProductCategory> ProductCategories
+        => _productCategories ??= new LazyMultimap<ProductCategory>(LoadProductCategories, _productIds);
+
+    protected virtual async Task<MultiMap<int, ProductCategory>> LoadProductCategories(int[] ids)
+    {
+        return (await CategoryService.GetAllCategoriesByProductIds(ids)).ToMultiMap(x => x.ProductId, x => x);
+    }
+
 
     protected virtual async Task<MultiMap<int, ProductMedia>> LoadProductMedia(int[] ids)
     {
@@ -82,14 +122,30 @@ public class ProductLazyContext
             .ToListAsync()).ToMultiMap(x => x.ProductId, x => x);
     }
 
-   
+    protected virtual async Task<MultiMap<int, Discount>> LoadProductDiscounts(int[] ids)
+    {
+        var map = new MultiMap<int, Discount>();
+        (await _db
+            .Products.AsNoTracking()
+            .Include(x => x.AppliedDiscounts)
+            .Where(x => ids.Contains(x.Id))
+            .Select(x => new
+            {
+                ProductId = x.Id,
+                Discounts = x.AppliedDiscounts
+            })
+            .ToListAsync()).Each(x => map.AddRange(x.ProductId, x.Discounts));
+        return map;
+    }
+
 
     private async Task<MultiMap<int, ProductVariantAttribute>> LoadVariantAttributes(int[] ids)
     {
-        var attributes = await BuildVariantAttributeQuery(_db, ids).ToListAsync();
+        var attributes = await BuildVariantAttributeQuery(_db, ids)
+            .ToListAsync();
         return attributes.ToMultiMap(x => x.ProductId, x => x);
     }
-    
+
     private static IQueryable<ProductVariantAttribute> BuildVariantAttributeQuery(ApplicationDbContext db, int[] ids)
     {
         return db
@@ -118,7 +174,6 @@ public class ProductLazyContext
         return relatedProducts.ToMultiMap(x => x.ProductId, x => x);
     }
 
-     
 
     private async Task<MultiMap<int, ProductSpecificationAttribute>> LoadSpecificationAttributes(int[] ids)
     {

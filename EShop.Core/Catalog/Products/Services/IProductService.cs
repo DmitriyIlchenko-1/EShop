@@ -4,6 +4,6 @@ namespace EShop.Core.Catalog.Products.Services;
 
 public interface IProductService
 {
-    ProductLazyContext CreateProductBatchContext(
+    ProductBatchContext CreateProductBatchContext(
         IEnumerable<Product> products, bool includeHidden = false);
 }

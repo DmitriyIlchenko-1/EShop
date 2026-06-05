@@ -1,4 +1,4 @@
-using EShop.AzureBlobStorage.Providers;
+ 
 using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Modules;
 using EShop.Infrastructure.Storage;

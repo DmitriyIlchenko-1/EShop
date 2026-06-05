@@ -42,6 +42,7 @@ public class User : IdentityUser<int>, IEntityWithTypedId<int>
     public string LastUserDeviceType { get; set; }
 
     [StringLength(2048)] public string LastVisitedPage { get; set; }
+    public string DiscountCouponCode { get; set; }
     public DateTime CreatedOnUtc { get; set; } = DateTime.UtcNow;
     public DateTime? LatestUpdateOnUtc { get; set; }
     public DateTime LastActivityDateUtc { get; set; }

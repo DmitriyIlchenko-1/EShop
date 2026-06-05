@@ -11,7 +11,7 @@ public class DefaultPriceCalculatorFactory : IPriceCalculatorFactory
         _scope = scope;
     }
 
-    public ICollection<IPriceCalculator> Create(PriceCalculatorContext context)
+    public ICollection<IPriceCalculator> Create(CalculatorPriceContext context)
     {
         return _scope.Resolve<ICollection<IPriceCalculator>>();
     }

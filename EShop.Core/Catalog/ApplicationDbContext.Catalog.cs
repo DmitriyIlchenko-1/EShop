@@ -18,6 +18,7 @@ public partial class ApplicationDbContext
     public DbSet<Discount> Discounts { get; set; }
     public DbSet<ProductReview> ProductReviews { get; set; }
     public DbSet<ProductLink> ProductLinks { get; set; }
+    public DbSet<ProductLabel> ProductLabels { get; set; }
     public DbSet<ProductVariantAttribute> ProductVariantAttributes { get; set; }
     public DbSet<ProductAttribute> ProductAttributes { get; set; }
     public DbSet<ProductAttributeOptionsSet> ProductAttributeOptionsSets { get; set; }

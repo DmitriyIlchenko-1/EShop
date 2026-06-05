@@ -1,44 +1,31 @@
+using EShop.Infrastructure.Utilities;
+
 namespace EShop.Core.Catalog.Products.Price;
 
 public class DefaultCalculatorDispatcher
 {
     private readonly IPriceCalculator[] _calculators;
-    private readonly PriceCalculatorContext _context;
 
-    private static readonly CalculatorDelegate DefaultCalculator = (context) =>
-    {
-        if (context.FinalPrice == 0)
-        {
-            context.FinalPrice = context.Product.Price;
-        }
-        
-        return Task.CompletedTask;
-    };
+    private static readonly CalculatorDelegate StartingPoint = _ => Task.CompletedTask;
 
-    public DefaultCalculatorDispatcher(IEnumerable<IPriceCalculator> calculators, PriceCalculatorContext context)
+    public DefaultCalculatorDispatcher(IEnumerable<IPriceCalculator> calculators)
     {
+        Guard.NotNull(calculators);
         _calculators = calculators.OrderBy(x => x.Order).ToArray();
-        _context = context;
     }
 
-    public async Task<ProductPriceContext> InvokeAsync()
+    public async Task InvokeAsync(CalculatorPriceContext ctx)
     {
-        var productPriceContext = new ProductPriceContext()
-        {
-            Product = _context.Product,
-        };
-        
+        Guard.NotNull(ctx);
         var delegates = CreateDelegates();
 
-        CalculatorDelegate calculator = DefaultCalculator;
+        CalculatorDelegate calculator = StartingPoint;
         for (var i = _calculators.Length - 1; i >= 0; i--)
         {
             calculator = delegates[i](calculator);
         }
 
-        await calculator.Invoke(productPriceContext);
-
-        return productPriceContext;
+        await calculator.Invoke(ctx);
     }
 
     private List<Func<CalculatorDelegate, CalculatorDelegate>> CreateDelegates()
@@ -62,4 +49,4 @@ public class DefaultCalculatorDispatcher
     
 }
 
-public delegate Task CalculatorDelegate(ProductPriceContext ctx);
+public delegate Task CalculatorDelegate(CalculatorPriceContext ctx);
