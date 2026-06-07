@@ -31,7 +31,7 @@ public readonly struct Money : IHtmlContent,  IEquatable<Money>, IComparable<Mon
     public override string ToString()
     {
         var formatted = RoundedAmount.ToString("C", NumberFormat);
-        return PostFormat == null ? formatted : string.Format(PostFormat, formatted, CultureInfo.InvariantCulture);
+        return PostFormat == null ? formatted : string.Format(CultureInfo.InvariantCulture, PostFormat, formatted);
     }
 
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)

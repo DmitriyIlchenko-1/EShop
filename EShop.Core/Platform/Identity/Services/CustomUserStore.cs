@@ -23,3 +23,4 @@ public class CustomUserStore : UserStore<User, Role, ApplicationDbContext, int, 
         return Task.CompletedTask;
     }
 }
+

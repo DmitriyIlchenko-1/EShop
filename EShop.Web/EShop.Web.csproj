@@ -12,7 +12,7 @@
   <PropertyGroup>
     <PreserveCompilationContext>false</PreserveCompilationContext>
   </PropertyGroup>
-
+  
     <ItemGroup>
         <Folder Include="App_Data\" />
         <Folder Include="Themes\EShopDefault\wwwroot\" />

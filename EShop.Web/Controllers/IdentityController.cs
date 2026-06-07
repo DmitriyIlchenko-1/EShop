@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Claims;
 using EShop.Core.Data;
 using EShop.Core.Data.Extensions;
@@ -6,6 +7,7 @@ using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Identity.Extensions;
 using EShop.Core.Platform.Logging.Services;
 using EShop.Core.Platform.Web;
+using EShop.Infrastructure.Email;
 using EShop.Infrastructure.Extensions;
 using EShop.Web.Common.Controllers;
 using EShop.Web.Models.Identity;
@@ -15,10 +17,11 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using UserSettings = EShop.Core.Platform.Identity.Configuration.UserSettings;
 
 namespace EShop.Web.Controllers;
 
-public class IdentityController : BaseController
+public class IdentityController : EShopBaseController
 {
     private readonly SignInManager<User> _signInManager;
     private readonly UserManager<User> _userManager;
@@ -26,11 +29,14 @@ public class IdentityController : BaseController
     private readonly IActivityLogger _activityLogger;
     private readonly INotificationManager _notifyManager;
     private readonly ApplicationDbContext _dbContext;
+    private readonly UserSettings _userSettings;
+    private readonly IEmailService _emailService;
+    private readonly LinkGenerator _linkGenerator;
 
 
     public IdentityController(SignInManager<User> signInManager, UserManager<User> userManager,
         IWorkContext workContext, IActivityLogger activityLogger, INotificationManager notifyManager,
-        ApplicationDbContext dbContext)
+        ApplicationDbContext dbContext, UserSettings userSettings, IEmailService emailService, LinkGenerator linkGenerator)
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -38,7 +44,9 @@ public class IdentityController : BaseController
         _activityLogger = activityLogger;
         _notifyManager = notifyManager;
         _dbContext = dbContext;
-        
+        _userSettings = userSettings;
+        _emailService = emailService;
+        _linkGenerator = linkGenerator;
     }
 
 
@@ -47,8 +55,17 @@ public class IdentityController : BaseController
     [HttpGet("register")]
     public IActionResult Register(string? returnUrl = null)
     {
-        ViewData["ReturnUrl"] = Url.IsLocalUrl(returnUrl) ? returnUrl : "/";
-        return View();
+        ViewData["ReturnUrl"] = Url.IsLocalUrl(returnUrl) ? returnUrl : string.Empty;
+        var model = new ApplicationRegistrationModel();
+        PrepareRegisterModelAsync(model);
+        return View(model);
+    }
+
+    private void PrepareRegisterModelAsync(ApplicationRegistrationModel model)
+    {
+        model.FirstNameRequired = _userSettings.FirstNameRequired;
+        model.LastNameRequired = _userSettings.LastNameRequired;
+        model.BirthdayEnabled = _userSettings.BirthdayEnabled;
     }
 
     [HttpPost("register")]
@@ -61,7 +78,7 @@ public class IdentityController : BaseController
             return RedirectToAction(nameof(RegisterResult),
                 new
                 {
-                    message = "You've already registered. You your email and password to log in.",
+                    message = "You've already registered. Use your email and password to log in.",
                     returnUrl
                 });
         }
@@ -80,17 +97,11 @@ public class IdentityController : BaseController
             var oldCreatedOn = user.CreatedOnUtc;
             var oldLastActivityDate = user.LastActivityDateUtc;
 
-            user.FirstName = model.FirstName.Trim();
-            user.LastName = model.LastName.Trim();
-         
+            user.UserName = model.Username != null ? model.Username.Trim() : model.Email.Trim();
             user.Email = model.Email.Trim();
             user.CreatedOnUtc = DateTime.UtcNow;
             user.LastActivityDateUtc = DateTime.UtcNow;
 
-            //TODO: is the try/finally necessary?
-            // Can't we map all the properties at once without splitting that process?
-            // EF will eventually save any changes to tracked entities, though, why not map all the properties
-            // to the user model in one place?
             try
             {
                 var identityResult = await _userManager.UpdateAsync(user);
@@ -138,6 +149,7 @@ public class IdentityController : BaseController
 
     #region Confim Email
 
+    [HttpGet(nameof(ConfirmEmail))]
     public async Task<IActionResult> ConfirmEmail(string code, string email)
     {
         User? user = await _userManager.FindByEmailAsync(email);
@@ -411,8 +423,13 @@ public class IdentityController : BaseController
 
     private void MapRegisterModelToUser(RegistrationBaseModel model, User user)
     {
+        user.FirstName = model.FirstName;
+        user.LastName = model.LastName;
         user.Gender = model.Gender;
-        user.BirthDate = model.BirthDay;
+        if (_userSettings.BirthdayEnabled && model.BirthDay.HasValue)
+        {
+            user.BirthDate = model.BirthDay;
+        }
     }
 
     private async Task<IActionResult> FinalizeUserRegistrationAsync(User user, string returnUrl)
@@ -438,9 +455,10 @@ public class IdentityController : BaseController
         else
         {
             //email confirmation
-            string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            Console.WriteLine($"---CODE--->{code}----");
-            //TODO: send a mail with the code so that the user can click the link and confirm his email address.
+            string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var msg = string.Format(CultureInfo.InvariantCulture, UserConstantTemplates.EmailConfirmation, token);
+            await _emailService.SendEmailConfirmation(user, msg);
+            var path = _linkGenerator.GetPathByAction(HttpContext, nameof(ConfirmEmail), values: new {  token });
             return RedirectToAction(nameof(RegisterResult),
                 new
                 {

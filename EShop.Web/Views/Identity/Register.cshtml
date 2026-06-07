@@ -7,19 +7,19 @@
 <form method="post" asp-route-returnUrl="@ViewData["ReturnUrl"]">
     <div>
         <label asp-for="Email">Email</label>
-        <input asp-for="Email" type="email"/>
+        <input asp-for="Email" type="email" value="cortezz1ty@gmail.com"/>
     </div>
     <div>
         <label asp-for="FirstName">First Name</label>
-        <input asp-for="FirstName"/>
+        <input asp-for="FirstName" value="Dima"/>
     </div>
     <div>
         <label asp-for="LastName">Last Name</label>
-        <input asp-for="LastName"/>
+        <input asp-for="LastName" value="myLastName"/>
     </div>
     <div>
         <label asp-for="BirthDay">The date of birth</label>
-        <input   asp-for="BirthDay"   type="date"
+        <input   asp-for="BirthDay"   type="date" value="@DateTime.Now.AddDays(-100).ToUniversalTime()"
                max="@DateTime.Now.ToString("yyyy-MM-dd")"
                min="@DateTime.Now.AddYears(-100).ToString("yyyy-MM-dd")"/>
     </div>
@@ -27,7 +27,7 @@
         <legend>Choose your gender</legend>
         <div>
             <label for="gender-male">Male</label>
-            <input id="gender-male" readonly asp-for="Gender" value="Male" type="radio"/>
+            <input id="gender-male" readonly asp-for="Gender" value="Male" type="radio" checked/>
         </div>
         <div>
             <label for="gender-female">Female</label>
@@ -37,12 +37,12 @@
     </fieldset>
     <div>
         <label asp-for="Password">Password</label>
-        <input asp-for="Password" type="password"/>
+        <input asp-for="Password" type="password" value="782ru3heiwfjn87WEYFHIU-"/>
     </div>
     
     <div>
         <label asp-for="ConfirmPassword">Confirm your password</label>
-        <input asp-for="ConfirmPassword" type="password"/>
+        <input asp-for="ConfirmPassword" type="password" value="782ru3heiwfjn87WEYFHIU-"/>
     </div>
     <button>Submit</button>
 </form>

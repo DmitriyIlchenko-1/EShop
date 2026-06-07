@@ -81,7 +81,9 @@ public class UserService : IUserService
         });
 
         configure?.Invoke(user);
-        await _userManager.CreateAsync(user);
+        //TODO: limit db handlers to only essential ones.
+        await _db.Users.AddAsync(user);
+        await _db.SaveChangesAsync();
         return user;
     }
 

@@ -42,6 +42,7 @@ public class AuthenticationStartup : BaseStartup
                 options.SignIn.RequireConfirmedAccount = false;
                 options.SignIn.RequireConfirmedPhoneNumber = false;
                 options.User.RequireUniqueEmail = true;
+                
             })
             .AddSignInManager<CustomSignInManager>()
             .AddDefaultTokenProviders()

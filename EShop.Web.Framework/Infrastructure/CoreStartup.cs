@@ -24,6 +24,7 @@ using EShop.Core.Platform.Themes.Services;
 using EShop.Core.Platform.Web;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Common;
+using EShop.Infrastructure.Email;
 using EShop.Infrastructure.Media;
 using EShop.Infrastructure.Media.Images;
 using EShop.Infrastructure.Modules;
@@ -72,6 +73,7 @@ public class CoreStartup : BaseStartup
         services.AddScoped<IPriceCalculatorFactory, DefaultPriceCalculatorFactory>();
         services.AddScoped<IDiscountService, DefaultDiscountService>();
         services.AddSingleton<ILabelManager, DefaultLabelManager>();
+        services.AddScoped<IEmailService, DefaultEmailService>();
         /*
          * Caching 
          */

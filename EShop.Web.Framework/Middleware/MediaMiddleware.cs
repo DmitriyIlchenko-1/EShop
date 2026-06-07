@@ -41,6 +41,7 @@ public class MediaMiddleware
     public async Task InvokeAsync(HttpContext context, Lazy<IMediaService> mediaService,
         Lazy<IMediaAccessor> mediaAccessor, Lazy<MediaSettings> mediaSettings, ILogger<MediaMiddleware> logger)
     {
+      
         if (!ValidatePath(context, out var id, out var remainingPath))
         {
             logger.NotProcessed();

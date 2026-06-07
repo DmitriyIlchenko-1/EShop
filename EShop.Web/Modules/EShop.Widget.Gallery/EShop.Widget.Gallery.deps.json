@@ -152,6 +152,26 @@
           }
         }
       },
+      "FluentValidation/12.1.1": {
+        "runtime": {
+          "lib/net8.0/FluentValidation.dll": {
+            "assemblyVersion": "12.0.0.0",
+            "fileVersion": "12.1.1.0"
+          }
+        }
+      },
+      "FluentValidation.DependencyInjectionExtensions/12.1.1": {
+        "dependencies": {
+          "FluentValidation": "12.1.1",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.1"
+        },
+        "runtime": {
+          "lib/net8.0/FluentValidation.DependencyInjectionExtensions.dll": {
+            "assemblyVersion": "12.0.0.0",
+            "fileVersion": "12.1.1.0"
+          }
+        }
+      },
       "Microsoft.AspNetCore.Cryptography.Internal/9.0.8": {
         "runtime": {
           "lib/net9.0/Microsoft.AspNetCore.Cryptography.Internal.dll": {
@@ -943,6 +963,8 @@
       "EShop.Core/1.0.0": {
         "dependencies": {
           "EShop.Infrastructure": "1.0.0",
+          "FluentValidation": "12.1.1",
+          "FluentValidation.DependencyInjectionExtensions": "12.1.1",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "9.0.8",
           "Microsoft.Extensions.DependencyModel": "10.0.2",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4"
@@ -1083,6 +1105,20 @@
       "sha512": "sha512-1dAu1iLDOEWurh1z3Y61cSzEGUZXLYjsHxONA6yt5vmhUwnPH7jv8p9t/Q540vQm5U+mQbc1uKqAlTts8V3a/Q==",
       "path": "easycaching.serialization.json/1.9.2",
       "hashPath": "easycaching.serialization.json.1.9.2.nupkg.sha512"
+    },
+    "FluentValidation/12.1.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-EPpkIe1yh1a0OXyC100oOA8WMbZvqUu5plwhvYcb7oSELfyUZzfxV48BLhvs3kKo4NwG7MGLNgy1RJiYtT8Dpw==",
+      "path": "fluentvalidation/12.1.1",
+      "hashPath": "fluentvalidation.12.1.1.nupkg.sha512"
+    },
+    "FluentValidation.DependencyInjectionExtensions/12.1.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-D0VXh4dtjjX2aQizuaa0g6R8X3U1JaVqJPfGCvLwZX9t/O2h7tkpbitbadQMfwcgSPdDbI2vDxuwRMv/Uf9dHA==",
+      "path": "fluentvalidation.dependencyinjectionextensions/12.1.1",
+      "hashPath": "fluentvalidation.dependencyinjectionextensions.12.1.1.nupkg.sha512"
     },
     "Microsoft.AspNetCore.Cryptography.Internal/9.0.8": {
       "type": "package",

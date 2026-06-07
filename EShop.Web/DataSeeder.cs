@@ -20,6 +20,7 @@ using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Configuration.Domain;
 using EShop.Core.Platform.Routing.Domain;
 using EShop.Infrastructure.Utilities;
+using EShop.Web.Models.Identity;
 
 public class DataSeeder
 {
@@ -174,8 +175,36 @@ public class DataSeeder
             Name = "CatalogSettings.ShowReviewsProductList",
             Value = "true"
         };
+        
+     
 
         await _dbContext.Settings.AddRangeAsync([catalogSetting, catalogSetting2, catalogSetting3]);
+        
+        var userSetting = new Setting()
+        {
+            Name = "UserSettings.FirstNameRequired",
+            Value = "true"
+        };
+        var userSetting2 = new Setting()
+        {
+            Name = "UserSettings.LastNameRequired",
+            Value = "true"
+        };
+        var userSetting3 = new Setting()
+        {
+            Name = "UserSettings.BirthdayRequired",
+            Value = "true"
+        };
+        var userSetting4 = new Setting()
+        {
+            Name = "UserSettings.UserLoginType",
+            Value = "UsernameOrEmail"
+        };
+        
+         
+        await _dbContext.Settings.AddRangeAsync([userSetting, userSetting2, userSetting3]);
+
+        
         await _dbContext.SaveChangesAsync();
     }
 

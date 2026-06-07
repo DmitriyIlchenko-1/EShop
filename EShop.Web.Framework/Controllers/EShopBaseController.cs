@@ -10,7 +10,7 @@ namespace EShop.Web.Common.Controllers;
 
 [NotificationFilter(Order = 1000)]
 [SaveChanges<ApplicationDbContext>(Order = int.MaxValue)]
-public abstract class BaseController : Controller
+public abstract class EShopBaseController : Controller
 {
     protected virtual IActionResult RedirectToLocal(string returnUrl)
     {

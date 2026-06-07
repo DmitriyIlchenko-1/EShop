@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Http;
 
@@ -34,4 +35,6 @@ public static class HttpContextExtensions
         context.Items[key] = factoryResult;
         return factoryResult;
     }
+
+     
 }
