@@ -1,7 +1,7 @@
 /* || BASE */
 
 html {
-    height: 100%;
+
     font-size: 62.5%;
 }
 
@@ -20,6 +20,7 @@ body {
     flex-direction: column;
     min-height: 100svh;
     margin: 0;
+    overflow-wrap: anywhere;
 }
 
 body, .color-scheme1, .color-scheme-2 {
@@ -109,6 +110,10 @@ h6, .h6, .text-block.h6 > * {
     margin-inline: 0 0;
 }
 
+.text-theme-light{
+    color: rgba(var(--color-foreground-rgb), .6);
+}
+
 img, svg {
     max-width: 100%;
     height: auto;
@@ -127,6 +132,12 @@ summary {
     list-style: none;
     cursor: pointer;
 }
+table{
+    border-collapse: collapse;
+}
+th,td{
+    border-collapse: collapse;
+}
 
 .border-style {
     border-width: var(--border-width);
@@ -135,16 +146,18 @@ summary {
     border-radius: var(--border-radius);
 }
 
-.svg-wrapper{
+.svg-wrapper {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: var(--icon-size-sm);
-    height: var(--icon-size-sm);
 }
 
 p {
     margin: 0 0 1em 0;
+}
+
+dl, dt {
+    margin: 0;
 }
 
 p,
@@ -157,13 +170,22 @@ h6 {
     overflow-wrap: break-word;
 }
 
+hr {
+    width: 100%;
+    height: 1px;
+    border: 0;
+    background-color: rgb(var(--text-color-rgb) / .15);
+    margin-block: var(--margin-md);
+}
+
 input, button, textarea, select {
     font-family: inherit;
     font-size: inherit;
     font-weight: inherit;
-    line-height: normal;
+    line-height: inherit;
     margin: 0;
 }
+
 
 input[type="search"] {
     -webkit-appearance: none;
@@ -250,6 +272,26 @@ button {
     font-style: inherit;
     font-size: inherit;
     cursor: pointer;
+}
+
+.button-unstyled {
+    display: block;
+    padding: 0;
+    background: inherit;
+    color: inherit;
+    border: 0;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: none;
+    font-family: var(--font-body-family);
+    font-style: var(--font-body-style);
+    font-size: var(--font-body--size);
+}
+
+.button[aria-disabled="true"], .button-secondary[aria-disabled="true"],
+.button:disabled, .button-secondary:disabled {
+    opacity: .5;
+    cursor: not-allowed;
 }
 
 .field__button {
@@ -369,6 +411,7 @@ button {
     margin-inline: var(--margin-inline-start, 0px) var(--margin-inline-end, 0px);
 }
 
+
 a, .link {
     text-decoration: none;
     color: var(--link-color);
@@ -396,6 +439,274 @@ a, .link {
 }
 
 
+.field-group {
+    margin: var(--margin-4xl) 0 0 0;
+    padding: 0;
+    border: none;
+    border-top: var(--input-border-width) solid var(--color-input-border);
+    background-color: rgb(var(--color-foreground-rgb), .01);
+}
+
+.field-group__label {
+    font-size: .88em;
+    font-weight: bold;
+    padding-inline: var(--padding-sm) 3rem;
+    padding-block: .3rem;
+    color: rgb(var(--color-foreground-rgb), .5);
+    background-color: var(--color-background);
+    border: 2px solid var(--color-input-border);
+}
+
+
+.radio-group {
+    margin: var(--margin-md) 0 0 0;
+    padding: 0;
+    border: none;
+}
+
+.radio-group--col {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-sm);
+}
+
+.radio-group__label {
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+/*Move what's below somewhere else when done*/
+.radio {
+    position: relative;
+    width: fit-content;
+    line-height: 1.4;
+}
+
+.radio > input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: none;
+    opacity: 0.0001;
+    z-index: 2;
+}
+
+.radio > input[type="radio"] + label {
+    display: inline-block;
+    padding: .75em .5em .75em 2em;
+}
+
+.radio > input[type="radio"],
+.radio > input[type="radio"] + label::before,
+.radio > input[type="radio"] + label::after {
+    border: 1px solid;
+    height: 1.125em;
+    width: 1.125em;
+    position: absolute;
+    top: .825em;
+    left: .2em;
+    border-radius: var(--border-radius-50);
+
+}
+
+.radio > input[type="radio"] + label::before,
+.radio > input[type="radio"] + label::after {
+    content: "";
+    transition: border-color .2s ease-in-out,
+    box-shadow .2s ease-in-out;
+}
+
+.radio > input[type="radio"] + label::after {
+    border-color: var(--color-foreground);
+}
+
+.radio > input[type="radio"] + label::before {
+    border-color: transparent;
+    box-shadow: 0 0 0 0 rgb(0 0 0); /**/
+}
+
+.radio > input[type="radio"]:checked + label::before {
+    border-color: transparent;
+    box-shadow: 0 0 0 2px #0d5192;
+}
+
+.radio > input[type="radio"]:checked + label::after {
+    border-color: var(--color-white);
+    border-width: 4px;
+    box-shadow: inset 0 0 0 5px #0d5192;
+}
+
+.radio > input[type="radio"]:focus-visible + label::before {
+    border-color: transparent;
+    box-shadow: 0 0 0 4px #228BEC;
+}
+
+
+.radio > input[type="radio"][disabled] + label {
+    opacity: .5;
+}
+
+
+.field:first-child {
+    margin-block-start: 0;
+}
+
+.field {
+    display: flex;
+    position: relative;
+    width: 100%;
+    margin-block-start: var(--margin-xl);
+    --color-input-border: var(--color-foreground-rgb);
+}
+
+.field input ~ label.required::after {
+    content: ' *';
+    color: var(--color-text-danger);
+}
+
+.field:has(input.input-validation-error) {
+    --color-input-border: var(--color-input-border-error-rgb);
+}
+
+.field:has(input.input-validation-error) {
+    --color-input-border: var(--color-input-border-error-rgb);
+}
+
+.field:has(input.valid) {
+    --color-input-border: var(--color-input-border-success-rgb);
+}
+
+.customer span.field-validation-error > span {
+    display: inline-block;
+    padding-block-start: var(--padding-xs);
+    color: var(--color-text-danger);
+}
+
+
+.field--text input {
+    box-sizing: border-box;
+    flex: 1;
+    padding: 1.5rem;
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    border: var(--input-border-width) solid rgb(var(--color-input-border), var(--input-border-opacity));
+    height: 4.7rem;
+    letter-spacing: .04rem;
+}
+
+.field--text :is(input:focus-visible, input:not(:placeholder-shown)) {
+    padding-block: 2.2rem .8rem;
+    padding-inline: 2rem 1.5rem;
+}
+
+.field input.input-validation-error {
+    background-image: url("data:image/svg+xml, %3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22200%22%20height%3D%22200%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23ff0000%22%20fill-rule%3D%22evenodd%22%20d%3D%22M8%2014.5a6.5%206.5%200%201%200%200-13a6.5%206.5%200%200%200%200%2013ZM8%2016A8%208%200%201%200%208%200a8%208%200%200%200%200%2016Zm1-5a1%201%200%201%201-2%200a1%201%200%200%201%202%200Zm-.25-6.25a.75.75%200%200%200-1.5%200v3.5a.75.75%200%200%200%201.5%200v-3.5Z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right calc(.375em + .1875rem) center;
+    background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+    padding-right: calc(1.5em + .75em);
+}
+
+.field input.valid {
+    background-image: url("data:image/svg+xml, %3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22200%22%20height%3D%22200%22%20viewBox%3D%220%200%2026%2026%22%3E%3Cpath%20fill%3D%22%23198754%22%20d%3D%22m22.567%204.73l-1.795-1.219a1.09%201.09%200%200%200-1.507.287l-8.787%2012.959l-4.039-4.039a1.09%201.09%200%200%200-1.533%200l-1.533%201.536a1.084%201.084%200%200%200%200%201.534L9.582%2022c.349.347.895.615%201.387.615s.988-.31%201.307-.774l10.58-15.606a1.085%201.085%200%200%200-.289-1.505z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right calc(.375em + .1875rem) center;
+    background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+    padding-right: calc(1.5em + .75em);
+}
+
+
+.field--text input:focus-visible {
+    outline: var(--focus-outline-width) var(--focus-outline-style) var(--focus-outline-color);
+    outline-offset: 4px;
+}
+
+.field--text:hover::before {
+    box-shadow: 0 0 0 1px rgb(var(--color-input-border), var(--input-border-opacity));
+}
+
+.field--text:has(:is(input:active, input:focus-visible))::before {
+    box-shadow: 0 0 0 1px rgb(var(--color-input-border), 1);
+}
+
+.field--text :is(input:active, input:focus-visible) {
+    border-color: rgb(var(--color-input-border), 1);
+}
+
+.field--text::before {
+    pointer-events: none;
+    content: "";
+    position: absolute;
+    inset: 0;
+    transition: box-shadow .1s ease;
+}
+
+.field--text input::placeholder {
+    color: transparent;
+}
+
+.field--text input ~ label {
+    position: absolute;
+    left: calc(var(--input-border-width) + 2rem);
+    top: calc(var(--input-border-width) + 1.5rem);
+    pointer-events: none;
+    transition: top .1s ease, font-size .1s ease;
+    letter-spacing: .1rem;
+    line-height: 1.5rem;
+    color: rgb(var(--color-foreground-rgb), .7);
+}
+
+.field--text :is(input:focus-visible, input:not(:placeholder-shown)) ~ label {
+    top: calc(var(--input-border-width) + .5rem);
+    font-size: 1rem;
+    letter-spacing: .04rem;
+}
+
+/*REVEAL/SHOW password*/
+
+.password-input__toggle :is(.icon-reveal, .icon-hide) {
+    position: absolute;
+    width: var(--icon-size-lg);
+    height: var(--icon-size-lg);
+    transform: scale(1);
+    opacity: 1;
+    transition: transform .2s ease, opacity .2s ease;
+}
+
+.password-input .password-input__input[type='password'] ~ .password-input__toggle .icon-hide,
+.password-input .password-input__input[type='text'] ~ .password-input__toggle .icon-reveal {
+    opacity: 0;
+    transform: scale(.8);
+    visibility: hidden;
+}
+
+.password-input__input {
+    padding-right: 7.9rem !important;
+}
+
+.password-input__input {
+    background-position: right calc(3em + .1875rem) center !important;
+}
+
+.password-input__toggle {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    right: var(--input-border-width);
+    align-self: center;
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+}
+
+.media-fit--cover :is(img, video, iframe) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 /*|| LAYOUT*/
 
 .page-width-wide,
@@ -404,7 +715,7 @@ a, .link {
     --page-margin: 16px;
 }
 
-@media screen and (min-width: 769px) {
+@media screen and (min-width: 750px) {
     .page-width-wide,
     .page-width-normal,
     .page-width-narrow {
@@ -487,7 +798,7 @@ Defining margins as columns lets us use background images that will display acro
 }
 
 /*TODO: do sth with this spacing scale*/
-.layout-panel-flex {
+.layout-panel-flex, .gap-style {
     --gap-scale: var(--spacing-scale-md);
 
     @media screen and (min-width: 990px) {
@@ -499,7 +810,7 @@ Defining margins as columns lets us use background images that will display acro
 .layout-panel-flex {
     display: flex;
     gap: var(--gap);
-    height: 100%; /**/
+    height: 100%;
 
 }
 
@@ -510,24 +821,19 @@ Defining margins as columns lets us use background images that will display acro
 }
 
 .layout-panel-flex--column {
-    flex-flow: column var(--flex-wrap) /*set to nowrap, it matters?*/;
-    align-items: var(--horizontal-alignment);
-    justify-content: var(--vertical-alignment);
+    flex-direction: column;
+    flex-wrap: var(--flex-wrap);
+    align-items: var(--vertical-alignment);
+    justify-content: var(--horizontal-alignment);
 }
 
 @media screen and (width <= 749px) {
     .mobile-column {
-        flex-flow: column nowrap; /*Why nowrap? */
-        align-items: var(--horizontal-alignment);
-        justify-content: var(--vertical-alignment);
+        flex-flow: column nowrap;
+        align-items: var(--vertical-alignment);
+        justify-content: var(--horizontal-alignment);
     }
 
-}
-
-@media screen and (min-width: 750px) {
-    .layout-panel-flex {
-        flex-direction: var(--flex-direction); /**/
-    }
 }
 
 
@@ -553,6 +859,21 @@ Defining margins as columns lets us use background images that will display acro
     background: var(--overlay-color);
 }
 
+.overlay--nav {
+    position: fixed;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility linear .4s, opacity .4s ease-in-out;
+
+}
+
+.overlay--nav.is-visible {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: initial;
+    transition-delay: 0s;
+}
+
 .list-unstyled {
     list-style: none;
     margin: 0;
@@ -567,9 +888,6 @@ Defining margins as columns lets us use background images that will display acro
 
 /*|| GENERAL ICONS*/
 
-.icon {
-    pointer-events: none;
-}
 
 .icon-arrow {
     width: 1.5rem;
@@ -580,8 +898,16 @@ Defining margins as columns lets us use background images that will display acro
     transition: transform .1s ease;
 }
 
-.animate-arrow:hover .icon-arrow path {
+:is(.animate-arrow:hover, .animate-arrow:focus-visible) .icon-arrow path {
     transform: translateX(-0.5px);
+}
+
+.animate-caret .icon-caret {
+    transition: transform .1s ease-in;
+}
+
+:is(.animate-arrow:hover, .animate-arrow:focus-visible) .icon-caret {
+    transform: scale(1.2);
 }
 
 .visually-hidden:not(:focus):not(:active) {
@@ -659,14 +985,11 @@ Defining margins as columns lets us use background images that will display acro
 
 
 /*Text block*/
-
-
 /*This block is used to wrap up paragraph(s) to make them look consistent/have centering options.
 For example, you might want to create a header that is actually more than one line, so you wrap multiple <p> elements and make the text block a header (h1,h2 etc).
 You can also switch the contents of a .text-block between fit-content, which will prevent the content to be wider or narrower than its max/min-content while still growing along size its .text-block,
 and 'fill' options (width: 100%), which will let you center the content right/left/center, though the paragraphs sitting inside the .text-block will always be as wide the their .text-block,
 though in narrow screens, you will have each letter sitting onto a new line because of overflow-wrap: break-word. */
-
 .text-block {
     width: var(--width, 100%);
     max-width: 100%;
@@ -704,10 +1027,14 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
 .size-style {
     width: var(--size-style-width-mobile, var(--size-style-width));
     height: var(--size-style-height-mobile, var(--size-style-height));
+    /* max-width: var(--size-style-max-width-mobile, var(--size-style-max-width));
+     max-height: var(--size-style-max-height-mobile, var(--size-style-max-height));*/
 
     @media screen and (min-width: 750px) {
         width: var(--size-style-width);
         height: var(--size-style-height);
+        /*   max-width: var(--size-style-max-width);
+           max-height: var(--size-style-max-height);*/
     }
 }
 
@@ -823,16 +1150,21 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
     position: relative;
 }
 
-.product-card__labels {
+.product-card__labels--overlay {
     position: absolute;
     z-index: var(--layer-raised);
 }
 
 
+.product-card__labels--overlay
 .product-card__label-wrapper:not(:last-child) {
     margin-bottom: 2px;
 }
 
+.product-card__labels
+.product-card__label-wrapper {
+    margin-inline-end: 4px;
+}
 
 .product-card__label {
     display: inline-flex;
@@ -870,33 +1202,61 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
     color: var(--product-label-text--sale);
 }
 
-
-.slideshow {
-    /*TODO: timeline-scope*/
+.product-card__label--custom {
+    background: var(--product-label-gradient--custom);
+    color: var(--product-label-text--custom);
 }
 
-.slideshow__container {
-    position: relative;
-    container-type: inline-size;
-}
+/*|| MEDIA THUMBS*/
 
-
-.slideshow-arrows {
-    position: absolute;
-    z-index: var(--layer-heightened);
-    inset: 0;
+.media-thumbs {
     display: flex;
-    pointer-events: none;
+    gap: var(--gap-sm);
+    overflow-y: hidden; /* Prevent the vertical scrolling while scrolling through thumbs. */
+}
+
+.media-thumbs__item {
+    scroll-snap-align: start;
+    flex: 0 0 84px;
+}
+
+.media-thumbs__btn {
+    overflow: hidden;
+    height: 100%;
+    padding-block-end: .3rem;
+    border-bottom: 2px solid transparent;
+}
+
+.media-thumbs__btn[aria-current="true"] {
+    border-color: var(--color-foreground);
+}
+
+.media-thumbs__btn img {
+    aspect-ratio: 1;
+    object-fit: contain;
+}
+
+
+/*|| MEDIA CONTROLS*/
+
+.media-gallery__controls{
+    position: absolute;
+    inset: 0;
+    z-index: var(--layer-overlay);
     mix-blend-mode: difference;
 }
+.media-controls {
+    display: flex;
+    pointer-events: none;
+}
 
-.slideshow-arrows[position='center'] {
+.media-controls[position='center'] {
     align-items: center;
     justify-content: space-between;
 }
 
 /*todo: what do we do if the screen is so small that the container holding the controls can't hold the two 44px elements? Are we OK with shrinking? */
-.slideshow__control {
+.media-controls__btn {
     display: grid;
     min-width: var(--minimum-touch-target);
     min-height: var(--minimum-touch-target);
@@ -906,100 +1266,136 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
     opacity: 0;
 }
 
-.card-gallery .slideshow-arrows .slideshow__control {
-    padding-inline: var(--padding-sm);
-
-    @container (width > 249px) {
-        .card-gallery .slideshow-arrows .slideshow__control {
-            padding-inline: var(--padding-md);
-        }
-    }
-}
-
-
 @media (width < 600px) {
-    .product-card .slideshow-arrows .slideshow__control {
+    :is(.product-information__grid) .media-gallery .media-controls__btn {
         display: none;
     }
 }
 
 
-.slideshow__control .icon-arrow {
+.media-controls__btn .icon-arrow {
     color: var(--color-white);
     width: var(--icon-size-sm);
     height: var(--icon-size-sm);
 }
 
-:is(.slideshow:hover, .slideshow:focus-within) > .slideshow__container > .slideshow-arrows .slideshow__control {
+.media-gallery > :is(.media-gallery__viewer:hover, .media-gallery__viewer:focus-within) .media-controls__btn {
     animation: arrowSlideIn .3s ease-in-out forwards;
 }
 
 
-.slideshow__control:focus-visible {
+.media-controls__btn:focus-visible {
     outline: 3px var(--focus-outline-style) var(--focus-outline-color);
     outline-offset: 3px;
 }
 
-.slideshow__slides {
+
+
+/*|| MEDIA DOTS*/
+
+.media-gallery__media-dots {
+    position: absolute;
+    bottom: 0;
     width: 100%;
+
+    --color-foreground-rgb: 255, 255, 255;
+    mix-blend-mode: difference;
+}
+
+.media-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 4.4rem;
+}
+
+
+.media-dots__inner {
+    overflow: hidden;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: var(--padding-sm) var(--padding-lg);
+}
+
+.media-dots__inner button {
+    --color-active: rgb(var(--color-foreground-rgb));
+    --color: rgb(var(--color-foreground-rgb), .3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    --size: .9rem;
+    width: calc(var(--size) * 2);
+    height: calc(var(--size) * 2);
+    margin: calc(var(--size) / -2);
+
+}
+
+.media-dots__inner button::after {
+    content: '';
+    width: var(--size);
+    height: var(--size);
+    border-radius: var(--border-radius-50);
+    background-color: var(--color);
+}
+
+.media-dots__inner button[aria-selected="true"]::after {
+    background-color: var(--color-active);
+}
+
+
+/*.slideshow__slides*/
+.media-gallery__viewer {
+    position: relative;
+}
+.media-viewer,
+.media-thumbs {
     position: relative;
     display: flex;
     overflow-x: scroll;
     scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
+    /* scroll-behavior: smooth; <-- should be managed through JS instead.*/
     scrollbar-color: transparent transparent;
     scrollbar-width: none;
     cursor: pointer;
 }
 
-.slideshow__slide {
-    scroll-snap-align: center;
-    position: relative;
+/*.slideshow__slide*/
+.media-viewer__item {
+    scroll-snap-align: start;
+    flex-basis: 100%;
     flex-shrink: 0;
+    position: relative;
     overflow: hidden;
 }
 
-/*We use flex layout for the images because if one of the images' height
-(or its aspect ratio is different)
- is smaller that the other's, there's going
-  to be height inconsistencies unless we make all the images
-  be the height of the container, which is done using flex
-   (flex items stretch through the flex line)*/
-*:not(.dialog-zoomed-gallery) > .product-media-container {
-    display: flex;
-    aspect-ratio: var(--gallery-aspect-ratio, auto); /*TODO: move the defaul value out of the css file*/
-    width: 100%;
-    position: relative;
-    overflow: hidden;
+.media-viewer__item:not(:last-child) {
+    margin-inline-end: var(--image-gap);
 }
 
 
 /*TODO:  add trigger iOS 16.4*/
 .product-media {
     display: flex;
-    flex: 1;
     /*the aspect-ratio also affects this element's size*/
     aspect-ratio: var(--gallery-aspect-ratio);
 }
 
-.product-media-container.media-fit {
+.product-media--fit {
     img {
-        object-fit: var(--product-media-fit, cover); /*TODO: move the defaul value out of the css file*/
+        object-fit: cover;
     }
 }
 
-/*todo: we should let images stretch even if they start to look pixelated cuz that's better than having half the card with no image. */
-.product-media-container img {
-    aspect-ratio: inherit;
-    object-fit: contain;
-}
+
 
 .product-card__main-content {
     padding-block-start: var(--padding-lg);
 }
 
 
-.product-card__ribbon-text {
+.ribbon-text {
     opacity: .7;
     text-transform: uppercase;
     letter-spacing: 0.1rem;
@@ -1016,11 +1412,30 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
     flex-direction: column;
     row-gap: 5px;
     z-index: var(--layer-heightened);
+
+}
+
+.variants--in-lists {
     font-size: 1.4rem;
 
     @media (min-width: 769px) {
         font-size: calc(var(--font-body--size) * .1rem);
     }
+}
+
+.variants--in-lists .variant-group__label {
+    line-height: normal;
+}
+
+.variants--in-page .variant-group__label {
+    min-width: var(--minimum-touch-target);
+    min-height: var(--minimum-touch-target);
+    padding-inline: 1.5rem;
+}
+
+.variants--in-page {
+    --color-swatch-input-width: 3.4rem;
+    --color-swatch-input-height: 3.4rem;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1082,7 +1497,6 @@ VARIANT LABEL and CONTROL
     border-radius: var(--input-border-radius);
     border: var(--variant-border-width) var(--variant-border-style) var(--variant-border-color);
     font-size: 1em;
-    line-height: normal;
     cursor: pointer;
 }
 
@@ -1204,6 +1618,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     content: "";
     position: absolute;
     place-self: center;
+    z-index: var(--layer-heightened);
 
     width: calc(var(--color-swatch-outer-circle-ratio) * var(--color-swatch-input-width));
     height: calc(var(--color-swatch-outer-circle-ratio) * var(--color-swatch-input-height));
@@ -1238,7 +1653,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     content: "";
     height: 1px;
     place-self: center;
-    width: calc(var(-swatch-outer-circle-ratio) * var(--color-swatch-input-width));
+    width: calc(var(--color-swatch-outer-circle-ratio) * var(--color-swatch-input-width));
     background: var(--input-line-though);
     transform: rotate(-135deg);
 }
@@ -1285,6 +1700,8 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 
 
 .rating-count {
+    margin-block: 0;
+    margin-inline: 5px 0;
     line-height: 1.5rem;
 }
 
@@ -1294,6 +1711,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 
 .price__current {
     padding-inline-end: .5rem;
+    margin: 0;
     font-size: 1em;
     font-weight: 700;
     white-space: nowrap;
@@ -1305,10 +1723,11 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 }
 
 
-.price__regular {
+.price__was {
     color: rgb(var(--text-color-rgb), .8);
     font-size: .8em;
     white-space: nowrap;
+    text-decoration: line-through;
 
     @media screen and (min-width: 769px) {
         font-size: 1em;
@@ -1389,10 +1808,73 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     border-width: 2px;
 }
 
+.quantity-selector {
+    --quantity-selector-width: 124px;
+    display: flex;
+    flex: 0 0 var(--quantity-selector-width);
+    align-items: center;
+    border: var(--input-border-width) solid var(--color-input-border);
+    border-radius: var(--input-border-radius);
+    color: var(--color-input-text);
+    background-color: var(--color-input-background);
+    transition: background-color .1s ease-in;
+
+    &:hover {
+        background-color: var(--color-input-hover-background);
+    }
+}
+
+
+.quantity-selector .quantity-minus {
+    border-start-start-radius: var(--input-border-radius);
+    border-end-start-radius: var(--input-border-radius);
+}
+
+.quantity-selector .quantity-plus {
+    border-start-end-radius: var(--input-border-radius);
+    border-end-end-radius: var(--input-border-radius);
+}
+
+.quantity-selector :is(.quantity-minus, .quantity-plus) {
+    padding: 0;
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    color: var(--color-input-text);
+    cursor: pointer;
+    background-color: transparent;
+}
+
+/*Are they wrapped to disable pointer events?*/
+.quantity-selector :is(.icon-plus, .icon-minus) {
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+}
+
+.quantity-selector input[type="number"] {
+    -webkit-appearance: textfield;
+    appearance: textfield;
+}
+
+.quantity-selector input[type="number"]::-webkit-inner-spin-button,
+.quantity-selector input[type="number"]::-webkit-outer-spin-button {
+    appearance: none;
+}
+
+.quantity-selector input[type="number"] {
+    width: calc(var(--quantity-selector-width)
+    - calc(2 * var(--minimum-touch-target)));
+    border: none;
+    background-color: transparent;
+    text-align: center;
+    color: var(--color-input-text);
+}
+
 
 /*Animations*/
-
-
 @keyframes arrowSlideIn {
     0% {
         transform: translate(calc(5 * var(--space-unit)));

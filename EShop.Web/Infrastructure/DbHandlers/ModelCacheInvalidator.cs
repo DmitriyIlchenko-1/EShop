@@ -9,6 +9,10 @@ public class ModelCacheInvalidator : IDbHandler
     // {0}: current user's roles.
     public const string CategoryHomePageModelKey = "pres.category.homepage-{0}";
     public const string CategoryHomePagePatternKey = "pres.category.homepage*";
+    
+    // {0}: product id.
+    public const string ProductSpecsModelKey = "pres.product.specs-{0}";
+    public const string ProductSpecsPatternKey = "pres.product.specs*";
 
 
     private readonly ICacheManager _cache;

@@ -3,13 +3,32 @@
 <head>
     <meta charset="utf-8"/>
     <title>@ViewBag.Title</title>
-    <link href="css/main.css" rel="stylesheet" type="text/css"/>
-    <link href="css/hero.css" rel="stylesheet" type="text/css"/>
-    <link href="css/utility-bar.css" rel="stylesheet" type="text/css"/>
-    <link href="css/component-list-social.css" rel="stylesheet" type="text/css"/>
-    <link href="css/utils.css" rel="stylesheet" type="text/css"/>
-    <link href="css/gallery.css" rel="stylesheet" type="text/css"/>
-    <link href="css/header.css" rel="stylesheet" type="text/css"/>
+    <link href="~/css/main.css" rel="stylesheet" type="text/css"/>
+    <link href="~/css/hero.css" rel="stylesheet" type="text/css"/>
+    <link href="~/css/utility-bar.css" rel="stylesheet" type="text/css"/>
+    <link href="~/css/component-list-social.css" rel="stylesheet" type="text/css"/>
+    <link href="~/css/gallery.css" rel="stylesheet" type="text/css"/>
+    <link href="~/css/header.css" rel="stylesheet" type="text/css"/>
+    <link href="~/css/menu.css" rel="stylesheet" type="text/css"/>
+    <link href="~/css/mega-nav.css" rel="stylesheet" type="text/css"/>
+    <link href="~/css/customer.css" rel="stylesheet" type="text/css"/>
+    <link href="~/css/product-details.css" rel="stylesheet" type="text/css"/>
+    <link href="~/css/utils.css" rel="stylesheet" type="text/css"/>
+    <link href="~/css/cart-items.css" rel="stylesheet" type="text/css"/>
+
+
+
+    <script src="~/js/critical.js" type="module"></script>
+    <script src="~/js/header.js" type="module"></script>
+    <script src="~/js/main.js" type="module"></script>
+    <script src="~/js/utilities.js" type="module"></script>
+    <script type="module" src="~/js/variant-selector.js"></script>
+    <script type="module" src="~/js/product-form.js"></script>
+    <script type="module" src="~/js/media-gallery.js"></script>
+    <script type="module" src="~/js/cart-items.js"></script>
+
+
+
 
     <!--Font imports-->
     <partial name="_FontImports"/>
@@ -40,21 +59,19 @@
 
             /*640px*/
             /*medium*/
-            @@media screen and (
-            min-width: 40em) {
-            --section-height-small: 40svh;
-            --section-height-medium: 55svh;
-            --section-height-large: 70svh;
-        }
+            @@media screen and (min-width: 40em) {
+                --section-height-small: 40svh;
+                --section-height-medium: 55svh;
+                --section-height-large: 70svh;
+            }
 
             /*960px*/
             /*large*/
-            @@media screen and (
-            min-width: 60em) {
-            --section-height-small: 50svh;
-            --section-height-medium: 65svh;
-            --section-height-large: 80svh;
-        }
+            @@media screen and (min-width: 60em) {
+                --section-height-small: 50svh;
+                --section-height-medium: 65svh;
+                --section-height-large: 80svh;
+            }
 
 
             /*|| Icons*/
@@ -63,6 +80,7 @@
             --icon-size-sm: 2rem;
             --icon-size-md: 2.2rem;
             --icon-size-lg: 2.4rem;
+            --icon-size-xl: 2.6rem;
 
 
             /*|| Gaps*/
@@ -103,20 +121,31 @@
             /*|| Spacing*/
             --space-unit: .4rem;
 
-            --padding-xs: calc(1 * var(--space-unit));
-            --padding-sm: calc(2 * var(--space-unit));
-            --padding-md: calc(3 * var(--space-unit));
-            --padding-lg: calc(4 * var(--space-unit));
-            --padding-xl: calc(5 * var(--space-unit));
-            --padding-2xl: calc(6 * var(--space-unit));
-            --padding-3xl: calc(8 * var(--space-unit));
-            --padding-4xl: calc(10 * var(--space-unit));
+            --padding-3xs: 0.2rem;
+            --padding-2xs: 0.4rem;
+            --padding-xs: 0.8rem;
+            --padding-sm: 1.12rem;
+            --padding-md: 1.28rem;
+            --padding-lg: 1.6rem;
+            --padding-xl: 2rem;
+            --padding-2xl: 2.4rem;
+            --padding-3xl: 2.8rem;
+            --padding-4xl: 3.2rem;
+            --padding-5xl: 4.8rem;
+            --padding-6xl: 6.4rem;
 
-            --margin-xs: calc(1 * var(--space-unit));
-            --margin-sm: calc(2 * var(--space-unit));
-            --margin-md: calc(3 * var(--space-unit));
-            --margin-lg: calc(4 * var(--space-unit));
-            --margin-xl: calc(5 * var(--space-unit));
+            --margin-3xs: 0.2rem;
+            --margin-2xs: 0.48rem;
+            --margin-xs: 0.8rem;
+            --margin-sm: 1.12rem;
+            --margin-md: 1.28rem;
+            --margin-lg: 1.6rem;
+            --margin-xl: 2rem;
+            --margin-2xl: 2.4rem;
+            --margin-3xl: 2.8rem;
+            --margin-4xl: 3.2rem;
+            --margin-5xl: 4.8rem;
+            --margin-6xl: 8rem;
 
 
             --spacing-scale-sm: 0.6;
@@ -212,9 +241,13 @@
 
 
             /*|| Inputs. Search*/
-            --input-border-width: 2px;
+            --input-border-width: 1px;
+            --input-border-opacity: .6;
             --input-border-radius: 10px;
             --search-input-border-radius: 55px;
+            --color-input-border-success-rgb: 22, 171, 0;
+            --color-input-border-error-rgb: 255, 0, 0;
+            --color-text-danger: #d40f0f;
 
             /*Animation*/
             --animation-speed: 0.125s;
@@ -299,6 +332,9 @@
             --product-label-gradient--refurbished: linear-gradient(145deg, rgba(42, 156, 44, 1) 20%, rgba(42, 156, 44, 0.76) 82%);
             --product-label-text--sale: #ffffff;
             --product-label-gradient--sale: linear-gradient(144deg, rgba(244, 43, 65, 0.8), rgb(218, 50, 67) 97%, rgba(247, 23, 23, 0.8) 97.482%);
+            --product-label-text--custom: #000000;
+            --product-label-gradient--custom: linear-gradient(144deg, rgba(244, 120, 43, 0.8), rgb(214, 108, 31) 97%, rgba(212, 92, 18, 0.89) 97.482%);
+
             --in-stock-text-color: #358c03;
             --in-stock-background-color: rgba(139, 248, 123, 0.44);
             --in-stock-border-color: rgba(50, 136, 0, 0.41);
@@ -327,13 +363,14 @@
 
         :root, .color-scheme-1 {
             --color-background: rgb(255, 255, 255);
+            --color-background-rgb: 255, 255, 255;
             --opacity-5-15: 0.15;
             --opacity-10-25: 0.25;
             --opacity-35-55: 0.55;
             --opacity-40-60: 0.6;
             --opacity-30-60: 0.6;
             --color-foreground: rgba(0, 0, 0, 0.81);
-            --color-foreground-rgb: 0 0 0;
+            --color-foreground-rgb: 0, 0, 0;
             --color-foreground-heading: rgb(0, 0, 0);
             --color-foreground-heading-rgb: 255 255 255;
             --color-primary: rgb(255 255 255 / 1.0);
@@ -361,8 +398,8 @@
             --color-secondary-button-hover-background: rgba(209, 211, 216, 0.16);
             --color-secondary-button-hover-border: rgb(255 255 255 / 1.0);
             --color-input-background: rgb(255 255 255 / 1.0);
-            --color-input-text: rgb(0 0 0 / 0.53);
-            --color-input-text-rgb: 0 0 0;
+            --color-input-text: rgb(51 51 51 / 1);
+            --color-input-text-rgb: 51 51 51;
             --color-input-border: rgb(0 0 0 / 0.13);
             --color-input-hover-background: rgb(250 250 250 / 1.0);
             --color-variant-background: rgb(255 255 255 / 1.0);
@@ -409,8 +446,12 @@
 <!--Read to know why overflow-hidden is not on the html element: https://www.w3.org/TR/css-overflow-3/#overflow-propagation-->
 <!--TODO: JS: main-nav, overflow-hidden-->
 <body class="page-width-narrow  ">
+<partial name="_Header"/>
 <main>
-    @RenderBody();
+    @RenderBody()
 </main>
+<div class="overlay overlay--nav overlay--solid js-overlay" style="--overlay-layer: var(--layer-overlay) "></div>
+
 </body>
+@(await RenderSectionAsync("Scripts", false))
 </html>

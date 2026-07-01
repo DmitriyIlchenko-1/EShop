@@ -1,8 +1,34 @@
 @{
-    ViewData["Title"] = "Registration Result";
+    ViewData["Title"] = "Registration result";
 }
 
 
-<p>@ViewData["Message"]</p>
 
-<a href="@ViewData["ReturnUrl"]">Continue</a>
+<div class="section section--content-middle spacing-style gap-style color-scheme-1" style="
+        --padding-block-start: max(20px, calc(var(--spacing-scale) * 48px));
+        --padding-block-end: max(20px, calc(var(--spacing-scale) * 48px));
+        --gap: max(24px, calc(var(--gap-scale, 1.0) * 28px))">
+   
+    <div class="layout-panel-flex layout-panel-flex--column"
+         style="
+                   --gap: max(24px, calc(var(--gap-scale, 1.0) * 29px));
+                     --flex-direction: column;
+                     --flex-wrap: nowrap;
+                     --flex-wrap-mobile: wrap;
+                     --horizontal-alignment: center;
+                     --vertical-alignment: center;
+                     --vertical-alignment-mobile: center">
+        <div class="spacing-style text-block" style="
+           --max-width: var(--max-width--body-narrow);
+           --width: fit-content;">
+            <h1>Registration completed.</h1>
+        </div>
+        <p>@ViewData["Message"]</p>
+        <a class="size-style button" href="@ViewData["ReturnUrl"]"
+           style="--size-style-width: fit-content; --size-style-width-mobile: fit-content;">
+           Continue
+        </a>
+    </div>
+</div>
+
+ 

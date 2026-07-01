@@ -19,7 +19,7 @@ public class DiscountPriceCalculator : IPriceCalculator
         _db = db;
     }
 
-    public int Order { get; }
+    public int Order => int.MaxValue;
 
     public async Task CalculateAsync(CalculatorPriceContext context, CalculatorDelegate next)
     {
@@ -31,10 +31,10 @@ public class DiscountPriceCalculator : IPriceCalculator
 
         var priceCtx = context.CalculatedProductPrice;
 
-        var (discountAmount, appliedDiscount) = await ApplyDiscountAsync(context.CalculatedProductPrice.FinalPrice, context);
+        var (discountAmount, appliedDiscount) = await ApplyDiscountAsync(context.CalculatedProductPrice.RegularPrice, context);
         if (appliedDiscount != null)
         {
-            priceCtx.FinalPrice -= discountAmount;
+            priceCtx.FinalPrice = context.CalculatedProductPrice.RegularPrice - discountAmount;
             priceCtx.AppliedDiscount = appliedDiscount;
             priceCtx.DiscountAmount = discountAmount;
         }

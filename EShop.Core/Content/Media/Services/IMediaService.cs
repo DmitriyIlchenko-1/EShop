@@ -13,9 +13,9 @@ public interface IMediaService
     Task<MediaFile> GetMediaFilesByIdAsync(int id, bool track = false);
 
 
-    Task<(string Url, string Subpath)> GetMediaUrlAsync(MediaFile mediaFile);
+    Task<string> GetMediaUrlAsync(MediaFile mediaFile);
 
-    public Task<(string Url, string Subpath)> GetMediaUrlAsync(string fileName, string fileId = null);
+    public Task<string> GetMediaUrlAsync(string fileName, int fileId);
 
 
     Task SaveMediaAsync(Stream mediaBinaryStream, string fileName, string mimeType);

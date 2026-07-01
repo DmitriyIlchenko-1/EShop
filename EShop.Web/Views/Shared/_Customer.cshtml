@@ -1,0 +1,20 @@
+@{
+    Layout = "_Layout";
+    //login, register etc
+    string classToken = ViewBag.ClassToken;
+}
+
+<section class="section section--content-middle color-scheme-1 spacing-style" style="
+            --padding-block-start: max(20px, calc(var(--spacing-scale) * 48px));
+--padding-block-end: max(20px, calc(var(--spacing-scale) * 48px))">
+    <div class="customer @classToken mx-auto">
+        <div class="text-block mb-6" style="--text-align: center;">
+            <h2>@ViewData["Title"]</h2>
+        </div>
+        @RenderBody()
+    </div>
+</section>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial"/>
+}

@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Security.Policy;
 using EShop.Core.Catalog.Attributes.Domain;
-using EShop.Core.Catalog.Attributes.Extensions;
+
 using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Products;
@@ -14,6 +14,7 @@ using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
 using EShop.Web.Common.Models.Choices;
 using EShop.Web.Models.Catalog;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
@@ -95,13 +96,15 @@ public partial class CatalogHelper
     {
         var batchContext = ctx.BatchProductContext;
         var settings = ctx.MappingSettings;
+        var seName = await _urlService.GetActiveSlugAsync(product.Id, product.GetEntityName());
         var item = new ProductSummaryItemModel(ctx.Model)
         {
             Id = product.Id,
             Name = product.Name,
-            SeName = await _urlService.GetActiveSlugAsync(product.Id, product.GetEntityName()),
+            SeName = seName,
+            DetailUrl = _urlHelper.RouteUrl("Product", new {SeName = seName})
         };
-
+        
 
         // var labels = await lazyContext.ProductLabels.GetOrLoadAsync(product.Id);
         // foreach (var productLabel in labels)
@@ -157,14 +160,14 @@ public partial class CatalogHelper
         {
             if (ctx.Brands.TryGetValue(product.BrandId ?? 0, out var brand) && brand != null)
             {
-                item.Brand = await MapBrandSummaryModelAsync(brand);
+                item.Brand = await PrepareBrandSummaryModelAsync(brand);
             }
         }
 
         if (settings.MapPictures)
         {
             var productMedia = await batchContext.ProductMedia.GetOrLoadAsync(product.Id);
-            item.Images = await PrepareProductSummaryImageModelAsync(product, productMedia);
+            item.Images = await PrepareProductImageModelAsync(productMedia);
         }
 
 
@@ -409,7 +412,7 @@ public partial class CatalogHelper
     // }
 
 
-    public async Task<BrandSummaryModel> MapBrandSummaryModelAsync(Brand productBrand,
+    public async Task<BrandSummaryModel> PrepareBrandSummaryModelAsync(Brand productBrand,
         bool withPictures = false)
     {
         var model = new BrandSummaryModel();
@@ -490,7 +493,7 @@ public partial class CatalogHelper
             .ToListAsync();
     }
 
-    protected virtual async Task<IList<ImageModel>> PrepareProductSummaryImageModelAsync(Product product,
+    public virtual async Task<IList<ImageModel>> PrepareProductImageModelAsync(
         IEnumerable<ProductMedia> mediaFiles)
     {
         if (!mediaFiles.Any())
@@ -503,9 +506,10 @@ public partial class CatalogHelper
         async Task<ImageModel> MapToMediaModelAsync(ProductMedia productMedia)
         {
             var mediaFile = productMedia.MediaFile;
-            (string url, string subpath) = await _mediaService.GetMediaUrlAsync(mediaFile);
+            string url = await _mediaService.GetMediaUrlAsync(mediaFile);
             return new ImageModel()
             {
+                Id = mediaFile.Id,
                 FileName = mediaFile.FileName,
                 MimeType = mediaFile.MimeType,
                 MediaType = mediaFile.MediaType,
@@ -514,7 +518,7 @@ public partial class CatalogHelper
                 Width = mediaFile.Width,
                 Height = mediaFile.Height,
                 Url = url,
-                Subpath = subpath
+                Subpath = url
             };
         }
 
@@ -523,6 +527,8 @@ public partial class CatalogHelper
             .ToListAsync();
         return imageModels;
     }
+    
+     
 
 
     public virtual ProductSummaryMappingSettings GetProductSummaryMappingSettings(

@@ -1,22 +1,23 @@
+
+.main-menu {
+    --nav-line-color: rgb(var(--color-foreground-rgb) / .2);
+    font-family: var(--navigation-font-family);
+    font-style: var(--navigation-font-style);
+    font-weight: var(--navigation-font-weight);
+}
+
 @media screen and (width <= 768px) {
     .main-menu--mobile-left {
         order: -1;
-        margin-inline-end: 20px;
     }
 }
 
-.main-menu {
-    @media screen and (min-width: 769px) {
-        order: 3;
-        width: 100%;
-    }
-}
 
 .main-menu__toggle {
-    @media screen and (min-width: 769px) {
-        display: none;
-    }
+    margin-inline-end: 15px;
+    position: relative;
 }
+
 
 .main-menu__toggle .icon {
     position: absolute;
@@ -25,48 +26,166 @@
     transition: transform .2s ease, opacity .2s ease;
 }
 
-.main-menu__disclosure:not([open]) > .main-menu__toggle .icon-close,
-.main-menu__disclosure[open] > .main-menu__toggle .icon-hamburger {
-    visibility: hidden; /**/
+.main-menu__toggle[aria-expanded="false"] > .icon-close,
+.main-menu__toggle[aria-expanded="true"] > .icon-hamburger {
+    visibility: hidden;
     opacity: 0;
     transform: scale(.8);
 }
 
+
+@media screen and (width < 769px) {
+    .main-menu__content.is-open {
+        display: block;
+    }
+}
+
+.main-menu__content.is-open:is(.section) {
+    display: grid !important;
+}
+
+
+@media screen and (width < 769px) {
+    .main-menu__content.is-open.is-visible {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+@media screen and (width < 769px) {
+    .main-menu__content {
+        transition: opacity .3s, visibility .3s;
+    }
+}
+
+@media screen and (width < 769px) {
+    .main-menu__content {
+        display: none;
+        opacity: 0;
+        visibility: hidden;
+        box-shadow: 0 -1px 0 var(--nav-line-color);
+    }
+}
+
+
 /*TODO: Animate the menu to slide into the view. */
+.main-menu__content.section > * {
+    @media screen and (width < 769px) {
+        grid-column: 2;
+    }
+    @media screen and (min-width: 769px) {
+        grid-column: 1 / -1;
+    }
+}
 
 .main-menu__content, .main-nav__child {
-    /*TEMP:*/
-    --header-width: 124px;
     background-color: var(--nav-bg-color);
     color: var(--text-color);
-    @media screen and (max-width: 769px) {
+    @media screen and (width < 769px) {
         /*Mobile Layout*/
         position: fixed;
-        width: 100vw;
-        height: calc(var(--viewport-height) - var(--header-bottom-position));
-        bottom: 0;
-        top: var(--header-bottom-position);
+        z-index: var(--layer-sticky);
+        top: var(--header-end, 100px);
         left: 0;
+        width: 100vw;
+        height: calc(var(--viewport-height) - var(--header-end));
         overflow-y: scroll;
-        /*TODO: rems? */
         padding-block-end: 60px;
+    }
+}
+
+@media screen and (width >= 769px) {
+    .main-menu__content.section {
+        position: static !important;
     }
 }
 
 @media screen and (min-width: 769px) {
     .main-nav__child {
-        border-block-start: 1px solid rgb(var(--color-foreground-rgb) / .2);
         position: absolute;
+        z-index: var(--layer-header-menu);
         overflow-y: scroll;
         top: 100%;
-        left: 0;
-        width: 100vw;
-        max-height: 468px;
-        padding-block: var(--padding-2xl);
-
-        /*TODO: temp*/
-        padding-inline: 20px;
+        /*This max height sets the upper limit of how tall the child nav can get despite how tall the actual panel holding child items is.
+        .child-nav's min-height is the actual height of the right panel and depending on how tall it is,
+         this main-nav__child's height will vary as well to create
+         the effect 'the taller the right panel is (the more items it's got (--sidebar-height)) the taller the child-nav becomes (->.main-nav__child) (as long as it's not constrained by the max-height on this class) */
+        max-height: max(100vh - var(--content-start) - 70px, 60vh);
+        transition: transform .3s ease-in-out,
+        opacity .2s ease-in-out;
+        border-block-start: 1px solid  var(--nav-line-color);
     }
 
+
+}
+
+@media screen and (width < 769px) {
+    .main-nav__child {
+        visibility: hidden;
+        transform: translate3d(100%, 0, 0);
+        transition: transform .2s ease-out, visibility .2s;
+    }
+}
+
+@media screen and (width < 769px) {
+    .is-open > .main-nav__child {
+        visibility: visible;
+        transform: translateZ(0);
+    }
+}
+
+@media screen and (width < 769px) {
+    .child-nav__item--toggle > .child-nav__panel {
+        display: none;
+    }
+}
+
+@media screen and (width < 769px) {
+    .js .child-nav__panel {
+        overflow: hidden;
+        transition: height .2s cubic-bezier(.2, .6, .4, 1);
+    }
+}
+
+@media screen and (width < 769px) {
+    .child-nav__item--toggle.is-open > .child-nav__panel {
+        display: block;
+    }
+}
+
+
+@media screen and (width >= 769px) {
+    .main-nav__item--dropdown.is-open.is-visible > .main-nav__child {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media screen and (width >= 769px) {
+    /*It only put the child back in the DOM, though,
+    it's still invisible because of opacity: 0*/
+    .main-nav__item--dropdown.is-open > .main-nav__child {
+        display: block;
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    .main-nav__item--dropdown.is-open > .main-nav__child:is(.section) {
+        display: grid !important;
+    }
+}
+
+@media screen and (width >= 769px) {
+    .main-nav__item--dropdown > .main-nav__child {
+        display: none;
+    }
+}
+
+@media screen and (min-width: 769px) {
+    .mega-nav--sidebar .child-nav {
+        position: relative;
+        min-height: var(--sidebar-height, auto);
+        transition: min-height .2s;
+    }
 }
 

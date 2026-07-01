@@ -9,9 +9,8 @@ public class Label : BaseEntity
     [MaxLength(15)]
     public string Name { get; set; }
 
-    public string Template { get; set; }
-    public string Color { get; set; }
-    public string IconName { get; set; }
+    public string Content { get; set; }
+    
 }
 
 
@@ -23,7 +22,7 @@ public class SystemLabelNames
     public const string SoldOut = "Sold out";
     public const string PreOrder = "Pre order";
     public const string NewArrivalTemplate = "New";
-    public const string SaleTemplate = "Saving of {0}%!";
+    public const string SaleTemplate = "You save {0}%";
 }
  
 public class ProductLabel

@@ -2,6 +2,7 @@ using EShop.Core.Data;
 using EShop.Core.Platform.Identity.Configuration;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Identity.Extensions;
+using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -14,8 +15,7 @@ public class CustomSignInManager : SignInManager<User>
 {
     private readonly ApplicationDbContext _db;
     private readonly UserSettings _userSettings;
-
-
+    
     public CustomSignInManager(UserManager<User> userManager, IHttpContextAccessor contextAccessor,
         IUserClaimsPrincipalFactory<User> claimsFactory, IOptions<IdentityOptions> optionsAccessor,
         ILogger<SignInManager<User>> logger, IAuthenticationSchemeProvider schemes,
@@ -28,15 +28,29 @@ public class CustomSignInManager : SignInManager<User>
         schemes,
         confirmation)
     {
+        
         _db = db;
         _userSettings = userSettings;
     }
 
-    public async Task<SignInResult> PasswordSignInAsync(string email, string password,
+    public override async Task<SignInResult> PasswordSignInAsync(string emailOrUsername, string password,
         bool isPersistent,
         bool lockoutOnFailure)
     {
-        User? user = await UserManager.FindByEmailAsync(email);
+        User? user;
+        if (_userSettings.UserLoginType == UserLoginType.Email)
+        {
+            user = await UserManager.FindByEmailAsync(emailOrUsername);
+        }
+        else if (_userSettings.UserLoginType == UserLoginType.Username)
+        {
+            user = await UserManager.FindByNameAsync(emailOrUsername);
+        }
+        else
+        {
+            user = await UserManager.FindByEmailAsync(emailOrUsername) ??
+                   await UserManager.FindByNameAsync(emailOrUsername);
+        }
 
         if (user == null)
             return SignInResult.Failed;
@@ -50,7 +64,8 @@ public class CustomSignInManager : SignInManager<User>
         if (user == null || user.IsDeleted)
             return SignInResult.Failed;
 
-        if (!user.Active)
+        //User has been blocked (Active = false) or hasn't confirmed their email
+        if (!user.IsActive)
             return SignInResult.NotAllowed;
 
         if (!user.IsRegistered())
@@ -61,9 +76,22 @@ public class CustomSignInManager : SignInManager<User>
         if (result.Succeeded)
         {
             user.LastLoginDateUtc = DateTime.UtcNow;
+            _db.Update(user);
             await _db.SaveChangesAsync();
         }
 
         return result;
+    }
+
+    public override Task<bool> CanSignInAsync(User user)
+    {
+        Guard.NotNull(user);
+        
+        if (!user.IsActive)
+        {
+            return Task.FromResult(false);
+        }
+        
+        return base.CanSignInAsync(user);
     }
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Brands.Domain;
@@ -7,13 +8,16 @@ using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Catalog.Products.Extensions;
 using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Catalog.Products.Services;
+using EShop.Core.Common.Domain;
 using EShop.Core.Common.Services;
 using EShop.Core.Content.Media.Services;
 using EShop.Core.Data;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Routing;
+using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Extensions;
 using EShop.Web.Common.Models.Choices;
+using EShop.Web.Infrastructure.DbHandlers;
 using EShop.Web.Models.Catalog;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,14 +35,19 @@ public partial class CatalogHelper
     private readonly IDateTimeService _dateTimeService;
     private readonly IBrandService _brandService;
     private readonly IUrlService _urlService;
+    private readonly IUrlHelper _urlHelper;
+    private readonly ICacheManagerFactory _cacheFactory;
     private readonly ApplicationDbContext _db;
     private readonly CatalogSettings _catalogSettings;
     private readonly PerformanceSettings _performanceSettings;
+    readonly InventorySettings _inventorySettings;
 
     public CatalogHelper(IMediaService mediaService,
         IProductService productService, IProductAttributeMaterializer productAttributeMaterializer,
         IDeliveryTimeService deliveryTimeService, ApplicationDbContext db, IDateTimeService dateTimeService,
-        IUrlService urlService, CatalogSettings catalogSettings, IBrandService brandService, IProductPriceService productPriceService, PerformanceSettings performanceSettings)
+        IUrlService urlService, CatalogSettings catalogSettings, IBrandService brandService,
+        IProductPriceService productPriceService, PerformanceSettings performanceSettings, IUrlHelper urlHelper,
+        ICacheManagerFactory cacheFactory, InventorySettings inventorySettings)
     {
         _mediaService = mediaService;
         _productService = productService;
@@ -51,6 +60,9 @@ public partial class CatalogHelper
         _brandService = brandService;
         _productPriceService = productPriceService;
         _performanceSettings = performanceSettings;
+        _urlHelper = urlHelper;
+        _cacheFactory = cacheFactory;
+        _inventorySettings = inventorySettings;
     }
 
     public ProductDetailsModelContext CreateModelContext(Product product, ProductVariantQuery query)
@@ -67,130 +79,191 @@ public partial class CatalogHelper
     // }
 
 
-    public async Task<ProductDetailVm> MapProductDetailsPageModelAsync(Product product,
-        ProductVariantQuery? variantQuery)
+    public async Task<ProductDetailModel> MapProductDetailsPageModelAsync(Product product,
+        ProductVariantQuery? variantQuery, int selectedQuantity = 1)
     {
         ArgumentNullException.ThrowIfNull(product);
         var context = CreateModelContext(product, variantQuery);
 
-        var model = new ProductDetailVm();
+        var model = new ProductDetailModel()
+        {
+            Id = product.Id,
+            Name = product.Name,
+            ShortDescription = product.ShortDescription,
+            MaxAddToCartNumber = product.MaxAddToCartNumber,
+            MetaTitle = product.MetaTitle,
+            MetaDescriptions = product.MetaDescription,
+            IsAvailable = product.IsAvailable,
+            Sku = product.Sku,
+            Gtin = product.Gtin,
+            UpdateUrl = _urlHelper.Action(nameof(ProductController.UpdateProductDetails), "Product", new
+            {
+                productId = product.Id,
+            })
+        };
 
+        #region Brand
+
+        model.Brand = await PrepareBrandSummaryModelAsync(product.Brand);
+
+        #endregion
+
+        #region Specifications
+
+        //TODO: Fix the cache problem, which is that we can't store values in cache forever without not specifying a time span (999)
         await PrepareProductSpecificationModelAsync(context, model);
-        await PrepareProductAttributeModelAsync(context, model);
+
+        #endregion
+
+        #region RelatedProducts
+
+        //TODO: not finished, first you have to write HTML markup to display this
         await PrepareRelatedProductModelAsync(context, model);
 
-        //Should be called after these three methods. 
-        await PrepareProductPropertiesModelAsync(context, model);
+        #endregion
 
+        var productMedia = await context.BatchContext.ProductMedia.GetOrLoadAsync(product.Id);
+        model.Images = await PrepareProductImageModelAsync(productMedia);
+        
 
-        model.ProductReviews = new ProductReviewsModel();
-        await PrepareProductReviewModelAsync(model.ProductReviews, product);
+        #region CORE: Product Attributes, Price, Property Mapping
+
+        await PrepareProductDetailModelAsync(model, context);
+
+        #endregion
+
 
         return model;
     }
 
-    public async Task PrepareProductDetailModelAsync(ProductDetailVm model, ProductDetailsModelContext context,
+    protected virtual async Task PrepareProductPriceModelAsync(ProductDetailsModelContext ctx, ProductDetailModel model,
+        int selectedQuantity)
+    {
+        // Don't calculate product's price if it's unavailable to order.
+        if (!model.IsAvailable)
+        {
+            return;
+        }
+        var priceCalculationContext = new PriceCalculationContext()
+        {
+            Quantity = selectedQuantity,
+            Product = ctx.Product,
+            BatchContext = ctx.BatchContext
+        };
+        var calculatedPrice = await _productPriceService.CalculatePriceAsync(priceCalculationContext);
+        model.FinalPrice = calculatedPrice.FinalPrice;
+        model.RegularPrice = calculatedPrice.RegularPrice;
+        model.Saving = calculatedPrice.PriceSaving;
+
+        if (calculatedPrice.FinalPrice == 0)
+        {
+            model.FinalPrice = model.FinalPrice.WithPostFormat("Free");
+        }
+
+        if (model.Saving.HasSaving)
+        {
+            model.Labels.Add(new ProductLabelModel()
+            {
+                Name = SystemLabelNames.Sale,
+                Content = string.Format(CultureInfo.InvariantCulture,
+                    SystemLabelNames.SaleTemplate,
+                    model.Saving.SavingPercent.ToString("F1"))
+            });
+        }
+    }
+
+
+    public async Task PrepareProductDetailModelAsync(ProductDetailModel model, ProductDetailsModelContext context,
         int selectedQuantity = 1)
     {
         ArgumentNullException.ThrowIfNull(model);
         ArgumentNullException.ThrowIfNull(context);
         var product = context.Product;
 
+        #region Attributes
+
         await PrepareProductAttributeModelAsync(context, model);
 
+        #endregion
+
+        #region Price
+
+        await PrepareProductPriceModelAsync(context, model, selectedQuantity);
+
+        #endregion
+
+        #region Property Mapping
+
+        //Should be called after these three methods. 
         await PrepareProductPropertiesModelAsync(context, model);
-    }
 
+        #endregion
+        
+        #region Labels
 
-    public async Task<IList<BrandSummaryModel>> PrepareBrandModelAsync(IList<Brand> brands)
-    {
-        ArgumentNullException.ThrowIfNull(brands);
-        var fileIds = brands
-            .Select(x => x.MediaFileId ?? 0)
-            .Where(x => x != 0)
-            .Distinct()
-            .ToArray();
-        var allImages = (await _mediaService
-                .GetMediaFilesByIdsAsync(fileIds, false))
-            .ToDictionary(x => x.Id);
-
-        //TODO: add caching.
-        var brandModels = await brands
-            .SelectAsync(async b =>
+        // Allow to display only 5 custom labels for a product
+        var customLabels = await _db
+            .ProductLabels.AsNoTracking()
+            .Include(x => x.Label)
+            .Where(x => x.ProductId == product.Id)
+            .Take(5)
+            .OrderBy(x => x.Order)
+            .Select(x => new ProductLabelModel
             {
-                allImages.TryGetValue(b.MediaFileId ?? 0, out var image);
-                return new BrandSummaryModel
-                {
-                    Id = b.Id,
-                    Name = b.Name,
-                    Image = new ImageModel()
-                    {
-                        Id = b.Id,
-                        Alt = image?.Alt,
-                        Height = image.Height,
-                        Width = image.Width,
-                        Url = await _urlService.GetActiveSlugAsync(b.Id, b.Name)
-                    }
-                };
+                Name = x.Label.Name,
+                Content = x.Label.Content
             })
             .ToListAsync();
+        foreach (var label in customLabels)
+        {
+            model.Labels.Add(label);
+        }
 
-        return brandModels;
+        #endregion
     }
-
-    protected virtual async Task<ImageModel> PrepareBrandImageModelAsync(Brand brand)
-    {
-        throw new NotImplementedException();
-    }
+    
+ 
 
 
-    private async Task PrepareProductReviewModelAsync(ProductReviewsModel model, Product product, int take = 10)
-    {
-        ArgumentNullException.ThrowIfNull(model);
-        ArgumentNullException.ThrowIfNull(product);
+    // public async Task<IList<BrandSummaryModel>> PrepareBrandModelAsync(IList<Brand> brands)
+    // {
+    //     ArgumentNullException.ThrowIfNull(brands);
+    //     var fileIds = brands
+    //         .Select(x => x.MediaFileId ?? 0)
+    //         .Where(x => x != 0)
+    //         .Distinct()
+    //         .ToArray();
+    //     var allImages = (await _mediaService
+    //             .GetMediaFilesByIdsAsync(fileIds, false))
+    //         .ToDictionary(x => x.Id);
+    //
+    //     //TODO: add caching.
+    //     var brandModels = await brands
+    //         .SelectAsync(async b =>
+    //         {
+    //             allImages.TryGetValue(b.MediaFileId ?? 0, out var image);
+    //             return new BrandSummaryModel
+    //             {
+    //                 Id = b.Id,
+    //                 Name = b.Name,
+    //                 Image = new ImageModel()
+    //                 {
+    //                     Id = b.Id,
+    //                     Alt = image?.Alt,
+    //                     Height = image.Height,
+    //                     Width = image.Width,
+    //                     Url = await _urlService.GetActiveSlugAsync(b.Id, b.Name)
+    //                 }
+    //             };
+    //         })
+    //         .ToListAsync();
+    //
+    //     return brandModels;
+    // }
 
-        model.ProductId = product.Id;
-        model.ProductName = product.Name;
+   
 
-        model.ReviewItems = await _db
-            .ProductReviews
-            .Where(x => x.ProductId == product.Id && x.ReviewStatus == ReviewStatus.Approved)
-            .OrderByDescending(x => x.CreatedOnUtc)
-            .Select(x => new ProductReviewItemModel()
-            {
-                Id = x.Id,
-                Title = x.Title,
-                ReviewerName = x.ReviewerName,
-                CreatedOn = x.CreatedOnUtc,
-                EditedOn = x.ModifiedOnUtc,
-                CommentText = x.CommentText,
-                Rating = x.Rating,
-                Replies = x
-                    .Replies.Where(
-                        x => x.ReplyStatus == ReplyStatus.Approved)
-                    .OrderByDescending(x => x.CreatedOnUtc)
-                    .Select(x => new ReplyModel()
-                    {
-                        ReplyText = x.ReplyText,
-                        ReplierName = x.ReplierName,
-                        // This line will get executed by EF in the server, not in the database.
-                        CreatedOn = _dateTimeService.ConvertToLocalTimeZoneFromUtc(x.CreatedOnUtc)
-                    })
-                    .ToList()
-            })
-            .Take(take)
-            .ToListAsync();
-
-
-        model.TotalReviewsCount = model.ReviewItems.Count;
-        model.Rating1Count = model.ReviewItems.Count(x => x.Rating == 1);
-        model.Rating2Count = model.ReviewItems.Count(x => x.Rating == 2);
-        model.Rating3Count = model.ReviewItems.Count(x => x.Rating == 3);
-        model.Rating4Count = model.ReviewItems.Count(x => x.Rating == 4);
-        model.Rating5Count = model.ReviewItems.Count(x => x.Rating == 5);
-    }
-
-    private async Task PrepareProductAttributeModelAsync(ProductDetailsModelContext context, ProductDetailVm model)
+    private async Task PrepareProductAttributeModelAsync(ProductDetailsModelContext context, ProductDetailModel model)
     {
         var product = context.Product;
         var batchContext = context.BatchContext;
@@ -209,17 +282,10 @@ public partial class CatalogHelper
                 Name = attribute.ProductAttribute.Name,
                 Description = attribute.ProductAttribute.Description,
                 TextPrompt = attribute.ProductAttribute.TextPrompt,
+                IsActive = attribute.IsActive,
                 IsRequired = attribute.IsRequired,
                 AttributeControlType = attribute.AttributeControlType,
             };
-
-            // if (query.Variants.Count > 0)
-            // {
-            //     var selectedAttribute = query.Variants.FirstOrDefault(x =>
-            //         x.ProductId == attribute.ProductId && x.AttributeId == attribute.ProductAttributeId &&
-            //             x.VariantAttributeId == attribute.Id);
-            //     
-            // }
 
 
             if (attribute.IsListTypeAttribute())
@@ -237,6 +303,7 @@ public partial class CatalogHelper
                             Alias = value.Alias,
                             Color = value.Color,
                             IsPreSelected = value.IsPreSelected,
+                            IsEssential = value.IsEssential,
                             DisplayOrder = value.DisplayOrder,
                             QuantityInfo = value.Quantity
                         };
@@ -253,75 +320,89 @@ public partial class CatalogHelper
                     .Select(x => (ChoiceItemModel)x)
                     .OrderBy(x => x.DisplayOrder)
                     .ToList();
+                Console.WriteLine();
             }
 
-            foreach (var val in attributeVm.Values.Where(x => x.IsPreSelected))
+            foreach (var value in attributeVm.Values.Where(x => x.IsPreSelected))
             {
-                // query.AddVariant();
+                // When this runs the first time, we've got to select attributes that are pre-selected cuz none are selected by the user yet.
+                // Query will contain both the user-selected values and the values that are 'IsPreSelected'. 
+                // The user-chosen values will override the 'IsPreSelected' ones since they appear before
+                // the pre-selected ones on the list and since we retrieve the values by calling FirstOrDefault(), we'll get the first added-value (a user-selected one if exists)
+                query.AddVariant(new ProductVariantQueryItem()
+                {
+                    Value = value.Id.ToString(),
+                    ProductId = product.Id,
+                    AttributeId = attribute.ProductAttributeId,
+                    VariantAttributeId = attribute.Id
+                });
             }
 
             model.ProductVariantAttributes.Add(attributeVm);
         }
 
-        if (query != null && (query.Variants.Count > 0))
-        {
-             await PrepareProductAttributeCombinationsModelAsync(context, model);
-        }
+        await PrepareProductAttributeCombinationsModelAsync(context, model);
     }
 
     private async Task PrepareProductAttributeCombinationsModelAsync(ProductDetailsModelContext context,
-    ProductDetailVm model)
-{
-    var product = context.Product;
-    var batchContext = context.BatchContext;
-    var query = context.ProductVariantQuery;
-    var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
-
-    //selection (attribute + selected value) of all the attributes displayed. 
-    var selection = _productAttributeMaterializer.CreateAttributeSelectionAsync(query, attributes, product.Id);
-    context.Selection = selection;
-    var selectedValues =
-        _productAttributeMaterializer.MaterializeProductVariantAttributeValues(selection, attributes);
-    var selectedValueIds = selectedValues
-        .Select(x => x.Id)
-        .ToArray();
-
-    model.SelectedCombination =
-        await _productAttributeMaterializer.FindAttributeCombinationAsync(product.Id, selection);
-    
-    if (model.SelectedCombination != null && !model.SelectedCombination.IsActive && model.SelectedCombination.StockQuantity == 0)
+        ProductDetailModel model)
     {
-        model.IsAvailable = false;
-    }
+        var product = context.Product;
+        var batchContext = context.BatchContext;
+        var query = context.ProductVariantQuery;
+        var attributes = await batchContext.Attributes.GetOrLoadAsync(product.Id);
 
-    product.MergeDataWithCombination(model.SelectedCombination);
+        //selection (attribute + selected value) of all the attributes displayed. 
+        var selection = _productAttributeMaterializer.CreateAttributeSelection(query, attributes, product.Id);
+        context.Selection = selection;
+        var selectedValues =
+            _productAttributeMaterializer.MaterializeProductVariantAttributeValues(selection, attributes);
+        var selectedValueIds = selectedValues
+            .Select(x => x.Id)
+            .ToArray();
 
-    foreach (var attribute in model.ProductVariantAttributes.Where(x => x.IsActive))
-    {
-        //any value of the attribute intersects with any user chosen value for this attribute.
-        // In other words, has the user selected a particular value for this attribute? 
-        var updatePreselection = selectedValueIds.Length > 0 && selectedValueIds
-            .Intersect(attribute.Values.Select(x => x.Id))
-            .Any();
+        model.SelectedCombination =
+            await _productAttributeMaterializer.FindAttributeCombinationAsync(product.Id, selection);
 
-
-        foreach (ProductVariantAttributeValueModel value in
-                 attribute.Values.Cast<ProductVariantAttributeValueModel>())
+        if ((model.SelectedCombination == null || (!model.SelectedCombination.IsActive ||
+                                                   model.SelectedCombination.StockQuantity == 0)) 
+            && product.AttributeCombinationRequired)
         {
-            var isSelected = selectedValueIds.Contains(value.Id);
-            if (updatePreselection)
-            {
-                //set to false or true depending on which value the user has chosen. 
-                value.IsPreSelected = isSelected;
-            }
+            model.IsAvailable = false;
+        }
+        else
+        {
+            model.IsAvailable = true;
+        }
 
-            if (isSelected)
+        product.MergeDataWithCombination(model.SelectedCombination);
+
+
+        //TODO: if none is active or even if one is not active, how to we convey that to the user? "foreach (var attribute in model.ProductVariantAttributes.Where(x => x.IsActive))"
+        foreach (var attribute in model.ProductVariantAttributes.Where(x => x.IsActive))
+        {
+            //any value of the attribute intersects with any user chosen value for this attribute.
+            // In other words, has the user selected a particular value for this attribute? 
+            var updatePreselection = selectedValueIds.Length > 0 && selectedValueIds
+                .Intersect(attribute.Values.Select(x => x.Id))
+                .Any();
+
+
+            foreach (ProductVariantAttributeValueModel value in
+                     attribute.Values.Cast<ProductVariantAttributeValueModel>())
             {
-                // model.Weight += value.ProductVariantAttributeValue.WeightAdjustment;
-            }
-            
-            if (true)
-            {
+                var isSelected = selectedValueIds.Contains(value.Id);
+                if (updatePreselection)
+                {
+                    //set to false or true depending on which value the user has chosen. 
+                    value.IsPreSelected = isSelected;
+                }
+
+                if (isSelected)
+                {
+                    model.Weight += value.ProductVariantAttributeValue.WeightAdjustment;
+                }
+
                 var availabilityInfo = await _productAttributeMaterializer.IsCombinationAvailableAsync(
                     product,
                     attributes,
@@ -342,48 +423,52 @@ public partial class CatalogHelper
             }
         }
     }
-}
 
 
-    private async Task PrepareProductPropertiesModelAsync(ProductDetailsModelContext context, ProductDetailVm model)
+    private async Task PrepareProductPropertiesModelAsync(ProductDetailsModelContext context, ProductDetailModel model)
     {
+        //TODO: Start using Meta properties and display dimension properties (including making sure dimension value like Length, Weight, Width etc are in sync with combination values e.g. Weight += comb.Weight).
         ArgumentNullException.ThrowIfNull(context);
         var product = context.Product;
         var combination = model.SelectedCombination;
 
         model.Id = product.Id;
         model.Name = product.Name;
-        model.Brand = product.Brand;
         model.MetaTitle = product.MetaTitle;
         model.MetaDescriptions = product.MetaTitle;
         model.Description = product.Description;
         model.ShortDescription = product.ShortDescription;
-        model.IsAvailable = product.IsAvailable;
+        // Don't map this in here because it'll override the set value base off the combination availability.
+        //model.IsAvailable = product.IsAvailable;
         model.StockQuantity = product.StockQuantity;
         model.RatingAverage = product.ApprovedRatingSum;
-        model.ReviewsCount = product.ApprovedReviewCount;
+        model.ProductReviewOverview = new ProductReviewOverviewModel()
+        {
+            TotalReviews = product.ApprovedReviewCount,
+            RatingSum = product.ApprovedRatingSum,
+        };
+        model.Weight = product.Width > 0 ? $"{product.Width:G29}" : string.Empty;
+        model.Height = product.Height > 0 ? $"{product.Height:G29}" : string.Empty;
+        model.Length = product.Length > 0 ? $"{product.Length:G29}" : string.Empty;
+        model.Width = product.Width > 0 ? $"{product.Width:G29}" : string.Empty;
 
 
-        // model.CalculatedProductPrice = combination is { Price: not null }
-        //     ? _productPricingService.CalculateProductPrice(price: combination.Price.Value,
-        //         oldPrice: combination.OldPrice,
-        //         specialPrice: combination.SpecialPrice,
-        //         specialPriceEnd: combination.SpecialPriceEnd,
-        //         specialPriceStart: combination.SpecialPriceStarts)
-        //     : _productPricingService.CalculateProductPrice(product);
+        // Stock info
+        if (product.DisplayStockQuantity)
+        {
+            if (product.StockQuantity > 0)
+            {
+                model.StockAvailability =
+                    string.Format(CatalogMessages.Product.StockAvailability, product.StockQuantity);
+                
+            }
+            else
+            {
+                model.StockAvailability = CatalogMessages.Product.OutOfStock;
+            }
+        }
 
-        model.Sku = combination is { Sku: not null } ? combination.Sku : product.Sku;
-        model.Gtin = combination is { Sku: not null } ? combination.Sku : product.Sku;
-
-        model.Weight = model.WidthValue > 0 ? $"{combination.Height:G29}" : string.Empty;
-        model.Height = combination?.Height > 0 ? $"{combination.Height:G29}" :
-            product.Height > 0 ? $"{product.Height:G29}" : string.Empty;
-        model.Length = combination?.Length > 0 ? $"{combination.Length:G29}" :
-            product.Length > 0 ? $"{product.Length:G29}" : string.Empty;
-        model.Width = combination?.Width > 0 ? $"{combination.Width:G29}" :
-            product.Width > 0 ? $"{product.Width:G29}" : string.Empty;
-
-
+        // TODO: Display delivery times.
         // Delivery time 
         if (combination?.DeliveryTimeId is > 0 && model.IsAvailable)
         {
@@ -396,7 +481,7 @@ public partial class CatalogHelper
     }
 
 
-    private async Task PrepareRelatedProductModelAsync(ProductDetailsModelContext context, ProductDetailVm model)
+    private async Task PrepareRelatedProductModelAsync(ProductDetailsModelContext context, ProductDetailModel model)
     {
         // ArgumentNullException.ThrowIfNull(model);
         // ArgumentNullException.ThrowIfNull(context);
@@ -415,19 +500,34 @@ public partial class CatalogHelper
     }
 
     private async Task PrepareProductSpecificationModelAsync(ProductDetailsModelContext context,
-        ProductDetailVm model)
+        ProductDetailModel model)
     {
-        ArgumentNullException.ThrowIfNull(context);
-        var product = context.Product;
-        var batchContext = context.BatchContext;
-        var specs = await batchContext.ProductSpecification.GetOrLoadAsync(product.Id);
-        model.ProductSpecifications = specs
-            .Select(x => new ProductSpecificationModel()
-            {
-                SpecificationAttributeId = x.SpecificationAttributeOption.SpecificationAttributeId,
-                SpecificationAttributeName = x.SpecificationAttributeOption.SpecificationAttribute.Name,
-                SpecificationAttributeOption = x.SpecificationAttributeOption.Name
-            })
-            .ToList();
+        var cacheKey = string.Format(ModelCacheInvalidator.ProductSpecsModelKey, context.Product.Id);
+        var specs = await _cacheFactory
+            .GetMemoryCache()
+            .GetOrCreateAsync(cacheKey,
+                async () =>
+                {
+                    var product = context.Product;
+                    return await _db
+                        .ProductSpecificationAttributes
+                        .AsNoTracking()
+                        .Where(x => x.ProductId == product.Id)
+                        .Include(x => x.SpecificationAttributeOption)
+                        .ThenInclude(x => x.SpecificationAttribute)
+                        .OrderBy(x => x.DisplayOrder)
+                        .ThenBy(x => x.SpecificationAttributeOption.SpecificationAttribute.DisplayOrder)
+                        .ThenBy(x => x.SpecificationAttributeOption.SpecificationAttribute.Name)
+                        .Select(x => new ProductSpecificationModel()
+                        {
+                            SpecificationAttributeId = x.SpecificationAttributeOption.SpecificationAttributeId,
+                            SpecificationAttributeName = x.SpecificationAttributeOption.SpecificationAttribute.Name,
+                            SpecificationAttributeOption = x.SpecificationAttributeOption.Name,
+                            DisplayOrder = x.SpecificationAttributeOption.DisplayOrder,
+                        })
+                        .ToListAsync();
+                },
+                new CacheEntryOptions() { AbsoluteExpiration = TimeSpan.FromHours(999) });
+        model.ProductSpecifications = specs;
     }
 }

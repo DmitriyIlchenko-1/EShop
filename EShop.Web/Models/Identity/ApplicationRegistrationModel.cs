@@ -6,6 +6,7 @@ namespace EShop.Web.Models.Identity;
 
 public class ApplicationRegistrationModel : RegistrationBaseModel
 {
+     
     [DataType(DataType.Password)]
     public string Password { get; set; }
   
@@ -16,8 +17,17 @@ public class ApplicationRegistrationModel : RegistrationBaseModel
 public class ApplicationRegistrationModelValidator : RegistrationBaseModelValidator<ApplicationRegistrationModel>
 {
     public ApplicationRegistrationModelValidator(UserSettings userSettings) : base(userSettings)
-    {
+    { 
+        RuleFor(x => x.Email)
+            .NotEmpty()
+            .EmailAddress();
         
+        if (userSettings.FirstNameRequired)
+        {
+            RuleFor(x => x.FirstName)
+                .NotEmpty();
+        }
+
         RuleFor(x => x.Password)
             .NotEmpty();
         RuleFor(x => x.ConfirmPassword)

@@ -1,6 +1,9 @@
 /* || UTILITY BAR */
 
 .utility-bar {
+    background-color: var(--color-background);
+    position: relative;
+    z-index: var(--layer-menu-drawer);
     padding-block: .9rem;
 }
 
@@ -9,6 +12,7 @@
 }
 
 .utility-bar__grid {
+
     display: grid;
     grid-template-columns: 1fr;
     grid-template-areas: 'announcements';
@@ -72,8 +76,6 @@
     margin: 0;
     text-wrap: pretty;
 }
-
-
 
 
 .announcement-bar__link {
@@ -147,9 +149,6 @@ If there's a lot of text in the announcement bar
     outline-offset: -0.3rem;
     box-shadow: 0 0 0 -0.2rem rgba(var(--color-foreground))
 }
-
-
-
 
 
 /*TODO: Add support for links e.g. announcement-bar__link and support for slider */

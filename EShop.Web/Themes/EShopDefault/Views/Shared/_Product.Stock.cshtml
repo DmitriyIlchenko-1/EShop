@@ -1,0 +1,20 @@
+@using EShop.Core.Catalog.Configuration
+@using EShop.Web.Models.Catalog
+@model ProductDetailModel
+@{
+    var inventorySettings = Context.RequestServices.GetRequiredService<InventorySettings>();
+    var isLowStock = Model.StockQuantity < inventorySettings.InStockThreshold;
+    var noStock = Model.StockQuantity == 0;
+}
+@if (Model.SelectedCombination != null && Model.SelectedCombination.IsActive)
+{
+    @if (!noStock)
+    {
+        <p class="m-0 product-info__stock @(!isLowStock ? "product-info__stock--in-stock" : "product-info__stock--low")">@Model.StockAvailability</p>
+    }
+    else
+    {
+        <p class="m-0 product-info__stock product-info__stock__no-stock">@Model.StockAvailability</p>
+    }
+}
+ 

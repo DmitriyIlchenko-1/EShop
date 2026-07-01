@@ -1,0 +1,46 @@
+.login svg {
+    width: var(--icon-size-lg);
+    height: var(--icon-size-lg);
+}
+
+.customer {
+    width: 33rem;
+
+    @media screen and (width >= 769px) {
+        width: 48rem;
+    }
+}
+
+.customer form {
+
+}
+
+.customer form > button {
+    font-size: 1.5rem;
+    letter-spacing: .1rem;
+    min-width: calc(12rem + var(--btn-primary-border-width) * 2);
+    min-height: calc(4.4rem + var(--btn-primary-border-width) * 2)
+}
+
+.login .list-social {
+    padding-block: var(--padding-md);
+}
+
+.login .list-social__item svg {
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+}
+
+ul ::marker {
+    font: inherit;
+    vertical-align: center
+}
+
+.customer .validation-summary-errors ul {
+    vertical-align: center;
+    color: var(--color-text-danger);
+    list-style-image: url("data:image/svg+xml, %3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23ff0000%22%20fill-rule%3D%22evenodd%22%20d%3D%22M8%2014.5a6.5%206.5%200%201%200%200-13a6.5%206.5%200%200%200%200%2013ZM8%2016A8%208%200%201%200%208%200a8%208%200%200%200%200%2016Zm1-5a1%201%200%201%201-2%200a1%201%200%200%201%202%200Zm-.25-6.25a.75.75%200%200%200-1.5%200v3.5a.75.75%200%200%200%201.5%200v-3.5Z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E");
+    list-style-position: inside;
+}
+
+

@@ -15,6 +15,7 @@
   
     <ItemGroup>
         <Folder Include="App_Data\" />
+        <Folder Include="Areas\" />
         <Folder Include="Themes\EShopDefault\wwwroot\" />
         <Folder Include="Views\Home\Partials\" />
     </ItemGroup>
@@ -32,6 +33,7 @@
         <PackageReference Include="Autofac" Version="9.0.0" />
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
         <PackageReference Include="Bogus" Version="35.6.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.11" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -406,6 +408,140 @@
       <_ContentIncludedByDefault Remove="wwwroot\images\Cached\0000020-pexels-karola-g-4202325-w2259.jpg" />
       <_ContentIncludedByDefault Remove="wwwroot\images\Cached\0000020-pexels-karola-g-4202325-w3162.jpg" />
       <_ContentIncludedByDefault Remove="wwwroot\images\Cached\0000020-pexels-karola-g-4202325-w3840.jpg" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\additional-methods.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\additional-methods.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\jquery-validation-sri.json" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\jquery.validate.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\jquery.validate.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ar.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ar.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_az.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_az.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_bg.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_bg.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_bn_BD.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_bn_BD.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ca.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ca.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_cs.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_cs.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_da.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_da.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_de.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_de.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_el.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_el.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_es.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_es.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_es_AR.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_es_AR.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_es_PE.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_es_PE.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_et.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_et.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_eu.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_eu.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_fa.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_fa.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_fi.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_fi.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_fr.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_fr.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ge.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ge.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_gl.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_gl.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_he.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_he.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_hr.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_hr.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_hu.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_hu.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_hy_AM.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_hy_AM.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_id.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_id.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_is.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_is.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_it.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_it.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ja.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ja.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ka.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ka.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_kk.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_kk.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ko.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ko.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_lt.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_lt.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_lv.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_lv.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_mk.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_mk.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_my.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_my.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_nl.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_nl.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_no.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_no.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_pl.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_pl.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_pt_BR.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_pt_BR.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_pt_PT.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_pt_PT.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ro.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ro.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ru.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ru.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_sd.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_sd.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_si.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_si.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_sk.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_sk.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_sl.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_sl.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_sr.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_sr.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_sr_lat.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_sr_lat.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_sv.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_sv.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_th.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_th.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_tj.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_tj.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_tr.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_tr.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_uk.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_uk.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ur.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_ur.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_vi.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_vi.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_zh.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_zh.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_zh_TW.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\messages_zh_TW.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\methods_de.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\methods_de.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\methods_es_CL.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\methods_es_CL.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\methods_fi.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\methods_fi.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\methods_it.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\methods_it.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\methods_nl.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\methods_nl.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\methods_pt.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validate\localization\methods_pt.min.js" />
+      <_ContentIncludedByDefault Remove="Views\Product\Product.cshtml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Themes\EShopDefault\Views\Product\Product.cshtml" />
     </ItemGroup>
 
 </Project>

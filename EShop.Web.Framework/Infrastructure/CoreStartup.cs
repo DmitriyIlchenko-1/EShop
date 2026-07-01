@@ -9,9 +9,11 @@ using EShop.Core.Content.Media.Services;
 using EShop.Core.Content.Widgets.Services;
 using EShop.Core.Data;
 using EShop.Core.Data.Brands.Services;
+using EShop.Core.Data.Cart.Services;
 using EShop.Core.Data.Categories.Services;
 using EShop.Core.Data.DbHandlers;
 using EShop.Core.Data.Launch;
+using EShop.Core.Data.Order.Services;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Configuration.Domain;
 using EShop.Core.Platform.Configuration.Services;
@@ -30,6 +32,7 @@ using EShop.Infrastructure.Media.Images;
 using EShop.Infrastructure.Modules;
 using EShop.Infrastructure.Storage;
 using EShop.Infrastructure.Utilities;
+using EShop.Web.Common.Razor;
 using EShop.Web.Common.TagHelpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -74,6 +77,12 @@ public class CoreStartup : BaseStartup
         services.AddScoped<IDiscountService, DefaultDiscountService>();
         services.AddSingleton<ILabelManager, DefaultLabelManager>();
         services.AddScoped<IEmailService, DefaultEmailService>();
+        services.AddScoped<IViewRenderer<PartialViewRendererDescriptor>, PartialViewRenderer>();
+        services.AddScoped<IViewRenderer<ComponentViewRendererDescriptor>, ComponentViewRenderer>();
+        services.AddScoped<IViewRendererFactory, DefaultViewRendererFactory>();
+        services.AddScoped<IShoppingCartService, DefaultShoppingCartService>();
+        services.AddScoped<IOrderService, DefaultOrderService>();
+        
         /*
          * Caching 
          */

@@ -48,6 +48,7 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IMerg
     [StringLength(400)] public string MetaTitle { get; set; }
     [StringLength(400)] public string MetaDescription { get; set; }
     [StringLength(400)] public string MetaKeywords { get; set; }
+    public int? MaxAddToCartNumber { get; set; }
     public DateTime CreatedOnUtc { get; set; }
     public DateTime ModifiedOnUtc { get; set; }
     public bool HasDiscountsApplied { get; set; }

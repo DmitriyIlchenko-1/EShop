@@ -136,15 +136,17 @@
                                     <div
                                         class="slideshow__slide product-media-container media-fit product-media-container--image">
                                         <div class="product-media">
-                                            <!--TODO: I'll add the sizes and srcset attributes when I start rendering this html though the backend.-->
                                             <img class="product-media__image" loading="eager"
                                                  fetchpriority="auto"
                                                  src="@img.Url"
                                                  max-src-width="3840"
-                                                 es-model="img"
+                                                 min-src-width="300"
+                                                 tol=".40"
                                                  alt="@img.Alt"/>
                                         </div>
                                     </div>
+                                    //TODO: TEMP: process only one image until the gallery component is done.
+                                    break;
                                 }
                             </div>
                         </div>
@@ -164,7 +166,7 @@
 
                 <div class="paragraph mb-1">
                     <h2 class="product-card__heading m-0">
-                        <a href="#" class="product-card__link">
+                        <a href="@Model.SeName" class="product-card__link">
                             @Model.Name
                         </a>
                     </h2>

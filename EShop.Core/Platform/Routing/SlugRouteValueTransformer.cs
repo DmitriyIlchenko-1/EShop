@@ -1,5 +1,7 @@
 using EShop.Core.Data;
 using EShop.Core.Platform.Routing.Domain;
+using EShop.Infrastructure.Utilities;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
@@ -34,7 +36,7 @@ namespace EShop.Core.Platform.Routing
 
             UrlRecord? urlRecord = await _db
                 .UrlRecords
-                .Include(x => x.EntityType)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Slug == requestPath);
 
             if (urlRecord is null)
@@ -42,13 +44,49 @@ namespace EShop.Core.Platform.Routing
                 return null;
             }
 
-            return new RouteValueDictionary
+            var transformedValues = GetRouteValues(urlRecord, values);
+            if (transformedValues == null)
             {
-                { "area", urlRecord.EntityType.TargetAreaName },
-                { "controller", urlRecord.EntityType.TargetControllerName },
-                { "action", urlRecord.EntityType.TargetActionName },
-                { "id", urlRecord.EntityId }
-            };
+                return null;
+            }
+
+            return transformedValues;
+        }
+
+        protected virtual RouteValueDictionary GetRouteValues(UrlRecord urlRecord, RouteValueDictionary values)
+        {
+            switch (urlRecord.EntityName.ToLowerInvariant())
+            {
+                case "product":
+                    return new RouteValueDictionary
+                    {
+                        { "area", string.Empty },
+                        { "controller", "Product" },
+                        { "action", "ProductDetails" },
+                        { "productId", urlRecord.EntityId },
+                    };
+            }
+
+            return null;
+        }
+    }
+
+    public static class SlugRouteValueTransformerExtensions
+    {
+        public static IEndpointRouteBuilder MapSlugRouteValues(this IEndpointRouteBuilder builder)
+        {
+            Guard.NotNull(builder);
+            builder.MapControllerRoute("Product",
+                "{**SeName:minlength(2)}",
+                new { controller = "Product", action = "ProductDetails" })
+                .WithMetadata(new SuppressMatchingMetadata());
+            builder.MapControllerRoute("Category",
+                "{**SeName:minlength(2)}",
+                new { controller = "Category", action = "Category" })
+                .WithMetadata(new SuppressMatchingMetadata());;
+            return builder;
         }
     }
 }
+
+ 

@@ -1,7 +1,8 @@
+ 
+using System.Text.Json;
 using EShop.Infrastructure.Collections;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
-using Newtonsoft.Json;
 
 namespace EShop.Core.Catalog.Attributes.Domain;
 
@@ -15,8 +16,27 @@ public class ProductVariantAttributeSelection : IEquatable<ProductVariantAttribu
     public IEnumerable<KeyValuePair<int, IEnumerable<int>>> Attributes
         => _attributes.AsEnumerable();
 
-     
+    public ProductVariantAttributeSelection(string rawAttributes)
+    {
+        Guard.NotEmpty(rawAttributes);
+        _attributes = GetAttributesFromJson(rawAttributes);
+    }
 
+    public ProductVariantAttributeSelection()
+    {
+        
+    }
+
+    private MultiMap<int, int> GetAttributesFromJson(string rawAttributes)
+    {
+        if (rawAttributes.IsEmpty())
+        {
+            return new MultiMap<int, int>();
+        }
+        
+        return JsonSerializer.Deserialize<MultiMap<int, int>>(rawAttributes);
+    }
+    
     public void AddAttribute(int attributeId, int value)
     {
         _attributes.Add(attributeId, value);
@@ -39,13 +59,17 @@ public class ProductVariantAttributeSelection : IEquatable<ProductVariantAttribu
         foreach (var pair in attributes)
         {
             combiner.Add(pair.Key);
-            combiner.Add(pair.Value.ToString());
+
+            foreach (var value in pair.Value.Select(x => x.ToString()).OrderBy(x => x))
+            {
+                combiner.Add(value);
+            }
         }
 
         return combiner.GetCombinedHash();
     }
 
-    //todo: finish it
+   
     public virtual string AsJson()
     {
         if (_jsonAttributeData.HasValue() && _isJson)
@@ -53,17 +77,9 @@ public class ProductVariantAttributeSelection : IEquatable<ProductVariantAttribu
         if (_attributes.Count == 0)
             return null;
         
-        try
-        {
-            var json = JsonConvert.SerializeObject(_attributes);
-            _isJson = true;
-            return _jsonAttributeData = json;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
+        var json = JsonSerializer.Serialize(_attributes);
+        _isJson = true;
+        return _jsonAttributeData = json;
     }
 
     public static bool operator ==(ProductVariantAttributeSelection left, ProductVariantAttributeSelection right)

@@ -12,6 +12,7 @@ public class DefaultCalculatorDispatcher
     {
         Guard.NotNull(calculators);
         _calculators = calculators.OrderBy(x => x.Order).ToArray();
+        Console.WriteLine();
     }
 
     public async Task InvokeAsync(CalculatorPriceContext ctx)

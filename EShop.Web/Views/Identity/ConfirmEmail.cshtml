@@ -1,7 +1,37 @@
 @{
     ViewData["Title"] = "Email Confirmation";
+    
 }
 
-<p>You've activated your account. You can now log in</p>
-
-<a asp-action="Login">Log in</a>
+<div class="section section--content-middle spacing-style gap-style color-scheme-2" style="
+        --padding-block-start: max(20px, calc(var(--spacing-scale) * 48px));
+        --padding-block-end: max(20px, calc(var(--spacing-scale) * 48px));
+        --gap: max(24px, calc(var(--gap-scale, 1.0) * 28px))">
+   
+    <div class="layout-panel-flex layout-panel-flex--column"
+         style="
+                   --gap: max(24px, calc(var(--gap-scale, 1.0) * 29px));
+                     --flex-direction: column;
+                     --flex-wrap: nowrap;
+                     --flex-wrap-mobile: wrap;
+                     --horizontal-alignment: center;
+                     --vertical-alignment: center;
+                     --vertical-alignment-mobile: center">
+        <div class="spacing-style text-block" style="
+           --max-width: var(--max-width--body-narrow);
+           --width: fit-content;">
+            <h1>Email confirmation result</h1>
+        </div>
+        <p>@ViewBag.ConfirmationResult</p>
+        <div class="flex gap-x-xl">
+            <a class="size-style button button-secondary" asp-action="Index" asp-controller="Home"
+               style="--size-style-width: fit-content; --size-style-width-mobile: fit-content;">
+                Home page
+            </a>
+            <a class="size-style button" asp-action="Login"
+               style="--size-style-width: fit-content; --size-style-width-mobile: fit-content;">
+                Sign in
+            </a>
+        </div>
+    </div>
+</div>

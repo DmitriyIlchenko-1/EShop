@@ -1,0 +1,36 @@
+@model ICollection<EShop.Web.Models.Catalog.ProductSpecificationModel>
+
+@{
+    if (Model.Count == 0)
+    {
+        return;
+    }
+}
+<dl class="product-spec">
+    @foreach (var group in Model.GroupBy(x => x.SpecificationAttributeName))
+    {
+        var count = group.Count();
+        <div class="product-spec__item">
+            <dt class="product-spec__name">
+                @group.Key
+            </dt>
+            <dd class="product-spec__value">
+                @if (count == 1)
+                {
+                    @group.First().SpecificationAttributeOption
+                }
+                else if (count > 1)
+                {
+                    <ul class="list-none p-0">
+                        @foreach (var item in group
+                                          .OrderBy(x => x.DisplayOrder)
+                                          .ThenBy(x => x.SpecificationAttributeOption))
+                        {
+                            <li>@item.SpecificationAttributeOption</li>
+                        }
+                    </ul>
+                }
+            </dd>
+        </div>
+    }
+</dl>

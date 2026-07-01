@@ -18,6 +18,6 @@ public class ProductVariantAttributeModel : ChoiceModel
 
     public override string BuildControlId()
     {
-        return ProductVariantQueryItem.CreateKey(ProductId, ProductVariantAttribute.Id, Id);
+        return ProductVariantQueryItem.CreateKey(ProductId, ProductAttributeId, Id);
     }
 }

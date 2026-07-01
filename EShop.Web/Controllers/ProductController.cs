@@ -5,13 +5,14 @@ using EShop.Core.Data;
 using EShop.Core.Platform.Logging.Services;
 using EShop.Infrastructure.Data;
 using EShop.Infrastructure.Extensions;
+using EShop.Web.Common.Controllers;
 using EShop.Web.Models.Catalog;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Web.Controllers;
 
-public class ProductController : Controller
+public class ProductController : EShopBaseController
 {
     private readonly ApplicationDbContext _db;
     private readonly CatalogHelper _catalogHelper;
@@ -28,7 +29,8 @@ public class ProductController : Controller
     }
 
 
-    public async Task<IActionResult> ProductDetails(int id, ProductVariantQuery query)
+   
+    public async Task<IActionResult> ProductDetails(int productId, ProductVariantQuery query)
     {
         Product product = await _db
             .Products
@@ -36,7 +38,7 @@ public class ProductController : Controller
             .AsSplitQuery()
             .Include(x => x.Brand)
             .Include(x => x.MediaFiles)
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == productId);
 
         if (product == null)
         {
@@ -50,7 +52,7 @@ public class ProductController : Controller
             "ActivityLog.PublicActivity.ViewProduct",
             product);
 
-        return View(model);
+        return View("Product", model);
     }
 
     // public async Task<IActionResult> UpdateProductDetailsInList(int productId, ProductVariantQuery query)
@@ -61,22 +63,35 @@ public class ProductController : Controller
     //     await _catalogHelper.PrepareProductSummaryModelAsync();
     // }
     
+    [HttpPost]
     public async Task<IActionResult> UpdateProductDetails(int productId, ProductVariantQuery productVariantQuery)
     {
         (Product product, int quantity) = await ExtractProductFromForm(HttpContext.Request.Form, productId);
-
-        var model = new ProductDetailVm();
+    
+        var model = new ProductDetailModel();
         var ctx = _catalogHelper.CreateModelContext(product, productVariantQuery);
         await _catalogHelper.PrepareProductDetailModelAsync(model, ctx, quantity);
+ 
+        object partials = new
+        {
+            Price = await RenderPartialViewToStringAsync("_Product.Price", model),
+            Variants = await RenderPartialViewToStringAsync("_Product.Variants", model.ProductVariantAttributes),
+            Labels = await RenderPartialViewToStringAsync("_Product.Labels", model.Labels),
+            Stock = await RenderPartialViewToStringAsync("_Product.Stock", model),
+            AddToCart = await RenderPartialViewToStringAsync("_Product.AddToCart", model),
+        };
 
-        throw new NotImplementedException();
+        return new JsonResult(new
+        {
+            Partials = partials
+        });
     }
     
     private async Task<(Product product, int quantity)> ExtractProductFromForm(IFormCollection form, int productId)
     {
         var quantity = 1;
         var product = await _db.Products.FindByIdAsync(productId);
-        var quantityKey = form.Keys.FirstOrDefault(x => x.EndsWith("SetQuantity"));
+        var quantityKey = form.Keys.FirstOrDefault(x => x.EndsWith("quantity"));
         if (!quantityKey.IsEmpty())
         {
             int.TryParse(form[quantityKey], out quantity);

@@ -4,7 +4,9 @@ namespace EShop.Web.Models.Identity;
 
 public class PasswordResetModel
 {
-    [Required(ErrorMessage = "Email is required")]
-    [EmailAddress(ErrorMessage = "Invalid email address")]
+    [Required]
+    [EmailAddress]
     public string Email { get; set; }
+
+    public string ResultMessage { get; set; }
 }

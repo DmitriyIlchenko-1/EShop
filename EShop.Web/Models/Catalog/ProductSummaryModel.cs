@@ -58,15 +58,7 @@ public class ProductSummaryModel : BaseModel, IDisposable
     }
 }
 
-public abstract class ProductCombinationMap : BaseModel
-{
-    public int TotalAttributeCount { get; set; }
-    public ProductVariantAttributeCombination SelectedCombination { get; set; }
-    public ICollection<ProductVariantAttributeModel> ProductVariantAttributes { get; set; } = [];
-
-    public abstract void AdjustForCombinationActive(bool isActive);
-    public abstract void AdjustForAttributeValue(ProductVariantAttributeValueModel chosenAttribute);
-}
+ 
 
 public class ProductSummaryItemModel : BaseModel
 {
@@ -90,6 +82,7 @@ public class ProductSummaryItemModel : BaseModel
     public string ShortDescription { get; set; }
     public string Sku { get; set; }
     public string SeName { get; set; }
+    public string DetailUrl { get; set; }
     public string Dimensions { get; set; }
     public int TotalReviews { get; set; }
     public int RatingSum { get; set; }

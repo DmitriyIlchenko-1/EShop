@@ -89,7 +89,7 @@ internal class DbSaveChangesOperation : IDisposable
                 .OfType<IMergedData>()
                 .ToArray();
 
-            IgnoreMergeProperties(mergeableEntities, true);
+            IgnoreMergedProperties(mergeableEntities, true);
             _dbContext.ChangeTracker.DetectChanges();
             _changedEntries = GetChangedEntities()
                 .ToArray();
@@ -118,6 +118,7 @@ internal class DbSaveChangesOperation : IDisposable
                 {
                     // perform necessary clean up whether or not an exception has been throw.
                     _dbContext.ChangeTracker.AutoDetectChangesEnabled = initialAutoDetectChanges;
+                    IgnoreMergedProperties(mergeableEntities, false);
                 }
             }
         }
@@ -197,7 +198,7 @@ internal class DbSaveChangesOperation : IDisposable
         return isHandled;
     }
 
-    private static void IgnoreMergeProperties(IMergedData[] entries, bool ignore)
+    private static void IgnoreMergedProperties(IMergedData[] entries, bool ignore)
     {
         for (int i = 0; i < entries.Length; i++)
         {

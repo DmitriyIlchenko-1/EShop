@@ -91,6 +91,7 @@ public readonly struct Money : IHtmlContent,  IEquatable<Money>, IComparable<Mon
     #endregion
 
     #region Arithmetics
+    public static Money operator +(decimal left, Money right) => right.WithAmount(left + right.Amount);
 
     public static Money operator -(Money left, decimal right) => left.WithAmount(left.Amount - right);
     public static Money operator -(Money left, Money right) => left.WithAmount(left.Amount - right.Amount);

@@ -21,7 +21,7 @@ using Microsoft.Extensions.FileProviders;
 
 namespace EShop.Web.Common.TagHelpers;
 
-[HtmlTargetElement("svg", Attributes = NameAttributeName)]
+[HtmlTargetElement("span", Attributes = NameAttributeName)]
 public class IconTagHelper : TagHelper
 {
     private const string NameAttributeName = "name";
@@ -37,10 +37,39 @@ public class IconTagHelper : TagHelper
 
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        var parameters = new Dictionary<string, object>();
+        var parameters = new Dictionary<string, object>()
+        {
+            { "width", 16 },
+            { "height", 16 },
+            { "aria-hidden", true },
+            { "focusable", false },
+            { "class", "icon" },
+        };
         var icon = await _labelManager.GetLabelIconAsync(Name, parameters);
+        output.TagName = "span";
+        output.Attributes.Add("class", GetCssClassNames(Name));
         output.TagMode = TagMode.StartTagAndEndTag;
+        var oldContent = await output.GetChildContentAsync();
+        output.Content.Clear();
         output.Content.SetHtmlContent(icon);
+        output.Content.AppendHtml(oldContent);
+    }
+
+
+    protected virtual string GetCssClassNames(string labelName)
+    {
+        string classNames = "product-card__label product-card__label--rounded ";
+        switch (labelName)
+        {
+            case SystemLabelNames.Sale:
+                classNames += "product-card__label--sale";
+                break;
+            default:
+                classNames += "product-card__label--custom";
+                break;
+        }
+        
+        return classNames;
     }
 }
  

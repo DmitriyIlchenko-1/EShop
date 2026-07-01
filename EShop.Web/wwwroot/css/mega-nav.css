@@ -1,0 +1,147 @@
+@media screen and (min-width: 769px) {
+    .main-nav__child.mega-nav {
+        left: 0;
+        width: var(--viewport-width, 100vw);
+        padding-block: var(--padding-2xl);
+    }
+}
+
+@media screen and (min-width: 769px) {
+    .mega-nav--sidebar {
+        min-height: 400px;
+        scrollbar-gutter: stable;
+    }
+
+    .mega-nav--sidebar .child-nav__item--toggle.is-visible {
+        background-color: rgb(var(--color-foreground-rgb), .1);
+    }
+}
+
+
+@media screen and (min-width: 769px) {
+    .mega-nav .main-nav__toggle {
+        border-block-end: 1px solid rgb(var(--color-foreground-rgb) / .4);
+    }
+}
+
+
+.mega-nav--sidebar .child-nav__item--toggle {
+    @media screen and (width >= 769px) {
+        width: 250px;
+        padding-inline: .5em;
+        border-block-end: 1px solid var(--nav-line-color);
+        transition: background-color .3s;
+    }
+    @media screen and (width >= 1280px) {
+        width: 300px;
+    }
+}
+
+.mega-nav--sidebar .child-nav__item--toggle.is-visible {
+    @media screen and (width >= 769px) {
+        background-color: rgb(var(--color-foreground-rgb) / .05);
+    }
+}
+
+
+@media screen and (width > 769px) {
+    .mega-nav--column .child-nav__collection-image,
+    .mega-nav--sidebar .child-nav__collection-image {
+        min-height: 54px;
+    }
+}
+
+
+.main-nav__collection-image {
+    margin-inline-end: 1rem;
+}
+
+@media screen and (width >= 769px) {
+    .mega-nav--column .child-nav > li > .main-nav__item-content {
+        border-block-end: 1px solid rgb(var(--color-foreground-rgb) / .4);
+        margin-block-end: var(--margin-xs);
+    }
+}
+
+@media screen and (width >= 769px) {
+    .mega-nav--column .child-nav > li > .child-nav__collection-image > .main-nav__child-item {
+        padding-block: var(--padding-xs);
+        padding-inline: 0;
+    }
+}
+
+/*@media screen and (width >= 769px) {
+    .main-nav__child-item {
+        padding-block: var(--padding-xs);
+        padding-inline: 0;
+    }
+}*/
+
+@media screen and (width >= 769px) {
+    .mega-nav--sidebar .main-nav__child-item {
+        padding-block: var(--padding-xl)
+    }
+}
+
+@media screen and (width >= 769px) {
+    .mega-nav--sidebar .main-nav__child-item {
+        flex: 1;
+    }
+}
+
+@media screen and (width >= 769px) {
+    .mega-nav--sidebar .main-nav__child-item {
+        padding-inline: 0;
+    }
+}
+
+.mega-nav--sidebar .child-nav__item--toggle.is-visible > .child-nav__panel {
+    visibility: visible;
+    opacity: 1;
+    max-height: none;
+}
+
+@media screen and (width >= 769px) {
+    .mega-nav--sidebar .child-nav__item--toggle > .child-nav__panel {
+        visibility: hidden;
+        overflow: hidden;
+        position: absolute;
+        padding-left: var(--padding-3xl);
+        /*
+        - .child-nav__panel's height is what's actually being used to populate --sidebar-height meaning that it's this panel that determines the actual total
+         height of all the child items sitting inside it. Because .child-nav__panel is absolute and
+         there can be more than one panel sitting on top of each other inside the .mega-nav--sidebar,
+         it means that if one panel is taller than another, .mega-nav--sidebar's overflow: scroll's behaviour will still kick in
+        and with this another shorted panel being currently viewed (.is-visible) you'll end up being able to scroll all the way down the height of the tallest one despite
+        how tall the panel currently being viewed is. Because although visibility is set to invisible,
+        as long as it's part of the DOM and is taller than the container (mega-nav--sidebar), the scroll behaviour on the mega-nav--sidebar will work despite the panels' z-index values.
+        - We remove the max-height constrain when the panel is being viewed so that we can normally scroll through it.
+        - Min-height is used to determine the minimum permissible height we want our panel to be so that the child items doesn't get any shorter* .*/
+        max-height: 350px;
+        min-height: 350px;
+        left: 250px;
+        right: 0;
+        top: 0;
+        opacity: 0;
+        transition: opacity .3s, visibility .3s;
+
+        @media screen and (width >= 1280px) {
+            left: 300px;
+        }
+    }
+}
+
+
+@media screen and (width >= 769px) {
+    .main-nav__grandchild-item > .main-nav__item-content > span:last-of-type,
+    .mega-nav--column .main-nav__grandchild-item,
+    .mega-nav--column .child-nav > li a {
+        transition: opacity .2s ease-in-out;
+    }
+
+    .main-nav__grandchild-item:hover > .main-nav__item-content > span:last-of-type,
+    .mega-nav--column .main-nav__grandchild-item:hover,
+    .mega-nav--column .child-nav > li a:hover {
+        opacity: .7;
+    }
+}

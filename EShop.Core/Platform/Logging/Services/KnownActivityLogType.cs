@@ -10,4 +10,6 @@ public static class KnownActivityLogType
     public const string Login = PublicActivity + "Login";
     public const string Logout = PublicActivity + "Logout";
     public const string ExternalLoginFailed = PublicActivity + "ExternalLoginFailed";
+    public const string AddToShoppingCart = PublicActivity + "AddToShoppingCart";
+
 }

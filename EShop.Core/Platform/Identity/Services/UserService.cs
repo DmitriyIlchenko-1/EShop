@@ -47,7 +47,7 @@ public class UserService : IUserService
             _authenticatedUserResolved = true;
         }
 
-        if (_authenticatedUser == null || _authenticatedUser.IsDeleted)
+        if (_authenticatedUser == null || !_authenticatedUser.IsActive || _authenticatedUser.IsDeleted)
         {
             return null;
         }
@@ -68,7 +68,7 @@ public class UserService : IUserService
             CreatedOnUtc = DateTime.UtcNow,
             LastActivityDateUtc = DateTime.UtcNow,
             ClientIdentity = clientIdentity,
-            Active = true,
+            IsActive = true,
         };
 
         var visitorRole = await GetUserRoleByNameAsync(UserRoleNameConstants.Guest, true) ??
@@ -132,7 +132,7 @@ public class UserService : IUserService
 
         return await _db
             .Users.Where(x =>
-                x.ClientIdentity == visitorIdentity && x.UserName == null && x.Email == null &&
+                x.ClientIdentity == visitorIdentity && x.Username == null && x.Email == null &&
                 x.LastActivityDateUtc >= from)
             .OrderByDescending(x => x.Id)
             .Include(x => x.UserRoles)

@@ -1,13 +1,16 @@
 using EShop.Core.Platform.Web;
 using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Extensions;
+using EShop.Infrastructure.Utilities;
+using Microsoft.AspNetCore.Http;
 
 
 namespace EShop.Infrastructure.Storage;
 
 public class FileMediaStorageProvider : IMediaStorageProvider
 {
-    private readonly IWebHelper _webHelper;
+    private readonly HttpContext _context;
+     
     public string Root { get; }
 
     public string ExtractSubpath(string path)
@@ -15,10 +18,11 @@ public class FileMediaStorageProvider : IMediaStorageProvider
         throw new NotImplementedException();
     }
 
-    public FileMediaStorageProvider(IWebHelper webHelper)
+    public FileMediaStorageProvider(IHttpContextAccessor contextAccessor)
     {
-        _webHelper = webHelper;
-        Root = _webHelper.HttpContext.Request.Host.Value;
+        _context = contextAccessor?.HttpContext;
+        var builder = new UriBuilder(_context?.Request.Scheme, _context?.Request.Host.Host, _context.Request.Host.Port.Value);
+        Root = builder.Uri.AbsoluteUri;
     }
 
     public async Task DeleteMediaAsync(string fileName)
@@ -27,19 +31,19 @@ public class FileMediaStorageProvider : IMediaStorageProvider
     }
 
    
+//http://localhost:5158/images/15/pexels-azka-nandya-91944639-9507137.jpg
 
-    // public Task<(string Url, string Subpath)> GetMediaUrlAsync(string fileName, IDictionary<string, object> parameters)
-    // {
-    //     var page = _webHelper.GetCurrentPageUrl();
-    //     string subpath = MediaFileLocation + "/";
-    //     if (parameters.TryGetValueAs("id", out int id))
-    //     {
-    //         subpath += id + "/";
-    //     }
-    //     
-    //     var path = Path.Combine(page, subpath);
-    //     return Task.FromResult((path, subpath));
-    // }
+    public Task<string> GetMediaUrlAsync(string fileName, int fileId)
+    {
+        if (fileId <= 0)
+        {
+           throw new ArgumentException("FileId must be greater than 0.");
+        } 
+
+        string path = Root;
+        path +=  "images" + "/" + fileId + "/" + fileName;
+        return Task.FromResult(path);
+    }
 
     public async Task SaveMediaAsync(Stream mediaBinaryStream, string fileName, string mimeType = null)
     {

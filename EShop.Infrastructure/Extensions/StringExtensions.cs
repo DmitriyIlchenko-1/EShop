@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.Globalization;
+using EShop.Infrastructure.Utilities;
 
 namespace EShop.Infrastructure.Extensions;
 
@@ -53,5 +55,13 @@ public static partial class StringExtensions
         return result;
 
 
+    }
+    
+    public static string ToStringInvariant(this IFormattable source)
+        => source.ToString(null, CultureInfo.InvariantCulture);
+
+    public static string TrimSafe(this string str)
+    {
+        return str == null ? string.Empty : str.Trim();
     }
 }

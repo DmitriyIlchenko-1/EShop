@@ -6,4 +6,6 @@ public static class KnownActivityFormats
     public const string ExternalLogin = "{0}-{1} logged in using external auth service: {2}";
     public const string Logout = "{0}-{1} logged out.";
     public const string ExternalLoginFailed = "External login failed. Service: {0}, Error: {1}";
+    public const string AddToShoppingCart = "Product {0} is added to shopping cart.";
+
 }

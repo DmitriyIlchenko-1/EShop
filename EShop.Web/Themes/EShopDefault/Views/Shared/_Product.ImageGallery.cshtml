@@ -1,0 +1,101 @@
+@using EShop.Infrastructure.Extensions
+@model EShop.Web.Models.Catalog.ProductDetailModel
+
+@{
+    var images = Model.Images.ToArray();
+    var thumbSize = 90;
+}
+
+ 
+<media-gallery class="media-gallery" style="--image-gap: 10px; --gallery-aspect-ratio: 1/1">
+                <div class="media-gallery__viewer">
+                    <ul class="media-viewer list-unstyled">
+                        @foreach (var image in images)
+                        {
+                            var id = image.Id;
+                            <li class="media-viewer__item" data-media-id="@id">
+                                <div class="product-media product-media--fit">
+                                    <img class="product-media__image"
+                                         src="@image.Url"
+                                         max-src-width="3840"
+                                         min-src-width="300"
+                                         tol=".40"
+                                         alt="@image.Alt"/>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+
+                    <div eh-if="@(images.Length > 1)" class="media-controls" position="center">
+                        <button aria-label="Previous slide" aria-controls=""
+                                class="media-controls__btn media-controls__btn--previous button-unstyled--transparent button--unstyled flip-x">
+                            <svg aria-hidden="true" focusable="false" class="icon icon-arrow"
+                                 viewBox="0 0 24 24" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
+                                   stroke-linejoin="round"></g>
+                                <g id="SVGRepo_iconCarrier">
+                                    <path d="M7.82054 20.7313C8.21107 21.1218 8.84423 21.1218 9.23476 20.7313L15.8792 14.0868C17.0505 12.9155 17.0508 11.0167 15.88 9.84497L9.3097 3.26958C8.91918 2.87905 8.28601 2.87905 7.89549 3.26958C7.50497 3.6601 7.50497 4.29327 7.89549 4.68379L14.4675 11.2558C14.8581 11.6464 14.8581 12.2795 14.4675 12.67L7.82054 19.317C7.43002 19.7076 7.43002 20.3407 7.82054 20.7313Z"
+
+                                          fill="currentColor"></path>
+                                </g>
+                            </svg>
+                        </button>
+                        <button aria-label="Next slide"
+                                class="media-controls__btn media-controls__btn--next button-unstyled--transparent button--unstyled ">
+                            <svg aria-hidden="true" focusable="false" class="icon icon-arrow"
+                                 viewBox="0 0 24 24" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
+                                   stroke-linejoin="round"></g>
+                                <g id="SVGRepo_iconCarrier">
+                                    <path d="M7.82054 20.7313C8.21107 21.1218 8.84423 21.1218 9.23476 20.7313L15.8792 14.0868C17.0505 12.9155 17.0508 11.0167 15.88 9.84497L9.3097 3.26958C8.91918 2.87905 8.28601 2.87905 7.89549 3.26958C7.50497 3.6601 7.50497 4.29327 7.89549 4.68379L14.4675 11.2558C14.8581 11.6464 14.8581 12.2795 14.4675 12.67L7.82054 19.317C7.43002 19.7076 7.43002 20.3407 7.82054 20.7313Z"
+                                          fill="currentColor"></path>
+                                </g>
+                            </svg>
+                        </button>
+                    </div>
+                   <div eh-if="@(images.Length > 1)" class="media-dots media-gallery__media-dots">
+                       <ol class="media-dots__inner list-unstyled">
+                           @{
+                               for (int i = 0; i < images.Length; i++)
+                               {
+                                   var id = images[i].Id;
+                                   var count = i + 1;
+                                   <li>
+                                       <button class="media-dots__btn" aria-selected="false" data-media-id="@id">
+                                           <span class="visually-hidden">
+                                               Picture @count
+                                           </span>
+                                       </button>
+                                   </li>
+                               }
+
+                           }
+                       </ol>
+                   </div>
+
+                </div>
+                <ul  class="media-thumbs list-unstyled mt-md">
+                    @{
+                        for (int i = 0; i < images.Length; i++)
+                        {
+                            var img = images[i];
+                            var url = new Uri(img.Url)
+                                .ExtendQuery(new Dictionary<string, string>() { { "w", thumbSize.ToString() } })
+                                .ToString();
+                            var count = i + 1;
+                            <li class="media-thumbs__item" data-media-id="@img.Id">
+                                <button class="media-thumbs__btn">
+                                    <img
+                                        src="@url"
+                                        alt="@img.Alt"/>
+                                </button>
+                            </li>
+                        }
+                    }
+                </ul>
+
+            </media-gallery>

@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using EShop.Infrastructure.Extensions;
+using EShop.Infrastructure.Utilities;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -181,8 +182,8 @@ public static class EfCoreExtensions
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TEntity"></typeparam>
     /// <returns></returns>
-    public static ValueTask<TEntity> FindByIdAsync<TEntity>(this DbSet<TEntity> dbSet, int id, bool track = true,
-        CancellationToken cancellationToken = default) where TEntity : BaseEntity
+    public static ValueTask<TEntity> FindByIdAsync<TEntity>(this DbSet<TEntity> dbSet, int id,
+        CancellationToken cancellationToken = default, bool track = true) where TEntity : BaseEntity
     {
         if (id <= 0)
         {
@@ -205,6 +206,117 @@ public static class EfCoreExtensions
         ArgumentNullException.ThrowIfNull(query);
         return track ? query.AsTracking() : query.AsNoTracking();
     }
+
+
+    public static ValueTask<TEntity> FindByIdAsync<TEntity, TIncluded>(
+        this IIncludableQueryable<TEntity, TIncluded> query, int id, CancellationToken cancellationToken = default,
+        bool track = false) where TEntity : BaseEntity
+    {
+        Guard.NotNull(query);
+        if (id == 0)
+        {
+            return ValueTask.FromResult<TEntity>(null);
+        }
+
+        var db = query.GetDbContext();
+        var trackedEntity = db
+            .Set<TEntity>()
+            .Local.FindEntry(id)
+            ?.Entity;
+        return trackedEntity != null
+            ? new ValueTask<TEntity>(trackedEntity)
+            : new ValueTask<TEntity>(query
+                .ApplyTracking(track)
+                .SingleOrDefaultAsync(x => x.Id == id, cancellationToken));
+    }
+
+
+    // /// <summary>
+    // /// If there's another instance referencing the same entity attached to this instance of DbContext,
+    // /// we detach it and attach the given one to persist the made changes.
+    // /// If no other instances referencing the same entity are attached, we simply update the given entity.
+    // ///
+    // /// </summary>
+    // /// <param name="entity"></param>
+    // /// <typeparam name="TEntity"></typeparam>
+    // /// <returns></returns>
+    // public static bool TryUpdate<TEntity>(this DbContext context, TEntity entity) where TEntity : BaseEntity
+    // {
+    //     Guard.NotNull(context);
+    //     Guard.NotNull(entity);
+    //     var oldDetention = context.ChangeTracker.AutoDetectChangesEnabled;
+    //     context.ChangeTracker.AutoDetectChangesEnabled = false;
+    //     using (new ActionDisposable(
+    //                () => context.ChangeTracker.AutoDetectChangesEnabled = oldDetention))
+    //     {
+    //         var set = context.Set<TEntity>();
+    //         var tracked = set
+    //             .Local.FindEntry(entity.Id);
+    //         if (tracked != null)
+    //         {
+    //             //TODO: if the same instances then take necessary action
+    //             if (tracked.State == Microsoft.EntityFrameworkCore.EntityState.Unchanged)
+    //             {
+    //                 tracked.State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+    //                 set.Update(entity);
+    //                 return true;
+    //             }
+    //             else
+    //             {
+    //                 return false;
+    //             }
+    //         }
+    //
+    //         if (set.Entry(entity).State == Microsoft.EntityFrameworkCore.EntityState.Added)
+    //         {
+    //             return false;
+    //         }
+    //
+    //         set.Entry(entity)
+    //             .State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+    //         return true;
+    //     }
+    //     
+    //      
+    // }
+    public static bool TryUpdate<TEntity>(this DbContext ctx, TEntity entity) where TEntity : BaseEntity
+    {
+        var detectChanges = ctx.ChangeTracker.AutoDetectChangesEnabled;
+        ctx.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        using (new ActionDisposable(() => ctx.ChangeTracker.AutoDetectChangesEnabled = detectChanges))
+        {
+            // (perf) Turning off AutoDetectChangesEnabled prevents that ctx.Entry() performs change detection internally.
+            var entry = ctx.Entry(entity);
+            if (entry.State == Microsoft.EntityFrameworkCore.EntityState.Detached)
+            {
+                TryDetachAlreadyTrackedEntity(ctx, entity);
+
+                entry.State = Microsoft.EntityFrameworkCore.EntityState.Unchanged;
+                entry.State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+
+                return true;
+            }
+
+            return false;
+        }
+    }
     
-    
+    private static bool TryDetachAlreadyTrackedEntity<TEntity>(DbContext ctx, TEntity entity) where TEntity : BaseEntity
+    {
+        // Attaching an entity while another instance with same primary key is attached will throw.
+        // First we gonna try to locate an already attached entity...
+        var attachedEntry = ctx.Set<TEntity>().Local.FindEntry(entity.Id);
+        if (attachedEntry != null)
+        {
+            if (attachedEntry.State == Microsoft.EntityFrameworkCore.EntityState.Unchanged || attachedEntry.State == Microsoft.EntityFrameworkCore.EntityState.Deleted)
+            {
+                // ...and detach it, but only Unchanged or Deleted entities and let others throw later.
+                attachedEntry.State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

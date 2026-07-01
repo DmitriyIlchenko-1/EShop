@@ -1,0 +1,85 @@
+@using EShop.Core.Catalog.Configuration
+@using EShop.Web.Components
+@model EShop.Web.Models.Catalog.ProductDetailModel
+ 
+ 
+ @{
+     ViewData["Title"] = Model.MetaTitle ?? Model.Name;
+      
+     Console.WriteLine();
+ }
+
+ 
+ 
+<section class="section section--content-middle color-scheme-1">
+    <!--TODO: add skip to content link-->
+    <div class="product-information__grid product-information--media-left">
+        <div class="product-information__media">
+            <partial name="_Product.ImageGallery" model="Model"/>
+        </div>
+        <div class="product-details   product-info spacing-style"
+             style="--padding-block-start: calc(var(--spacing-scale) * 24px);
+             --padding-block-end: calc(var(--spacing-scale) * 24px)">
+            <p class="product-details__block text-sm ribbon-text">
+                <span class="visually-hidden">Product's brand is</span>
+                <a asp-route="Brand" asp-route-SeName="@Model.Brand.SeName">@Model.Brand.Name</a>
+            </p>
+            <div class="product-details__block--sm product-info__title">
+                <h1 class="h4">@Model.Name</h1>
+            </div>
+            <div  class=" product-details__block product-details__block--sm product-info__rating">
+                <partial name="_Product.ReviewOverview" model="Model.ProductReviewOverview"/>
+            </div>
+            <div class="product-details__block product-price" data-partial="price">
+                <partial name="_Product.Price" model="Model"/>
+            </div>
+            <div class="product-details__block product-details__block--sm" data-partial="labels">
+                <partial name="_Product.Labels" model="Model.Labels"/>
+            </div>
+            <div class="product-details__block product-details__block--sm" data-partial="stock">
+                <partial name="_Product.Stock" model="Model"/>
+
+            </div>
+            <hr class="my-3xl"/>
+            <div class="product-details__block product-details__block-sm rte">
+                @Html.Raw(Model.ShortDescription);
+            </div>
+            <div class="product-details__block product-details__block">
+               <variant-selector data-partial="variants" data-url="@Model.UpdateUrl">
+                   <partial name="_Product.Variants" model="Model.ProductVariantAttributes"/>
+               </variant-selector>
+            </div>
+            <div class="product-details__block product-details__block--xl" data-partial="addToCart">
+                <partial name="_Product.AddToCart" model="Model"/>
+            </div>
+
+            <div class="product-details__block">
+                <tabbed-content>
+                    <div class="tablist font-bold" role="tablist">
+                        <button class="button-unstyled tablist__tab"
+                                id="tab-1"
+                                role="tab"
+                                aria-controls="panel-1"
+                                aria-selected="true">
+                            Specifications
+                        </button>
+                        <button class="button-unstyled tablist__tab"
+                                id="tab-2"
+                                role="tab"
+                                aria-controls="panel-2"
+                                aria-selected="false">
+                            Reviews
+                        </button>
+                    </div>
+                    <div id="panel-1" role="tabpanel" tabindex="0" aria-labelledby="tab-1">
+                        <partial name="_Product.Specifications" model="Model.ProductSpecifications"/>
+                    </div>
+                    <div id="panel-2" role="tabpanel" tabindex="0" aria-labelledby="tab-2">
+                        <p>Second tab panel content</p>
+                    </div>
+                </tabbed-content>
+            </div>
+        </div>
+
+    </div>
+</section>

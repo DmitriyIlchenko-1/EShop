@@ -8,5 +8,5 @@ public partial class ApplicationDbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
-    
+    public DbSet<ExternalIdentityLogin> ExternalIdentityLogins { get; set; }
 }

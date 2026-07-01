@@ -1,17 +1,24 @@
+#header-group {
+    display: contents;
+}
+
+
 .header {
     --search-bg-color: rgb(228, 228, 228); /*TODO: will be generated later on based on the bg of the header*/
     --search-modal-border-radius: 8px;
     --bg-color: rgb(211, 218, 246); /*TODO:fo */
     --nav-bg-color: rgb(211, 218, 246);
-    --header-accent-color: rgba(214, 108, 44, 0.94);
+    --header-accent-color: rgb(255, 123, 43);
     --text-color: rgb(0, 0, 0);
+    --icon-color-rgb: 0 0 0;
 }
 
-.header-section--sticky {
+.header-section:has(> #header-component[sticky="always"]) {
     position: sticky;
     top: -1px; /*1. */
-    z-index: var(--layer-sticky);
+    z-index: var(--layer-menu-drawer);
 }
+
 
 /*
  1. So we can write JavaScript to help us to track the header's sticky state
@@ -33,6 +40,7 @@ TODO:
 */
 
 .header {
+    display: block;
     padding-block-start: var(--padding-sm);
     @media (width >= 769px) {
         padding-block-start: var(--padding-lg);
@@ -41,37 +49,57 @@ TODO:
 }
 
 .header__row {
-    @media (width >= 769px) {
-        gap: var(--gap-xl);
+    display: grid;
+    align-items: center;
+    grid-template-areas:
+    "menu heading icons"
+    "search-bar search-bar search-bar";
+    grid-template-columns: max-content 1fr max-content;
+
+    @media screen and (width >= 769px) {
+        grid-template-areas:
+                "heading search-bar icons"
+                "menu menu menu";
+        grid-template-columns: 1fr 6fr 1fr;
     }
 }
 
-
 .header__logo {
-    flex: 1 1 auto;
+    grid-area: heading;
 }
+
+.header__icons {
+    grid-area: icons;
+}
+
+.header__search {
+    grid-area: search-bar;
+    margin-block-start: var(--margin-md);
+    @media (width >= 769px) {
+        margin-block-start: 0;
+        margin-block-end: var(--margin-md);
+    }
+    --overlay-color: rgb(var(--modal-overlay-color) / .4);
+}
+
+.main-menu {
+    grid-area: menu;
+    @media screen and (width >= 769px) {
+        background-color: rgb(var(--nav-bg-color));
+        color: rgb(var(--text-color));
+    }
+}
+
 
 .search__form-input-wrapper[open="true"] {
     z-index: var(--layer-raised);
     width: 100%;
 }
 
-.header__search {
-    flex: 0 0 100%;
-    order: 2;
-    margin-block-start: var(--margin-md);
-    @media (width >= 769px) {
-        margin-block-start: 0;
-        flex: 6 1 auto;
-        order: 1;
-    }
-    --overlay-color: rgb(var(--modal-overlay-color) / .4);
-}
 
 /*TODO: test with a Windows contrast theme*/
 .search__form {
     position: relative;
-    display: none;
     justify-content: center;
 }
 
@@ -164,7 +192,7 @@ TODO:
     right: 0;
     height: calc(100% - var(--icon-size-sm));
     width: .1rem;
-    background-color: rgb(var(--color-foreground-rgb) / .2);
+    background-color: rgb(var(--color-foreground-rgb), .2);
 }
 
 :is(.search__submit, .search__clear) .icon {
@@ -175,15 +203,6 @@ TODO:
     transform: scale(1.1);
 }
 
-
-.header__icons {
-    flex: 0 0 auto;
-
-    @media (width >= 769px) {
-        flex: 1 1 auto;
-        order: 2;
-    }
-}
 
 .header__icons {
     display: flex;
@@ -197,13 +216,13 @@ TODO:
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--minimum-field-touch-target);
-    height: var(--minimum-field-touch-target);
-    color: var(--color-foreground);
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    color: rgb(var(--icon-color-rgb));
 }
 
 .header__icon .icon {
-    width: var(--icon-size-md);
+    width: var(--icon-size-xl);
 }
 
 .header__icon:hover .icon {
@@ -319,91 +338,178 @@ TODO:
 
 
 .main-nav {
-    /*TODO: move up to a future menu component for mobile*/
-    font-weight: 700;
-    word-break: break-word;
-
     @media screen and (min-width: 769px) {
         display: flex;
         align-items: center;
-        gap: var(--gap-3xl);
+        flex-wrap: wrap;
+        margin-inline-start: -1.6rem;
     }
 }
 
 .main-nav__item {
     display: block;
-
-    @media screen and (max-width: 768px) {
-        width: 100%;
-        padding-block: var(--padding-lg);
-        padding-inline: var(--padding-lg) 3.6rem;
-        text-align: start;
-    }
-
-    @media screen and (min-width: 769px) {
-        padding-block: var(--padding-sm);
-    }
+    padding-block: var(--padding-xl);
+    padding-inline: var(--padding-lg);
 }
 
-
-.main-nav__item--toggle {
-    display: flex;
-    align-items: center;
-}
-.main-nav__child-item--toggle{
-
+@media screen and (width >= 769px) {
+    .main-nav__item.main-nav__link {
+        position: relative;
+        z-index: 1;
+        padding-inline: 0;
+        line-height: 1.2;
+        padding-block: var(--padding-xs);
+        display: flex;
+        align-items: center;
+    }
 }
 
 @media screen and (width < 769px) {
-    :is(.main-nav, .main-nav__child) > li {
-        border-block-end: 1px solid rgb(var(--color-foreground-rgb) / .2);
+    .main-nav__item {
+        width: 100%;
+    }
+}
+
+
+.main-nav__toggle {
+    @media screen and (width >= 769px) {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--minimum-field-touch-target);
+        min-height: var(--minimum-field-touch-target);
+        padding-block: 0;
+        padding-inline: 0;
+    }
+}
+
+@media screen and (width >= 769px) {
+    .main-nav__toggle::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+    }
+}
+
+/*Remove any space that was added because of the 4px margin by putting a -4px margin */
+@media screen and (width >= 769px) {
+    .main-nav__row > .main-nav__toggle {
+        margin-inline-start: 4px;
+        margin-inline-end: -16px;
+    }
+}
+
+
+.main-nav__toggle .icon {
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+}
+
+.child-nav__item--toggle > .main-nav__toggle .icon-caret {
+    transition: transform .2s ease-in-out;
+}
+
+.child-nav__item--toggle > .main-nav__toggle[aria-expanded="true"] .icon-caret {
+    transform: rotate(180deg);
+}
+
+
+.main-nav__item-content {
+    display: flex;
+    align-items: center;
+}
+
+.main-nav__item-content:not(.main-nav__item-content--column) > span {
+    margin-inline-end: auto;
+}
+
+
+.mega-nav--sidebar .main-nav__grandchild--grid .media-fit {
+    object-fit: cover;
+    aspect-ratio: 1/1;
+}
+
+/*.main-nav__child-item {
+    @media screen and (width >= 769px) {
+        width: 100%;
+    }
+}*/
+
+
+@media screen and (width < 769px) {
+    :is(.main-nav__item--back, .main-nav__toggle, .main-nav__link--orphan):focus-visible {
+        outline-offset: -.2rem;
+    }
+}
+
+
+/*if we apply .main-nav__item-content directly to the button or the (<a>) link,
+the display: none doesn't work on either of them. However, in we nest the
+..__item-content inside, there going to be some problems with underline links
+*/
+
+.main-nav__row {
+    @media screen and (width >= 769px) {
+        position: relative;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        margin-inline: 2rem;
+    }
+}
+
+
+@media screen and (width < 769px) {
+    :is(.main-nav, .child-nav) > li {
+        border-block-end: 1px solid var(--nav-line-color);
+    }
+}
+
+
+@media screen and (width < 769px) {
+    .child-nav > li > .main-nav__item-content {
+        display: none;
+    }
+
+}
+
+
+.main-nav__link {
+    display: none;
+    @media screen and (width >= 769px) {
+        display: block;
+    }
+}
+
+.main-nav__link--orphan {
+    @media screen and (width < 769px) {
+        display: block;
+    }
+}
+
+
+@media screen and (min-width: 769px) {
+    .main-nav__row {
+        transition: box-shadow .2s ease-in;
     }
 }
 
 @media screen and (min-width: 769px) {
-    :is(.main-nav__child) > li {
-        border-block-end: 1px solid rgb(var(--color-foreground-rgb) / .2);
+    :is(.main-nav__row:hover, .main-nav__link:focus-visible) {
+        box-shadow: inset 0 -2px 0 0 currentColor;
     }
-}
 
-@media screen and (width < 769px) {
-    .main-nav :is(.main-nav__item:not(.main-nav__grandchild-item)):hover {
-        background-color: rgb(var(--color-foreground-rgb) / .15);
-    }
-}
-
-@media screen and (min-width: 769px) and (-ms-high-contrast: active) {
-    .main-nav :is(.main-nav__item:not(.main-nav__grandchild-item)) {
-        box-shadow: none;
-        transition: text-decoration-color .5s;
-        text-decoration-color: transparent;
-    }
-}
-
-@media screen and (min-width: 769px) and (-ms-high-contrast: active) {
-    .main-nav :is(.main-nav__item:not(.main-nav__grandchild-item)):hover {
-        text-decoration: underline;
-        text-decoration-color: currentColor;
-        text-decoration-thickness: 1px;
-        text-underline-offset: 5px;
-    }
 }
 
 
-.main-nav :is(.main-nav__item:not(.main-nav__grandchild-item)):hover {
-    /*
-    box-shadow: inset 0 -2px 0 0 currentColor;
-    */
-    text-decoration: underline;
-    text-decoration-color: currentColor;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 5px;
+.main-nav__item-content--column {
+    align-items: start;
+    flex-direction: column;
+    gap: var(--gap-xs);
 }
 
-.main-nav__item-content{
-    display: inline-flex;
-    align-items: center;
-}
+
 .main-nav__item--back {
     display: flex;
     align-items: center;
@@ -414,90 +520,118 @@ TODO:
     flex: 1;
 }
 
-.main-nav__child-item :is(.main-nav__img.main-nav__img--small-circle) {
-    margin-inline-end: var(--margin-lg);
-}
-
-.main-nav__item .icon {
-    max-width: none;
-    flex-shrink: 0;
-}
-
-.main-nav__item--toggle .icon-arrow {
-    @media screen and (width < 769px) {
-        position: absolute;
-        right: 1.8rem;
-    }
-    margin-left: 5px;
-}
 
 .main-nav__item--back .icon-arrow {
     transform: rotate(180deg);
-    margin-inline: 0 var(--margin-lg);
+    margin-inline: 0 1.5rem;
 }
 
 /*Use rems for width and height? */
-.main-nav__img {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--border-radius-50);
+
+.main-nav__collection-image {
+    width: var(--image-size, 40px);
+    height: var(--image-size, 40px);
     flex-shrink: 0;
     object-fit: cover;
-    max-width: none;
+}
 
+.main-nav__collection-image--circle {
+    border-radius: var(--border-radius-50);
+}
+
+
+.mega-nav--sidebar .main-nav__grandchild-item {
+    padding-block-start: 0;
+}
+
+
+@media screen and (width < 769px) {
+    .main-nav__item--go {
+        padding-block: var(--margin-sm);
+    }
+}
+
+@media screen and (width < 769px) {
+    .mega-nav--column li:first-child > .main-nav__grandchild-item {
+        padding-block-start: 0;
+    }
 }
 
 .main-nav__grandchild {
-    padding-inline: var(--margin-xl);
-    padding-block-end: 5rem;
-}
-
-.main-nav__grandchild-item {
-    line-height: 1.2;
-    padding-inline: 0;
-    padding-block: var(--margin-sm);
+    background-color: var(--nav-bg-color);
+    @media screen and (width < 769px) {
+        padding-inline: var(--padding-lg);
+        padding-block-end: var(--padding-2xl);
+    }
 }
 
 .gallery .main-nav__grandchild-item {
     display: flex;
 }
 
-.main-nav__grandchild-item {
+
+.main-nav__grandchild-item, .main-nav__item--go {
+    padding-inline: 0;
+    padding-block: var(--padding-xs);
     font-weight: normal;
 }
 
-
-.main-nav__grandchild-item .icon-arrow {
-    margin-inline: .5rem 0;
+.main-nav__grandchild-item {
+    line-height: 1.5;
 }
+
+
+:is(.main-nav__grandchild-item,.main-nav__item--go) .icon-arrow {
+    margin-inline: 1rem 0;
+}
+
 
 .main-nav__grandchild--img-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: var(--gap-2xl);
+    row-gap: var(--gap-xl);
     column-gap: var(--gap-xl);
 }
 
-.main-nav__grandchild--img-grid .main-nav__grandchild-item {
-    display: flex;
-    padding: 0;
+@media screen and (width > 769px) {
+    .main-nav__grandchild--img-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 }
+
 
 @media (hover: hover) and (pointer: fine) {
     /*rea..*/
-    .main-nav__grandchild--img-grid .main-nav__grandchild-item:hover img {
+    .mega-nav--sidebar .main-nav__grandchild-item--has-image:hover .main-nav__grandchild-image {
         transform: scale(1.03);
         border-color: transparent;
     }
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .main-nav__grandchild--img-grid .main-nav__grandchild-item img {
+    .mega-nav--sidebar .main-nav__grandchild-item--has-image .main-nav__grandchild-image {
         transition: transform .3s cubic-bezier(.38, .41, .27, 1), border-color .4s;
         will-change: transform; /**/
     }
 }
 
 
+
+.header__cart-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    font-size: .75em;
+    font-weight: 700;
+    border-radius: var(--border-radius-50);
+    background-color: var(--header-accent-color);
+}
+
+.header__cart-count span {
+}
 
 

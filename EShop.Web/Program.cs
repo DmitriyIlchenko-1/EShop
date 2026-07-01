@@ -37,11 +37,25 @@ var startup = engine.Startup(appContext);
 //Add services to Microsoft's IServiceCollection. The services will still end up in the same container, which is likely to be Autofac's container, though it depends on the settings.
 startup.ConfigureServices(builder.Services, builder.Configuration);
  
+//FOR TEXT PURPOSES
+builder.Services.AddCors(opt =>
+{
+    opt.AddDefaultPolicy(
+        p =>
+        {
+            p
+                .WithOrigins("http://localhost:63342")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
 
 //Add services directly through Autofac.
 builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);
 var app = builder.Build();
- 
+//FOR TEXT PURPOSES
+app.UseCors();
+
 engine.ChildLifetimeScopeAccessor
     = app.Services.GetRequiredService<IChildLifetimeScopeAccessor>();
 

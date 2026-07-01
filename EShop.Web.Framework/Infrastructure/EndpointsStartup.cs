@@ -17,7 +17,9 @@ public class EndpointsStartup : BaseStartup
         {
             p.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
             p.MapControllerRoute("areas", "{area:exists}/{controller}/{action}/{id?}");
+            p.MapSlugRouteValues();
             p.MapDynamicControllerRoute<SlugRouteValueTransformer>("/{**slug:minlength(2)}");
+           
         });
     }
 

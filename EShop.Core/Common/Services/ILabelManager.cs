@@ -20,7 +20,6 @@ public interface ILabelManager
 
 public class DefaultLabelManager : ILabelManager
 {
-   
     private readonly ICacheManager _cache;
     private readonly IFileProvider _fileProvider;
     private const string IconPath = "/icons/";
@@ -34,7 +33,7 @@ public class DefaultLabelManager : ILabelManager
         _fileProvider = app.WebRoot;
         _db = db;
     }
-    
+
     public async Task<string> GetLabelIconAsync(string labelName, IDictionary<string, object> parameters = null)
     {
         parameters ??= new Dictionary<string, object>();
@@ -42,14 +41,22 @@ public class DefaultLabelManager : ILabelManager
         return await _cache.GetOrCreateAsync(cacheKey,
             async () =>
             {
-                string iconFileName = string.Format(IconFileFormat, labelName.Trim().Replace(" ", "-", StringComparison.OrdinalIgnoreCase));
+                string iconFileName = string.Format(IconFileFormat,
+                    labelName
+                        .Trim()
+                        .Replace(" ", "-", StringComparison.OrdinalIgnoreCase));
                 var iconInfo = _fileProvider.GetFileInfo(IconPath + iconFileName);
                 await using var stream = iconInfo.CreateReadStream();
-                var xmlReader = XmlReader.Create(stream, new XmlReaderSettings { Async = true });
-                await xmlReader.MoveToContentAsync();
-                return await xmlReader.ReadInnerXmlAsync();
+                var xmlDocument = await XElement.LoadAsync(stream, LoadOptions.None, CancellationToken.None);
+                foreach (var parameter in parameters)
+                {
+                    xmlDocument.SetAttributeValue(parameter.Key, parameter.Value);
+                }
+                var reader = xmlDocument.CreateReader();
+                reader.MoveToContent();
+                return reader.ReadOuterXml();
             },
-            new CacheEntryOptions() { AbsoluteExpiration = TimeSpan.FromHours(999) });
+            new CacheEntryOptions() { AbsoluteExpiration = TimeSpan.FromSeconds(60) });
     }
 
     private string GenerateIconHash(string name, IDictionary<string, object> parameters)

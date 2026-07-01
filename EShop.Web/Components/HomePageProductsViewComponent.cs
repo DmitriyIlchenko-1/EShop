@@ -32,7 +32,6 @@ public class HomePageProductsViewComponent : BaseViewComponent
             .Where(x => x.ShowOnHomePage)
             .OrderBy(x => x.HomePageDisplayOrder)
             .SelectSummaryOnly()
-            .Take(20)
             .ToListAsync();
 
 

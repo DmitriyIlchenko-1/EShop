@@ -1,0 +1,26 @@
+@model EShop.Web.Models.Checkout.ShoppingCartModel
+
+<div class="my-lg flex justify-between items-center flex-wrap">
+    <div class="font-semibold enlarge-text" aria-hidden="true">Subtotal:</div>
+    @{
+        var price = Model.CartSubtotal;
+        if (price.SubtotalWithDiscount == price.SubtotalWithNoDiscount)
+        {
+            <p class="price__current">@price.SubtotalWithNoDiscount</p>
+        }
+        else
+        {
+            <dl>
+                <dt class="visually-hidden">Final subtotal</dt>
+                <dd class="price__current inline m-0">@price.SubtotalWithDiscount</dd>
+                <dt class="visually-hidden">Regular subtotal</dt>
+                <dd class="price__was inline m-0">@price.SubtotalWithNoDiscount</dd>
+            </dl>
+        }
+    }
+   
+</div>
+<div class="flex flex-col items-center gap-y-sm mt-3xl">
+    <button class="button w-full">Checkout</button>
+    <a class="link">Keep shopping</a>
+</div>

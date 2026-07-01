@@ -3,86 +3,82 @@
 @using EShop.Web.Models.Catalog
 @model IEnumerable<ProductVariantAttributeModel>
 
-<div class="variants">
-    @foreach (var attr in Model)
-    {
-        var containerId = attr.BuildControlId();
-        var attrValues = attr.Values ?? [];
-        var preSelectedVal = attrValues.FirstOrDefault(x => x.IsPreSelected);
-        <div class="variant">
-
-            @{
-                var res = attr?.AttributeControlType;
-                Console.WriteLine();
-            }
+<div class="variants variants--in-page">
+   <form>
+      @foreach (var attr in Model)
+      {
+         var containerId = attr.BuildControlId();
+         var attrValues = attr.Values ?? [];
+         var selectedValue = attrValues.FirstOrDefault(x => x.IsPreSelected);
+         <div class="variant">
             @switch (attr.AttributeControlType)
             {
-                case AttributeControlType.RadioButtonPills:
-                    <fieldset class="variant__selects">
-                        <legend class="variant__description">
-                            @attr.Name <span aria-hidden="true">: @preSelectedVal?.Name</span>
-                        </legend>
-                        <div class="variant__set">
-                            @foreach (var item in attrValues)
-                            {
-                                var controlId = containerId + "_" + item.Id;
-                                var @checked = preSelectedVal == item;
-                                <span class="variant-group">
-                                    <input
-                                        class="variant-group__control @(item.IsUnavailable ? " variant-group__control--unavailable" : "")"
-                                        type="radio"
-                                        @(@checked ? "checked" : "")
-                                        id="@controlId" name="@containerId" value="@item.Id"/>
+               case AttributeControlType.RadioButtonPills:
+                  <fieldset class="variant__selects">
+                     <legend class="variant__description required">
+                        @attr.Name <span aria-hidden="true">: @selectedValue?.Name</span>
+                     </legend>
+                     <div class="variant__set js-variant-set">
+                        @foreach (var item in attrValues)
+                        {
+                           //TODO: 1. Write .require for legend so that it's black and displayed before selectedValue?.Name do the same for other control types in here
+                           var isRequired = ((ProductVariantAttributeValueModel)item).IsEssential;
+                           var controlId = containerId + "_" + item.Id;
+                           var @checked = selectedValue == item;
+                           <span class="variant-group">
+                                    <input @(@isRequired ? "required" : "")
+                                           class="js-variant-control variant-group__control @(item.IsUnavailable ? " variant-group__control--unavailable" : "")"
+                                           type="radio"
+                                           @(@checked ? "checked" : "")
+                                           id="@controlId" name="@containerId" value="@item.Id"/>
                                     <label class="variant-group__label" for="@controlId">
                                         @item.Name
-                                        <span eh-if="item.IsUnavailable" class="visually-hidden">
-                                            @item.Title
+                                       <span eh-if="item.IsUnavailable" class="visually-hidden">
+                                            @*e.g. Out of stock*@
+                                          @item.Title
                                         </span>
                                     </label>
-                                    <span class="visually-hidden">IsEssential? :@(((ProductVariantAttributeValueModel)item).IsEssential)</span>
                                 </span>
-                            }
-                            <p eh-if="@(attr.TotalAttributeCount > 0)" class="variant__overlimit text-sm">+ @attr.TotalAttributeCount</p>
-                        </div>
+                        }
+                     </div>
 
-                    </fieldset>
-                    break;
-                case AttributeControlType.RadioList:
+                  </fieldset>
+                  break;
+               case AttributeControlType.RadioList:
 
-                    break;
-                case AttributeControlType.Swatch:
-                    <fieldset class="variant__selects color-swatches">
-                        <legend class="variant__description">
-                            @attr.Name <span aria-hidden="true">: @preSelectedVal?.Name</span>
-                        </legend>
-                        <div class="variant__set color-swatches__color-container">
-                            @foreach (var item in attrValues)
-                            {
-                                var @checked = preSelectedVal == item;
-                                var controlId = containerId + "_" + item.Id;
-                                <label class="color-swatch__label"
-                                       for="@controlId">
-                                    <span class="visually-hidden">@item.Name</span>
-                                    <span eh-if="item.IsUnavailable" class="visually-hidden">@item.Title</span>
-                                    <input
-                                        class="color-swatch__control
-                                        @(item.IsUnavailable ? " color-swatch__control--unavailable" : "")"
-                                        @(@checked ? "checked" : "")
-                                        type="radio"
-                                        style="--swatch-image: @item.Color"
-                                        id="@controlId" name="@containerId" value="@item.Id"/>
-                                    <span class="visually-hidden">IsEssential? :@(((ProductVariantAttributeValueModel)item).IsEssential)</span>
-                                </label>
-                            }
-                            <p eh-if="@(attr.TotalAttributeCount > 0)" class="variant__overlimit text-sm">+ @attr.TotalAttributeCount</p>
-                        </div>
-                    </fieldset>
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                  break;
+               case AttributeControlType.Swatch:
+                  <fieldset class="variant__selects color-swatches">
+                     <legend class="variant__description">
+                        @attr.Name <span aria-hidden="true">: @selectedValue.Name</span>
+                     </legend>
+                     <div class="js-variant-set variant__set color-swatches__color-container">
+                        @foreach (var item in attrValues)
+                        {
+                           var isRequired = ((ProductVariantAttributeValueModel)item).IsEssential;
+                           var @checked = selectedValue == item;
+                           var controlId = containerId + "_" + item.Id;
+                           <label class="color-swatch__label"
+                                  for="@controlId">
+                              <span class="visually-hidden">@item.Name</span>
+                              <span eh-if="item.IsUnavailable" class="visually-hidden">@item.Title</span>
+                              <input @(@isRequired ? "required" : "")
+                                     class="js-variant-control color-swatch__control @(item.IsUnavailable ? " color-swatch__control--unavailable" : "")"
+                                     @(@checked ? "checked" : "")
+                                     type="radio"
+                                     style="--swatch-image: @item.Color"
+                                     id="@controlId" name="@containerId" value="@item.Id"/>
+                           </label>
+                        }
+                     </div>
+                  </fieldset>
+                  break;
+               default:
+                  throw new ArgumentOutOfRangeException();
             }
-        </div>
-    }
+         </div>
+      }
+   </form>
 </div>
 
  

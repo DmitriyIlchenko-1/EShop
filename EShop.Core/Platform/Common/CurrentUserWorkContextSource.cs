@@ -61,12 +61,12 @@ public class CurrentUserWorkContextSource : ICurrentUserWorkContextSource
             {
                 //TODO: ... if(is system account())
 
-                if (!user.IsDeleted && user.Active)
+                if (!user.IsDeleted && user.IsActive)
                     break;
             }
         }
 
-        if (user == null || (user.IsGuest()))
+        if (user == null)
         {
             user = await CreateVisitorAsync();
         }

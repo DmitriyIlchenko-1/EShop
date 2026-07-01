@@ -1,0 +1,18 @@
+@model EShop.Web.Models.Catalog.ProductReviewOverviewModel
+
+<div eh-if="@(Model.TotalReviews > 0)" class="rating">
+    @{
+        var ratingPercent = Model.RatingSum / (decimal)Model.TotalReviews;
+        var roundRating = decimal.Round(ratingPercent, 1);
+        Console.WriteLine();
+    }
+    <div role="img" aria-label="@(roundRating) out of 5.0 stars."
+         class="rating__star-container inline-block align-middle">
+        <span style="--rating: @ratingPercent; --rating-max: 5"
+              class="rating__stars ">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+    </div>
+    <p class="rating-count inline-block align-middle text-sm m-0">
+        <span aria-hidden="true">@Model.TotalReviews</span>
+        <span class="visually-hidden">@Model.TotalReviews reviews in total</span>
+    </p>
+</div>

@@ -1,0 +1,13 @@
+@model IEnumerable<EShop.Web.Models.Catalog.ProductLabelModel>
+
+<ul class="product-card__labels list-unstyled flex">
+    @foreach (var label in Model)
+    {
+        <li class="product-card__label-wrapper flex">
+            <span name="@label.Name">
+                <span class="align-middle">@label.Content</span>
+            </span>
+        </li>
+    }
+               
+</ul>

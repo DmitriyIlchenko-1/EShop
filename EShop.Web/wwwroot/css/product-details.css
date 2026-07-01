@@ -1,0 +1,124 @@
+
+.product-information__grid {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    @media screen and (width >= 769px) {
+        grid-template-columns: minmax(0, 1fr) 40rem;
+        &:not(.product-information--media-none) {
+            grid-column: 2/3;
+        }
+    }
+    @media screen and (width >= 1024px){
+        grid-template-columns: 40% 1fr
+    }
+}
+.product-information--media-left{
+    column-gap: var(--gap-3xl);
+}
+
+.product-information__media {
+    @media screen and (width < 769px) {
+        grid-column: 1/-1;
+    }
+}
+
+
+.product-details {
+    @media screen and (width < 769px) {
+        grid-column: 2/3;
+    }
+    @media screen and (width >= 769px) {
+
+    }
+}
+
+/*Product details part*/
+.product-details__block {
+    margin-block: var(--margin-md);
+}
+
+.product-details__block--sm {
+    margin-block: var(--margin-sm);
+}
+
+.product-details__block--xl {
+    margin-block: var(--margin-2xl);
+}
+
+.product-info__title + .product-info__rating {
+    margin-top: -8px;
+}
+
+.product-info__price {
+    font-size: var(--font-h4--size);
+}
+
+.product-info__legal {
+    margin-block: 4px;
+}
+
+.product-info__add-to-cart {
+    display: flex;
+    gap: var(--gap-sm);
+}
+
+.product-info__add-btn {
+    flex: 1 1 auto;
+}
+
+.tablist {
+    --focus-outline-offset: .4rem;
+    display: flex;
+    gap: var(--gap-2xl);
+    margin-block-end: var(--margin-2xl);
+}
+
+.tablist__tab {
+    opacity: .6;
+    padding-block-end: .2rem;
+}
+
+.tablist__tab[aria-selected="true"] {
+    border-bottom: 2px solid currentColor;
+    opacity: 1;
+}
+
+
+.product-spec__item {
+    display: flex;
+    flex-direction: column;
+    margin-block: var(--margin-sm);
+}
+
+
+.product-spec__item:not(:last-child) {
+    padding-block-end: var(--padding-md);
+    border-bottom: 1px dashed rgb(var(--color-foreground-rgb), .15);
+}
+
+.product-spec__name {
+    font-weight: 600;
+    text-align: left;
+
+
+}
+
+.product-spec__value {
+    margin-inline: 0;
+    text-align: right;
+}
+
+product-comparison-grid{
+    display: block;
+}
+
+.product-info__stock--low{
+    color: var(--low-stock-text-color);
+}
+.product-info__stock--in-stock{
+    color: var(--in-stock-text-color);
+}
+.product-info__stock--in-stock{
+    color: var(--in-stock-text-color);
+}

@@ -1,0 +1,41 @@
+@model EShop.Web.Models.Catalog.ProductDetailModel
+@{
+    var hasSaving = Model.Saving.HasSaving;
+}
+ 
+    <div class="product-info__price">
+        <p class="price">
+           @if (Model.IsAvailable)
+           {
+               @if (hasSaving)
+               {
+                   <span class="price__current">
+                       <span class="visually-hidden">Sale price</span>
+                       <span>@Html.Raw(Model.FinalPrice)</span>
+                   </span>
+                   <span class="price__was">
+                       <span class="visually-hidden">Regular price</span>
+                       <s>@Html.Raw(Model.RegularPrice)</s>
+                   </span>
+               }
+               else
+               {
+                   <span class="price__current">
+                       <span class="visually-hidden">Price</span>
+                       <span>@Html.Raw(Model.FinalPrice)</span>
+                   </span>
+               }
+              
+           }
+           else if(Model.SelectedCombination != null && !Model.SelectedCombination.IsActive){
+               <span class="price__not-available">
+                    Not available
+               </span>
+            }
+        </p>
+    </div>
+    <div eh-if="Model.IsAvailable" class="product-info__legal text-sm">
+        Tax included
+    </div>
+ 
+ 

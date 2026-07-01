@@ -6,6 +6,7 @@ using EShop.Core.Platform.Web;
 using EShop.Infrastructure.Data;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Storage;
+using EShop.Infrastructure.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -69,22 +70,22 @@ public class MediaService : IMediaService
     }
 
 
-    public async Task<(string Url, string Subpath)> GetMediaUrlAsync(MediaFile mediaFile) =>
-        mediaFile != null ? await GetMediaUrlAsync(mediaFile.FileName, mediaFile.Id.ToString(CultureInfo.InvariantCulture)) : await GetMediaUrlAsync("not-found-image.png");
-
-
-    public Task<(string Url, string Subpath)> GetMediaUrlAsync(string fileName, string fileId = null)
+    public async Task<string> GetMediaUrlAsync(MediaFile mediaFile)
     {
-        var page = _webHelper.GetCurrentPageUrl();
-        string subpath =  MediaFileLocation + "/";
-        if (!fileId.IsEmpty())
+        Guard.NotNull(mediaFile);
+        return await GetMediaUrlAsync(mediaFile.FileName, mediaFile.Id);
+    }
+         
+
+
+    public async Task<string> GetMediaUrlAsync(string fileName, int fileId)
+    {
+        Guard.NotEmpty(fileName);
+        if (fileId <= 0)
         {
-            subpath += fileId + "/";
+            throw new ArgumentException("fileId must be greater than 0", nameof(fileId));
         }
-        subpath += fileName;
-        
-        var path = Path.Combine(page, subpath);
-        return Task.FromResult((path, subpath));
+        return await _mediaStorageService.GetMediaUrlAsync(fileName, fileId);
     }
 
     public Task SaveMediaAsync(Stream mediaBinaryStream, string fileName, string mimeType = null)

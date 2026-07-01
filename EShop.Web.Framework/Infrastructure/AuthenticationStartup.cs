@@ -10,8 +10,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.BouncyCastle.Asn1.X509;
+using UserStore = EShop.Core.Platform.Identity.Services.UserStore;
 
 namespace EShop.Web.Common.Infrastructure;
 
@@ -29,12 +32,12 @@ public class AuthenticationStartup : BaseStartup
     {
         services
             .AddIdentity<User, Role>(options =>
-            {
+            { 
                 
                 options.Password.RequireDigit = false;
                 options.Password.RequiredLength = 3;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireUppercase = true;
                 options.Password.RequireLowercase = false;
                 options.Password.RequiredUniqueChars = 0;
 
@@ -46,12 +49,16 @@ public class AuthenticationStartup : BaseStartup
             })
             .AddSignInManager<CustomSignInManager>()
             .AddDefaultTokenProviders()
-            .AddUserStore<CustomUserStore>()
+            .AddUserStore<UserStore>()
             .AddRoleStore<CustomRoleStore>();
 
+        services.Configure<SecurityStampValidatorOptions>(opt =>
+        {
+            opt.ValidationInterval = TimeSpan.Zero;
+        });
 
         services.AddScoped(typeof(IRoleStore<>), typeof(RoleStore<>));
-
+        services.AddScoped<ILookupNormalizer, DefaultLookupNormalizer>();
         services.ConfigureApplicationCookie(options =>
         {
             options.Cookie.Name = CookieNames.Identity;

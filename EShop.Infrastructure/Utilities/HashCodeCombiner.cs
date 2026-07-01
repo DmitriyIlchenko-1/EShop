@@ -37,6 +37,24 @@ public class HashCodeCombiner
         return this;
     }
 
+    public HashCodeCombiner AddRange<T>(IEnumerable<T> values, IEqualityComparer<T>? comparer = null)
+    {
+        if (values is null)
+        {
+            return this;
+        }
+
+        int count = 0;
+        foreach (var value in values)
+        {
+            count++;
+            Add(value, comparer);
+        }
+        
+        Append(count);
+        return this;
+    }
+
     private void Append(long hash)
     {
         if (hash != 0)

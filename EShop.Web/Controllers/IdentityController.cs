@@ -3,6 +3,7 @@ using System.Security.Claims;
 using EShop.Core.Data;
 using EShop.Core.Data.Extensions;
 using EShop.Core.Platform.Common;
+using EShop.Core.Platform.Identity.Configuration;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Identity.Extensions;
 using EShop.Core.Platform.Logging.Services;
@@ -16,11 +17,23 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using UserSettings = EShop.Core.Platform.Identity.Configuration.UserSettings;
+
 
 namespace EShop.Web.Controllers;
-
+/*
+ * TODO:
+ * 1. Deal with security stamps because right now we're using a workaround.
+ * 2. Add password validator for registration.
+ * 5. Style the summary list on top of the from.
+ * 6. Learn and apply autocomplete.
+ * 7. Make email validation stricter at the backend (don't touch jQuery for this)
+ * 8. Write some custom jQuery JS to prevent 'valid' from applying to valid form controls until later on when the form is first submitted.
+ * It is so that the success styling doesn't get applied when nothing has failed the validation yet.
+ *9. Add readonly styles :readonly
+ * 10. style alert in ChangePassword.cshtml
+ */
 public class IdentityController : EShopBaseController
 {
     private readonly SignInManager<User> _signInManager;
@@ -31,12 +44,13 @@ public class IdentityController : EShopBaseController
     private readonly ApplicationDbContext _dbContext;
     private readonly UserSettings _userSettings;
     private readonly IEmailService _emailService;
-    private readonly LinkGenerator _linkGenerator;
+    
 
 
     public IdentityController(SignInManager<User> signInManager, UserManager<User> userManager,
         IWorkContext workContext, IActivityLogger activityLogger, INotificationManager notifyManager,
-        ApplicationDbContext dbContext, UserSettings userSettings, IEmailService emailService, LinkGenerator linkGenerator)
+        ApplicationDbContext dbContext, UserSettings userSettings, IEmailService emailService
+        )
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -46,7 +60,7 @@ public class IdentityController : EShopBaseController
         _dbContext = dbContext;
         _userSettings = userSettings;
         _emailService = emailService;
-        _linkGenerator = linkGenerator;
+       
     }
 
 
@@ -57,15 +71,17 @@ public class IdentityController : EShopBaseController
     {
         ViewData["ReturnUrl"] = Url.IsLocalUrl(returnUrl) ? returnUrl : string.Empty;
         var model = new ApplicationRegistrationModel();
-        PrepareRegisterModelAsync(model);
+        PrepareRegisterModel(model);
         return View(model);
     }
 
-    private void PrepareRegisterModelAsync(ApplicationRegistrationModel model)
+    private void PrepareRegisterModel(RegistrationBaseModel model)
     {
+        model.UsernameEnabled = _userSettings.UserLoginType != UserLoginType.Email;
         model.FirstNameRequired = _userSettings.FirstNameRequired;
         model.LastNameRequired = _userSettings.LastNameRequired;
         model.BirthdayEnabled = _userSettings.BirthdayEnabled;
+        model.GenderEnabled = _userSettings.GenderEnabled;
     }
 
     [HttpPost("register")]
@@ -83,9 +99,9 @@ public class IdentityController : EShopBaseController
                 });
         }
 
-        foreach (var validator in _userManager.PasswordValidators)
+        if (!Url.IsLocalUrl(returnUrl))
         {
-            AddModelStateErrors(await validator.ValidateAsync(_userManager, user, model.Password));
+            returnUrl = string.Empty;
         }
 
         if (ModelState.IsValid)
@@ -96,17 +112,24 @@ public class IdentityController : EShopBaseController
             var oldEmail = user.Email;
             var oldCreatedOn = user.CreatedOnUtc;
             var oldLastActivityDate = user.LastActivityDateUtc;
+            var oldActive = user.IsActive;
+            var oldUsername = user.Username;
 
-            user.UserName = model.Username != null ? model.Username.Trim() : model.Email.Trim();
+            user.Username = model.Username != null ? model.Username.Trim() : model.Email.Trim();
             user.Email = model.Email.Trim();
+            //TODO: add a possibility to change registration types, in which case Active should be set to true if email confirmation isn't required, which, right now, it always is.
+            user.IsActive = false;
             user.CreatedOnUtc = DateTime.UtcNow;
             user.LastActivityDateUtc = DateTime.UtcNow;
+            //TODO:
+            user.SecurityStamp = string.Empty;
 
             try
             {
                 var identityResult = await _userManager.UpdateAsync(user);
                 if (identityResult.Succeeded)
                 {
+                    
                     var passwordResult = await _userManager.AddPasswordAsync(user, model.Password);
                     succeeded = passwordResult.Succeeded;
                     AddModelStateErrors(passwordResult);
@@ -119,10 +142,12 @@ public class IdentityController : EShopBaseController
                 if (!succeeded)
                 {
                     user.FirstName = oldFirstName;
+                    user.Username = oldUsername;
                     user.LastName = oldLastName;
                     user.Email = oldEmail;
                     user.CreatedOnUtc = oldCreatedOn;
                     user.LastActivityDateUtc = oldLastActivityDate;
+                    user.IsActive = oldActive;
                     await _dbContext.SaveChangesAsync();
                 }
             }
@@ -135,6 +160,8 @@ public class IdentityController : EShopBaseController
             }
         }
 
+        ViewData["ReturnUrl"] = returnUrl;
+        PrepareRegisterModel(model);
         return View(model);
     }
 
@@ -150,7 +177,7 @@ public class IdentityController : EShopBaseController
     #region Confim Email
 
     [HttpGet(nameof(ConfirmEmail))]
-    public async Task<IActionResult> ConfirmEmail(string code, string email)
+    public async Task<IActionResult> ConfirmEmail(string token, string email)
     {
         User? user = await _userManager.FindByEmailAsync(email);
 
@@ -160,13 +187,20 @@ public class IdentityController : EShopBaseController
             return RedirectToAction("Index", "Home");
         }
 
-        var confirm = await _userManager.ConfirmEmailAsync(user, code);
+
+        if (await _userManager.IsEmailConfirmedAsync(user))
+        {
+            ViewBag.ConfirmationResult = "Your email has already been confirmed.";
+        }
+
+        var confirm = await _userManager.ConfirmEmailAsync(user, UrlExtensions.Base64UrlDecode(token));
         if (!confirm.Succeeded)
         {
             _notifyManager.AddError("Email or Confirmation Tokes are invalid.");
             return RedirectToAction("Index", "Home");
         }
 
+        ViewBag.ConfirmationResult = "Your email has been confirmed. You can now sign in.";
         return View();
     }
 
@@ -176,21 +210,37 @@ public class IdentityController : EShopBaseController
     #region Login
 
     [HttpGet("login")]
-    [AllowAnonymous]
     public IActionResult Login(string? returnUrl = null)
     {
-        ViewData["ReturnUrl"] = returnUrl;
-        return View();
+        ViewData["ReturnUrl"] = Url.IsLocalUrl(returnUrl) ? returnUrl : Url.Content("~/");
+        var model = new LoginModel()
+        {
+            UserLoginType = _userSettings.UserLoginType
+        };
+        return View(model);
     }
 
     [HttpPost("login")]
-    [AllowAnonymous]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginModel loginModel, string? returnUrl = null)
     {
         if (ModelState.IsValid)
         {
-            var user = await _userManager.FindByEmailAsync(loginModel.Email);
+            User user;
+            if (loginModel.UserLoginType == UserLoginType.Email)
+            {
+                user = await _userManager.FindByEmailAsync(loginModel.Email.TrimSafe());
+            }
+            else if (loginModel.UserLoginType == UserLoginType.Username)
+            {
+                user = await _userManager.FindByNameAsync(loginModel.Username.TrimSafe());
+            }
+            else
+            {
+                user = await _userManager.FindByEmailAsync(loginModel.UsernameOrEmail.TrimSafe()) ??
+                       await _userManager.FindByNameAsync(loginModel.UsernameOrEmail.TrimSafe());
+            }
+
             if (user != null)
             {
                 var logInResult = await _signInManager.PasswordSignInAsync(user,
@@ -205,36 +255,36 @@ public class IdentityController : EShopBaseController
                 }
                 else
                 {
-                    if (!user.EmailConfirmed && !user.Active)
+                    if (!user.EmailConfirmed && !user.IsActive)
                     {
-                        _notifyManager.AddInfo("You have to confirm your first, before you can log in.");
+                        ModelState.AddModelError(string.Empty, "You have to confirm your email first, before you can log in.");
                     }
-
-                    if (logInResult.RequiresTwoFactor)
+                    else if (logInResult.RequiresTwoFactor)
                     {
                         //TODO ...
                     }
-
-                    if (user.EmailConfirmed && !user.Active)
+                    else
                     {
-                        _notifyManager.AddWarning(
-                            "You account has been deactivated. Contact the owner of the website to find out why.");
-                        RedirectToAction(nameof(Login));
+                       ModelState.AddModelError(string.Empty, "The credentials are invalid");
                     }
                 }
             }
-
-            _notifyManager.AddError("The credentials are invalid", false);
+            else
+            {
+                ModelState.AddModelError(string.Empty, "The credentials are invalid");
+            }
         }
 
         ViewData["ReturnUrl"] = returnUrl;
-        return View();
+        loginModel.UserLoginType = _userSettings.UserLoginType;
+        return View(loginModel);
     }
 
     #endregion
 
     #region Logout
 
+    [HttpGet("logout")]
     public async Task<ActionResult> Logout()
     {
         _activityLogger.InsertActivity(KnownActivityLogType.Logout,
@@ -278,6 +328,7 @@ public class IdentityController : EShopBaseController
                 {
                     user = await _userManager.FindByEmailAsync(externalEmail);
 
+                    //A new user, have them complete the registration to fill out the missing fields e.g. Birthday
                     if (user == null)
                     {
                         return RedirectToAction(nameof(ExternalAccountRegisterNew),
@@ -287,11 +338,12 @@ public class IdentityController : EShopBaseController
                             });
                     }
 
+                    //The user has used a different external provider, though, they already have an account in the system
                     await _userManager.AddLoginAsync(user, externalLoginInfo);
                 }
             }
 
-            //TODO: make it possible for the User to chose if the session should be persistent
+            //TODO: Do we need to bypass Two Factor? 
             var signInResult = await _signInManager.ExternalLoginSignInAsync(externalLoginInfo.LoginProvider,
                 externalLoginInfo.ProviderKey,
                 true,
@@ -304,13 +356,11 @@ public class IdentityController : EShopBaseController
             }
             else if (signInResult.RequiresTwoFactor)
             {
-                // ...
+                // TODO: ...
             }
-
-            //If the user isn't active, they can't log in because WorkContext won't let them. 
         }
 
-        _notifyManager.AddError("Something went wrong during authentication. Try again later.");
+        _notifyManager.AddError("Something went wrong during the authentication. Try again later.");
         return RedirectToAction(nameof(Login));
     }
 
@@ -331,8 +381,9 @@ public class IdentityController : EShopBaseController
             FirstName = claimPrincipal.FindFirstValue(ClaimTypes.GivenName),
             LastName = claimPrincipal.FindFirstValue(ClaimTypes.Surname)
         };
-        ViewData["ReturnUrl"] = returnUrl;
 
+        PrepareRegisterModel(model);
+        ViewData["ReturnUrl"] = returnUrl;
         return View(model);
     }
 
@@ -347,17 +398,21 @@ public class IdentityController : EShopBaseController
             return RedirectToAction(nameof(Login));
         }
 
+        ClaimsPrincipal principal = info.Principal;
         if (ModelState.IsValid)
         {
-            ClaimsPrincipal principal = info.Principal;
+          
             User user = new User
             {
+                Username = principal.FindFirstValue(ClaimTypes.Email),
                 Email = principal.FindFirstValue(ClaimTypes.Email),
                 FirstName = principal.FindFirstValue(ClaimTypes.GivenName),
-                LastName = principal.FindFirstValue(ClaimTypes.Surname),
+                LastName = principal.FindFirstValue(ClaimTypes.Surname) ?? model.LastName,
                 CreatedOnUtc = DateTime.UtcNow,
                 LastActivityDateUtc = DateTime.UtcNow,
-                Active = true
+                IsActive = true,
+                //we assume the user's email is confirmed because we rely on their external provider to verify it.
+                EmailConfirmed = true
             };
             MapRegisterModelToUser(model, user);
 
@@ -380,44 +435,148 @@ public class IdentityController : EShopBaseController
         }
 
 
+        PrepareRegisterModel(model);
+        model.Email = principal.FindFirstValue(ClaimTypes.Email);
+        model.FirstName = principal.FindFirstValue(ClaimTypes.GivenName);
+        model.LastName = principal.FindFirstValue(ClaimTypes.Surname);
         ViewData["ReturnUrl"] = returnUrl;
         return View(model);
     }
 
 
-    public async Task<IActionResult> ExternalError(string provider, string error)
+    public IActionResult ExternalError(string provider, string errorType, string error)
     {
-        //TODO: add loging 
-        //TODO: let the user know they have denied access to their data. 
-        _notifyManager.AddError("Something went wrong during authentication. Try again later.");
+        if (provider.HasValue() || error.HasValue())
+        {
+            Logger.LogError(
+                "Error from an external authentication provider. Provider: {provider}, Error Type: {errorType}, Error: {error}",
+                provider,
+                errorType.EmptyIfNull(),
+                error);
+        }
+
+        var msg = errorType == "access_denied" ? error : "Something went wrong during authentication. Try again later.";
+        _notifyManager.AddError(msg);
         return RedirectToAction(nameof(Login));
     }
 
     #endregion
 
 
+    #region Change password
+
+    [Authorize(Roles = "Registered")]
+    public IActionResult ChangePassword()
+    {
+        return View(new ChangePasswordModel());
+    }
+
+    [Authorize(Roles = "Registered")]
+    [HttpPost]
+    public async Task<IActionResult> ChangePassword(ChangePasswordModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            var passwordResult = await _userManager.ChangePasswordAsync(
+                _workContext.CurrentUser,
+                model.OldPassword,
+                model.NewPassword);
+
+            if (passwordResult.Succeeded)
+            {
+                model.Result = "Password changed successfully";
+            }
+            else
+            {
+                AddModelStateErrors(passwordResult);
+            }
+        }
+
+        return View(model);
+    }
+
+    #endregion
+
     #region Password Reset
 
     [HttpGet("/password-reset")]
     public IActionResult PasswordReset()
     {
-        return View();
+        return View(new PasswordResetModel());
     }
 
-    // [HttpPost("password-reset")]
-    // public async Task<IActionResult> PasswordReset(PasswordResetModel model)
-    // {
-    //     if (ModelState.IsValid)
-    //     {
-    //         User user = await _userManager.FindByEmailAsync(model.Email);
-    //         if (user != null && user.Loc)
-    //         {
-    //             
-    //         }
-    //     }
-    // }
+    [HttpPost("/password-reset")]
+    public async Task<IActionResult> PasswordReset(PasswordResetModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            User user = await _userManager.FindByEmailAsync(model.Email);
+            if (user != null && user.IsActive)
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                await _emailService.SendResetPassword(user, UrlExtensions.Base64UrlEncode(token));
+            }
+
+            model.ResultMessage = "The e-mail has been sent";
+        }
+
+         
+
+        return View(model);
+    }
+
+    [HttpGet("password-reset-confirm")]
+    public IActionResult PasswordResetConfirm(string token, string email)
+    {
+        if (token.IsEmpty() || email.IsEmpty())
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        var model = new PasswordResetConfirmationModel()
+        {
+            Token = token,
+            Email = email
+        };
+
+        return View(model);
+    }
+
+    [HttpPost("password-reset-confirm")]
+    public async Task<IActionResult> PasswordResetConfirm(PasswordResetConfirmationModel model)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        foreach (var validator in _userManager.PasswordValidators)
+        {
+            AddModelStateErrors(await validator.ValidateAsync(_userManager, user, model.NewPassword));
+        }
+        
+        if (ModelState.IsValid)
+        {
+            var resetResult = await _userManager.ResetPasswordAsync(user, UrlExtensions.Base64UrlDecode(model.Token), model.NewPassword);
+            if (resetResult.Succeeded)
+            {
+                model.IsResultSuccess = true;
+                model.ResultMessage = "Your password has been changed";
+            }
+            else
+            {
+                resetResult.Errors.Each(x => _notifyManager.AddError(x.Description));
+            }
+        }
+
+        return View(model);
+    }
 
     #endregion
+
+    [HttpGet("access-denied")]
+    public IActionResult AccessDenied(string returnUrl = null)
+    {
+        HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        ViewData["ReturnUrl"] = returnUrl;
+        return View();
+    }
 
     #region Helpers
 
@@ -425,14 +584,19 @@ public class IdentityController : EShopBaseController
     {
         user.FirstName = model.FirstName;
         user.LastName = model.LastName;
-        user.Gender = model.Gender;
+
         if (_userSettings.BirthdayEnabled && model.BirthDay.HasValue)
         {
             user.BirthDate = model.BirthDay;
         }
+
+        if (_userSettings.GenderEnabled)
+        {
+            user.Gender = model.Gender;
+        }
     }
 
-    private async Task<IActionResult> FinalizeUserRegistrationAsync(User user, string returnUrl)
+    protected virtual async Task<IActionResult> FinalizeUserRegistrationAsync(User user, string returnUrl)
     {
         user.ClientIdentity = null;
 
@@ -444,21 +608,12 @@ public class IdentityController : EShopBaseController
         ExternalLoginInfo? externalLoginInfo = await _signInManager.GetExternalLoginInfoAsync();
         if (externalLoginInfo != null)
         {
-            string redirectUrl = Url.Action(nameof(RegisterResult));
-            if (Url.IsLocalUrl(returnUrl))
-            {
-                redirectUrl = $"{redirectUrl}?returnUrl={Uri.EscapeDataString(returnUrl)}";
-            }
-
-            return Redirect(redirectUrl);
+            return RedirectToLocal(returnUrl);
         }
         else
         {
-            //email confirmation
             string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var msg = string.Format(CultureInfo.InvariantCulture, UserConstantTemplates.EmailConfirmation, token);
-            await _emailService.SendEmailConfirmation(user, msg);
-            var path = _linkGenerator.GetPathByAction(HttpContext, nameof(ConfirmEmail), values: new {  token });
+            await _emailService.SendEmailConfirmation(user, UrlExtensions.Base64UrlEncode(token));
             return RedirectToAction(nameof(RegisterResult),
                 new
                 {

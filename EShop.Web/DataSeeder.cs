@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Helpers;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Configuration;
@@ -21,6 +22,7 @@ using EShop.Core.Platform.Configuration.Domain;
 using EShop.Core.Platform.Routing.Domain;
 using EShop.Infrastructure.Utilities;
 using EShop.Web.Models.Identity;
+using Newtonsoft.Json.Linq;
 
 public class DataSeeder
 {
@@ -133,15 +135,8 @@ public class DataSeeder
         {
             new Label()
             {
-                Name = SystemLabelNames.Sale,
-                IconName = "discount-svgrepo-com.svg",
-                Template = SystemLabelNames.SaleTemplate,
-            },
-            new Label()
-            {
-                Name = "Refurbished",
-                IconName = "recycling-svgrepo-com.svg",
-                Template = "Refurbished",
+                Name = "Recycling",
+                Content = "Recycled",
             }
         };
 
@@ -175,11 +170,10 @@ public class DataSeeder
             Name = "CatalogSettings.ShowReviewsProductList",
             Value = "true"
         };
-        
-     
+
 
         await _dbContext.Settings.AddRangeAsync([catalogSetting, catalogSetting2, catalogSetting3]);
-        
+
         var userSetting = new Setting()
         {
             Name = "UserSettings.FirstNameRequired",
@@ -201,10 +195,19 @@ public class DataSeeder
             Value = "UsernameOrEmail"
         };
         
-         
         await _dbContext.Settings.AddRangeAsync([userSetting, userSetting2, userSetting3]);
 
-        
+        var inventorySetting = new Setting()
+        {
+            Name = "InventorySettings.InStockThreshold",
+            Value = "20"
+        };
+
+
+        await _dbContext.Settings.AddAsync(inventorySetting);
+
+
+
         await _dbContext.SaveChangesAsync();
     }
 
@@ -216,23 +219,26 @@ public class DataSeeder
             {
                 new User
                 {
-                    UserName = "testuser1@example.com",
-                    Email = "testuser1@example.com",
+                    //Admin123-
+                    Username = "admin123",
+                    Email = "cortezz1ty@gmail.com",
                     FirstName = "John",
                     LastName = "Doe",
                     CreatedOnUtc = DateTime.UtcNow,
-                    Active = true,
+                    IsActive = true,
                     EmailConfirmed = true,
+                    SecurityStamp = ""
                 },
                 new User
                 {
-                    UserName = "testuser2@example.com",
+                    Username = "testuser2@example.com",
                     Email = "testuser2@example.com",
                     FirstName = "Jane",
                     LastName = "Smith",
                     CreatedOnUtc = DateTime.UtcNow,
-                    Active = true,
+                    IsActive = true,
                     EmailConfirmed = true,
+                    SecurityStamp = ""
                 }
             };
 
@@ -241,8 +247,8 @@ public class DataSeeder
 
             var roles = new List<Role>
             {
-                new Role { Name = UserRoleNameConstants.Guest },
-                new Role { Name = UserRoleNameConstants.Registered }
+                new Role { Name = UserRoleNameConstants.Guest, Active = true },
+                new Role { Name = UserRoleNameConstants.Registered, Active = true }
             };
 
             foreach (var role in roles)
@@ -260,6 +266,8 @@ public class DataSeeder
 
 
             _dbContext.Users.AddRange(users);
+            await _userManager.AddPasswordAsync(users[0], "Admin123-");
+            await _userManager.AddToRoleAsync(users[0], UserRoleNameConstants.Registered);
 
             await _dbContext.SaveChangesAsync();
 
@@ -359,12 +367,15 @@ public class DataSeeder
                 var shortDescription = $"Short description for {productName}.";
                 var brand = brands.ElementAt(i % brands.Count); // Random brand assignment
                 var approvedReviewCount = Random.Shared.Next(0, 20);
-                var approvedRatingSum = approvedReviewCount == 0 ? 0 : Random.Shared.Next(approvedReviewCount, approvedReviewCount * 5);
+                var approvedRatingSum = approvedReviewCount == 0
+                    ? 0
+                    : Random.Shared.Next(approvedReviewCount, approvedReviewCount * 5);
                 products.Add(new Product
                 {
                     Name = productName,
                     Description = description,
                     ShortDescription = shortDescription,
+                    MaxAddToCartNumber = Random.Shared.Next(5, 15),
                     Sku = $"SKU-{i.ToString().PadLeft(3, '0')}", // Create a SKU
                     IsAvailable = true,
                     Published = true,
@@ -418,17 +429,19 @@ public class DataSeeder
 
             for (int i = 0; i < products.Count; i++)
             {
-                var map = new ProductMedia
+                _dbContext.ProductMedias.AddRange(imageModels.Select(x =>
                 {
-                    Product = products[i],
-                    MediaFile = imageModels[Random.Shared.Next(0, imageModels.Count)],
-                };
-                _dbContext.ProductMedias.Add(map);
+                    return new ProductMedia
+                    {
+                        Product = products[i],
+                        MediaFile = x,
+                    };
+                }).OrderBy(x => Guid.NewGuid().ToString()));
             }
 
 
             //LABELS
-            var refurbished = await _dbContext.Labels.SingleOrDefaultAsync(x => x.Name == "Refurbished");
+            var refurbished = await _dbContext.Labels.SingleOrDefaultAsync(x => x.Name == "Recycling");
             foreach (var product in products)
             {
                 product.Labels.Add(refurbished);
@@ -701,7 +714,7 @@ public class DataSeeder
             // Assign specifications to products
             foreach (var product in products)
             {
-                var numSpecs = new Random().Next(2, 4); // Randomly assign between 2 and 4 specifications
+                var numSpecs = new Random().Next(2, 13); // Randomly assign between 2 and 4 specifications
                 var selectedOptions = specificationAttributeOptionsList
                     .OrderBy(x => Guid.NewGuid())
                     .Take(numSpecs)
@@ -901,17 +914,11 @@ public class DataSeeder
             // Assign attributes to products (including Color)
             foreach (var product in products)
             {
-                var numAttributes = new Random().Next(3, 6); // Randomly assign between 3 and 5 attributes
+                var numAttributes = 2; // Randomly assign between 3 and 5 attributes
                 var selectedAttributes = productAttributes
                     .OrderBy(x => Guid.NewGuid())
                     .Take(numAttributes)
                     .ToList(); // Get unique options
-                var colorAttribute = selectedAttributes.FirstOrDefault(a => a.Name == "Color");
-                if (colorAttribute == null)
-                {
-                    var color = productAttributes.First(a => a.Name == "Color");
-                    selectedAttributes.Add(color);
-                }
 
                 foreach (var attribute in selectedAttributes)
                 {
@@ -959,7 +966,7 @@ public class DataSeeder
                             WeightAdjustment = option.WeightAdjustment,
                             DisplayOrder = option.DisplayOrder,
                             IsPreSelected = preselected, // Set as preselected randomly in combinations
-                            Quantity = 1
+                            Quantity = Random.Shared.Next(0, 3)
                         });
                         preselected = false;
                     }
@@ -976,7 +983,7 @@ public class DataSeeder
         var productVariantAttributes = _dbContext
             .ProductVariantAttributes.Include(x => x.ProductAttribute)
             .Include(x => x.ProductVariantAttributeValues)
-            .ToList();
+            .ToArray();
 
         int count = 0;
         foreach (var product in products)
@@ -987,143 +994,153 @@ public class DataSeeder
                 .ToList();
             if (!productVariantAttributeList.Any()) continue; // Skip if no attributes
 
-            var combination = new ProductVariantAttributeCombination
-            {
-                ProductId = product.Id,
-                IsActive = false,
-                Price = product.Price, // Start with product's base price
-                Weight = product.Weight, // Start with product's base weight
-                StockQuantity = product.StockQuantity,
-            };
+             
 
             decimal priceAdjustment = 0;
             decimal weightAdjustment = 0;
             var rawAttributes = new List<string>(); // Used to create raw attributes JSON
-            var selection = new ProductVariantAttributeSelection();
-            foreach (var variantAttribute in productVariantAttributeList)
+            // We need to create and assign more than one combination to a product and make sure that one combination doesn't contain all the variants options.
+
+            var allValues = productVariantAttributeList.Select(x => x.ProductVariantAttributeValues);
+            var result = CrossProduct(allValues);
+            int count2 = 0;
+            foreach (var pair in result)
             {
-                var values = variantAttribute.ProductVariantAttributeValues.ToList();
-                var randomValue = values.FirstOrDefault(x => x.IsPreSelected);
-
-                Guard.NotNull(randomValue);
-                priceAdjustment += randomValue.PriceAdjustment;
-                weightAdjustment += randomValue.WeightAdjustment;
-                combination.Price += randomValue.PriceAdjustment;
-                combination.Weight += randomValue.WeightAdjustment;
-                rawAttributes.Add($"{variantAttribute.ProductAttribute.Name}:{randomValue.Name}");
-                selection.AddAttribute(variantAttribute.Id, randomValue.Id);
-                // Optionally, set IsPreSelected for the value in the combination
+                count2++;
+                var combination = new ProductVariantAttributeCombination
+                {
+                    ProductId = product.Id,
+                    IsActive = Random.Shared.Next(0, 5) != 0,
+                    Price = product.Price, // Start with product's base price
+                    Weight = product.Weight, // Start with product's base weight
+                    StockQuantity =  count2 < 4 ? 0 : (count2 < 7 ? 15 : Random.Shared.Next(20, 300))
+                };
+                var selection = new ProductVariantAttributeSelection();
+                foreach (var value in pair)
+                {
+                   selection.AddAttribute(value.ProductVariantAttributeId, value.Id); 
+                }
+                combination.HashCode = selection.GetHashCode();
+                combination.Price = decimal.Round(Random.Shared.NextDecimal(10, 900), 4);
+                combination.Weight = decimal.Round(Random.Shared.NextDecimal(10, 900), 4);
+                _dbContext.ProductVariantAttributeCombinations.Add(combination);
             }
-
-            //1 ,24   
-// product 1: attributeId: [109,110,111, 112] : valueidL 325, 328, 331, 334  (selection)
-// hashcode: -64235192
-            combination.HashCode = selection.GetHashCode();
-            combination.RawAttributes = "[{\"Key\":5,\"Value\":[18]},{\"Key\":4,\"Value\":[22]}]";
-            _dbContext.ProductVariantAttributeCombinations.Add(combination);
+            
         }
 
         await _dbContext.SaveChangesAsync();
-    }
+ 
+        IEnumerable<IEnumerable<T>> CrossProduct<T>(
+            IEnumerable<IEnumerable<T>> source) =>
+            source.Aggregate(
+                (IEnumerable<IEnumerable<T>>)new[] { Enumerable.Empty<T>() },
+                (acc, src) => src.SelectMany(x => acc.Select(a => a.Concat(new[] { x }))));
 
+    }
 
     private async Task SeedProductCategoriesAsync()
-    {
-        if (!_dbContext.ProductCategories.Any())
         {
-            var products = _dbContext.Products.ToList();
-            var categories = new List<Category>
+            if (!_dbContext.ProductCategories.Any())
             {
-                new Category
+                var products = _dbContext.Products.ToList();
+                var categories = new List<Category>
                 {
-                    Name = "Electronics", DisplayOrder = 1, Description = "Electronics category", IsPublished = true
-                },
-                new Category
-                    { Name = "Clothing", DisplayOrder = 2, Description = "Clothing category", IsPublished = true },
-                new Category { Name = "Books", DisplayOrder = 3, Description = "Books category", IsPublished = true }
-            };
-
-            //DISCOUNTS
-            var discounts = await _dbContext
-                .Discounts.Where(x => x.DiscountType == DiscountType.CategoryDiscount)
-                .ToListAsync();
-
-            for (int i = 0; i < categories.Count; i++)
-            {
-                var numberToApply = Random.Shared.Next(0, 3);
-                var selectedDiscounts = discounts
-                    .OrderBy((x) => Guid.NewGuid())
-                    .Take(numberToApply)
-                    .ToList();
-
-                foreach (var discount in selectedDiscounts)
-                {
-                    categories[i]
-                        .AppliedDiscounts.Add(discount);
-                    categories[i].HasDiscountsApplied = true;
-                }
-            }
-
-            await _dbContext.Categories.AddRangeAsync(categories);
-            await _dbContext.SaveChangesAsync();
-
-            foreach (var product in products)
-            {
-                var categoryCount = new Random().Next(1, 3); // Assign 1 or 2 categories per product
-                var selectedCategories = categories
-                    .OrderBy(x => Guid.NewGuid())
-                    .Take(categoryCount)
-                    .ToList();
-
-                foreach (var category in selectedCategories)
-                {
-                    _dbContext.ProductCategories.Add(new ProductCategory
+                    new Category
                     {
-                        ProductId = product.Id,
-                        CategoryId = category.Id,
-                        DisplayOrder = new Random().Next(1, 4) // Assign a random display order
-                    });
-                }
-            }
+                        Name = "Electronics", DisplayOrder = 1, Description = "Electronics category", IsPublished = true
+                    },
+                    new Category
+                        { Name = "Clothing", DisplayOrder = 2, Description = "Clothing category", IsPublished = true },
+                    new Category
+                        { Name = "Books", DisplayOrder = 3, Description = "Books category", IsPublished = true }
+                };
 
-            await _dbContext.SaveChangesAsync();
+                //DISCOUNTS
+                var discounts = await _dbContext
+                    .Discounts.Where(x => x.DiscountType == DiscountType.CategoryDiscount)
+                    .ToListAsync();
+
+                for (int i = 0; i < categories.Count; i++)
+                {
+                    var numberToApply = Random.Shared.Next(0, 3);
+                    var selectedDiscounts = discounts
+                        .OrderBy((x) => Guid.NewGuid())
+                        .Take(numberToApply)
+                        .ToList();
+
+                    foreach (var discount in selectedDiscounts)
+                    {
+                        categories[i]
+                            .AppliedDiscounts.Add(discount);
+                        categories[i].HasDiscountsApplied = true;
+                    }
+                }
+
+                await _dbContext.Categories.AddRangeAsync(categories);
+                await _dbContext.SaveChangesAsync();
+
+                foreach (var product in products)
+                {
+                    var categoryCount = new Random().Next(1, 3); // Assign 1 or 2 categories per product
+                    var selectedCategories = categories
+                        .OrderBy(x => Guid.NewGuid())
+                        .Take(categoryCount)
+                        .ToList();
+
+                    foreach (var category in selectedCategories)
+                    {
+                        _dbContext.ProductCategories.Add(new ProductCategory
+                        {
+                            ProductId = product.Id,
+                            CategoryId = category.Id,
+                            DisplayOrder = new Random().Next(1, 4) // Assign a random display order
+                        });
+                    }
+                }
+
+                await _dbContext.SaveChangesAsync();
+            }
         }
     }
-}
 
-// Mock implementation to avoid errors in RoleManager constructor
-public class MockRoleStore : IRoleStore<Role>
+public static class Utils
 {
-    public void Dispose()
+    public static int NextInt32(this Random rng)
     {
+        int firstBits = rng.Next(0, 1 << 4) << 28;
+        int lastBits = rng.Next(0, 1 << 28);
+        return firstBits | lastBits;
     }
 
-    public Task<IdentityResult> CreateAsync(Role role, CancellationToken cancellationToken) =>
-        Task.FromResult(IdentityResult.Success);
+     public static decimal NextDecimalSample(this Random random)
+    {
+        var sample = 1m;
+        //After ~200 million tries this never took more than one attempt but it is possible to generate combinations of a, b, and c with the approach below resulting in a sample >= 1.
+        while (sample >= 1)
+        {
+            var a = random.NextInt32();
+            var b = random.NextInt32();
+            //The high bits of 0.9999999999999999999999999999m are 542101086.
+            var c = random.Next(542101087);
+            sample = new Decimal(a, b, c, false, 28);
+        }
+        return sample;
+    }
 
-    public Task<IdentityResult> DeleteAsync(Role role, CancellationToken cancellationToken) =>
-        Task.FromResult(IdentityResult.Success);
+    public static decimal NextDecimal(this Random random)
+    {
+        return NextDecimal(random, decimal.MaxValue);
+    }
 
-    public Task<Role?> FindByIdAsync(string roleId, CancellationToken cancellationToken) =>
-        Task.FromResult((Role?)null);
+    public static decimal NextDecimal(this Random random, decimal maxValue)
+    {
+        return NextDecimal(random, decimal.Zero, maxValue);
+    }
 
-    public Task<Role?> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken) =>
-        Task.FromResult((Role?)null);
+    public static decimal NextDecimal(this Random random, decimal minValue, decimal maxValue)
+    {
+        var nextDecimalSample = NextDecimalSample(random);
+        return maxValue * nextDecimalSample + minValue * (1 - nextDecimalSample);
+    }
 
-    public Task<string?> GetNormalizedRoleNameAsync(Role role, CancellationToken cancellationToken) =>
-        Task.FromResult(role.NormalizedName);
-
-    public Task<string?> GetRoleIdAsync(Role role, CancellationToken cancellationToken) =>
-        Task.FromResult(role.Id.ToString());
-
-    public Task<string?> GetRoleNameAsync(Role role, CancellationToken cancellationToken) => Task.FromResult(role.Name);
-
-    public Task SetNormalizedRoleNameAsync(Role role, string? normalizedName, CancellationToken cancellationToken) =>
-        Task.CompletedTask;
-
-    public Task SetRoleNameAsync(Role role, string? roleName, CancellationToken cancellationToken) =>
-        Task.CompletedTask;
-
-    public Task<IdentityResult> UpdateAsync(Role role, CancellationToken cancellationToken) =>
-        Task.FromResult(IdentityResult.Success);
 }
