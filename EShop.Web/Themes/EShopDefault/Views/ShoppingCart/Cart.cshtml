@@ -22,7 +22,7 @@
     else 
     {
         <form class="cart js-cart-form" data-update-cart-url="@updateCartUrl">
-            <cart-items class="cart-items">
+            <cart-items class="cart-items" id="cart-items" data-section>
                 <table class="w-full">
                     <thead class="visually-hidden">
                     <tr>
@@ -31,14 +31,16 @@
                         <th>Subtotal</th>
                     </tr>
                     </thead>
-                    <tbody data-partial="">
+                    <tbody class="js-cart-body">
                     <partial name="_ShoppingCart.CartItems" model="Model"/>
                     </tbody>
                 </table>
             </cart-items>
             <div class="cart__summary p-xl" id="cart-summary">
                 <h2 class="h4">Order summary</h2>
-                <partial name="_ShoppingCart.TotalSummary" model="Model"/>
+                <div class="js-cart-summary">
+                    <partial name="_ShoppingCart.TotalSummary" model="Model"/>
+                </div>
             </div>
         </form>
     }

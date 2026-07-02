@@ -1,10 +1,12 @@
+using EShop.Core.Platform.Identity.Domain;
 using EShop.Infrastructure.Domain;
 using EShop.Infrastructure.Utilities;
 
 namespace EShop.Core.Data.Cart.Domain;
 
-public class ShoppingCart : BaseEntity
+public class ShoppingCart
 {
+    
     public int UserId { get; set; }
     public ICollection<ShoppingCartItem> Items { get; set; } = [];
 

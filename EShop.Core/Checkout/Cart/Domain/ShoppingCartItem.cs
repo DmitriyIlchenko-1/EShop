@@ -12,6 +12,7 @@ public class ShoppingCartItem : BaseEntity
     public int ProductId { get; set; }
     public int UserId { get; set; }
     public int Quantity { get; set; }
+    public DateTime AddedOnUtc { get; set; }
     public string RawAttributes { get; set; }
     public Product Product { get; set; }
     

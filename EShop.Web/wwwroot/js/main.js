@@ -563,6 +563,7 @@ class QuantitySelector extends HTMLElement {
         this.plusBtn = this.querySelector('.quantity-plus');
         this.minusBtn.addEventListener('click', this.decreaseQuantity.bind(this));
         this.plusBtn.addEventListener('click', this.increaseQuantity.bind(this));
+        this.changeEvent = new Event('change', {bubbles : true});
         this.init();
     }
 
@@ -581,6 +582,7 @@ class QuantitySelector extends HTMLElement {
         );
         this.quantityInput.value = nextValue.toString();
         this.updateButtonStates();
+        this.quantityInput.dispatchEvent(this.changeEvent);
     }
 
     getEffectiveMax() {
@@ -655,6 +657,7 @@ class QuantitySelector extends HTMLElement {
         
         this.quantityInput.value = quantity.toString();
         this.updateButtonStates();
+        this.quantityInput.dispatchEvent(this.changeEvent);
     }
 
     updateButtonStates() {

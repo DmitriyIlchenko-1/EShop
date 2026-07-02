@@ -61,9 +61,11 @@ public class DefaultShoppingCartService : IShoppingCartService
         {
             cartItem = new ShoppingCartItem()
             {
+                UserId = userCart.UserId,
                 ProductId = ctx.Product.Id,
                 ShoppingCartId = userCart.Id,
                 RawAttributes = rawAttributes,
+                AddedOnUtc = DateTime.UtcNow,
             };
             userCart.Items.Add(cartItem);
         }
@@ -169,7 +171,7 @@ public class DefaultShoppingCartService : IShoppingCartService
         else
         {
             var userCart = await _db.ShoppingCarts
-                .Include(x => x.Items)
+                .Include(x => x.Items.OrderBy(xx => xx.AddedOnUtc))
                 .ThenInclude(x => x.Product)
                 .FirstOrDefaultAsync(x => x.UserId == user.Id);
             if (userCart is null)
@@ -182,9 +184,9 @@ public class DefaultShoppingCartService : IShoppingCartService
             _requestCache.Put(cacheKey, userCart);
             return userCart;
         }
-        
-       
     }
+    
+    protected async Task<S
 }
 
 
