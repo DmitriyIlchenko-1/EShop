@@ -1,5 +1,4 @@
 using EShop.Core.Data.DbHandlers;
- 
 using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Domain;
 using EShop.Infrastructure.Engine;
@@ -7,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
-using EfState =  Microsoft.EntityFrameworkCore.EntityState;
+using EfState = Microsoft.EntityFrameworkCore.EntityState;
+
 namespace EShop.Infrastructure.Data;
 
 public abstract class DbHandlerContext : DbContext
@@ -16,10 +16,34 @@ public abstract class DbHandlerContext : DbContext
 
     public DbHandlerContext(DbContextOptions options) : base(options)
     {
-        
+        ChangeTracker.Tracked += OnTracked;
+        ChangeTracker.StateChanged += OnStateChanged;
     }
 
-     
+    private void OnTracked(object sender, EntityEntryEventArgs e)
+    {
+        var entry = e.Entry;
+        if (entry.Entity is BaseEntity entity && (entry.State == EfState.Unchanged || entry.State == EfState.Modified))
+        {
+            InjectLazyLoader(entity, entry.Context);
+        }
+    }
+
+    private void OnStateChanged(object sender, EntityStateChangedEventArgs e)
+    {
+        var entry = e.Entry;
+        if (entry.Entity is BaseEntity entity)
+        {
+            if (e.NewState == EfState.Unchanged || entry.State == EfState.Modified)
+            {
+                InjectLazyLoader(entity, entry.Context);
+            }
+            else
+            {
+                UnsetLazyLoader(entity);
+            }
+        }
+    }
 
     private IDbHandlerDispatcher ActivateDbHandlerDispatcher()
     {
@@ -118,5 +142,21 @@ public abstract class DbHandlerContext : DbContext
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
-   
+    private static void InjectLazyLoader(BaseEntity entity, DbContext db)
+    {
+        if (entity.LazyLoader is null)
+        {
+            var lazyLoader = db.GetService<ILazyLoader>();
+            entity.LazyLoader = lazyLoader;
+        }
+    }
+
+    private static void UnsetLazyLoader(BaseEntity entity)
+    {
+        if (entity.LazyLoader is LazyLoader lazyLoader)
+        {
+            lazyLoader.Dispose();
+            entity.LazyLoader = null;
+        }
+    }
 }

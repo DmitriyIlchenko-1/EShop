@@ -10,6 +10,8 @@ public abstract class BaseEntity : IEquatable<BaseEntity>
     public int Id { get; set; }
 
     
+    protected internal ILazyLoader LazyLoader { get; set; }
+
 
     //INFO: GetHashCode() should 'match' the Equals()'s logic to work properly in hash tables. 
     public override int GetHashCode()

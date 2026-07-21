@@ -166,22 +166,14 @@ public class CheckoutController : EShopBaseController
         if (!(cart.GetCount() > 0))
         {
         }
-
-        // temp
-        _db
-            .Entry(user)
-            .Collection(x => x.Addresses)
-            .Load();
+        
         var address = user.Addresses.FirstOrDefault(x => x.Id == addressId);
         if (address != null)
         {
-            Console.WriteLine($"Address with id {addressId} has been found");
             user.Addresses.Remove(address);
             _db.Addresses.Remove(address);
             await _db.SaveChangesAsync();
-            Console.WriteLine($"Address with id {addressId} has been removed");
         }
-        Console.WriteLine($"Address with id {addressId} has not been found");
 
         var model = new CheckoutShippingAddressModel();
         await _checkoutHelper.PrepareShippingAddressModelAsync(model, cart, true);

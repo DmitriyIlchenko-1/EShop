@@ -93,11 +93,31 @@ public class User : BaseEntity
     //DefaultShippingAddressId
     public int? ShippingAddressId { get; set; }
 
-    public Address BillingAddress { get; set; }
+    private Address _billingAddress;
 
-    public Address ShippingAddress { get; set; }
+    public Address BillingAddress
+    {
+        get => _billingAddress ?? LazyLoader.Load(this, ref _billingAddress);
+        set => _billingAddress = value;
+    }
 
-    public ICollection<Address> Addresses { get; set; } = [];
+    private Address _shippingAddress;
+
+    public Address ShippingAddress
+    {
+        get => _shippingAddress ?? LazyLoader.Load(this, ref _shippingAddress);
+        set => _shippingAddress = value;
+    }
+
+
+    private ICollection<Address> _addresses;
+
+    public ICollection<Address> Addresses
+    {
+        get => _addresses ?? LazyLoader.Load(this, ref _addresses) ?? (_addresses = new HashSet<Address>());
+        set => _addresses = value;
+    }
+
     
      
     public ICollection<UserRole> UserRoles { get; set; } = [];
