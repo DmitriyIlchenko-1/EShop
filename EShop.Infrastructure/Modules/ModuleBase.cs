@@ -7,7 +7,7 @@ public abstract class ModuleBase : IModule
     public async Task InstallAsync()
     {
         await InstallCoreAsync();
-        ModuleManager.Instance.InstalledModules.Add(ModuleDescriptor.Name);
+        ModuleManager.Instance.InstalledModules.Add(ModuleDescriptor.SystemName);
         ModuleManager.Instance.Save();
     }
 
@@ -19,7 +19,7 @@ public abstract class ModuleBase : IModule
     public async Task UninstallAsync()
     {
         await UninstallCoreAsync();
-        ModuleManager.Instance.InstalledModules.Remove(ModuleDescriptor.Name);
+        ModuleManager.Instance.InstalledModules.Remove(ModuleDescriptor.SystemName);
         ModuleManager.Instance.Save();
     }
     

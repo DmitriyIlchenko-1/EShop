@@ -551,7 +551,6 @@ public partial class CatalogHelper
 
     public class ProductSummaryMappingSettings
     {
-        //TODO: Remove =true from all of these after testing
         public bool MapPrices { get; set; }
         public bool MapPictures { get; set; }
         public bool MapDimensions { get; set; }

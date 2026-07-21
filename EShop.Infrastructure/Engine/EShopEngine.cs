@@ -16,6 +16,7 @@ public class EShopEngine : IEngine
     public IApplicationContext ApplicationContext { get; private set; }
     public IChildLifetimeScopeAccessor ChildLifetimeScopeAccessor { get; set; }
     public IHostEnvironment Environment { get; private set; }
+  
     public IEngineStartup Startup(IApplicationContext applicationContext)
     {
         Guard.NotNull(applicationContext);

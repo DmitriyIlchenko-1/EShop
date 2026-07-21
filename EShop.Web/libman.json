@@ -17,6 +17,11 @@
     {
       "library": "jquery-validate@1.21.0",
       "destination": "wwwroot/lib/jquery-validate"
+    },
+    {
+      "provider": "jsdelivr",
+      "library": "notyf@3.10.0",
+      "destination": "wwwroot/lib/notyf"
     }
   ]
 }

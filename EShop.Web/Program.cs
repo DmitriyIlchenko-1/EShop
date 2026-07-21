@@ -11,11 +11,15 @@ using EShop.Core.Common.Services;
 using EShop.Core.Data;
 using EShop.Core.Data.DbHandlers;
 using EShop.Core.Platform.Caching;
+using EShop.Core.Platform.Configuration.Services;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Infructructure.Types;
+using EShop.Core.Platform.Modules;
+using EShop.Core.Platform.Modules.Payment;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Engine;
+using EShop.Infrastructure.Modules;
 using EShop.Web.Common.Infrastructure;
 using EShop.Web.Common.Infrustructure;
 using EShop.Web.Common.Middleware;
@@ -53,7 +57,7 @@ builder.Services.AddCors(opt =>
 //Add services directly through Autofac.
 builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);
 var app = builder.Build();
-//FOR TEXT PURPOSES
+//FOR TEST PURPOSES
 app.UseCors();
 
 engine.ChildLifetimeScopeAccessor
@@ -71,7 +75,9 @@ using var d = engine.ChildLifetimeScopeAccessor.CreateManualChildLifetimeScope(o
 var dbContext = scope.Resolve<ApplicationDbContext>();
 var userManager = scope.Resolve<UserManager<User>>();
 var roleManager = scope.Resolve<RoleManager<Role>>();
-var dataSeeder = new DataSeeder(dbContext, userManager, roleManager);
+var settingFactory = scope.Resolve<ISettingFactory>();
+var dataSeeder = new DataSeeder(dbContext, userManager, roleManager, settingFactory);
 await dataSeeder.SeedDataAsync();
- 
+
+
 app.Run();

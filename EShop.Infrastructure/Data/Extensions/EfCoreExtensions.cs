@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -318,5 +319,87 @@ public static class EfCoreExtensions
         }
 
         return false;
+    }
+    
+     public static async Task<CollectionEntry<TEntity, TCollection>?> LoadCollectionAsync<TEntity, TCollection>(
+        this DbHandlerContext ctx,
+        TEntity entity,
+        Expression<Func<TEntity, IEnumerable<TCollection>>> navigationProperty,
+        bool force = false,
+        Func<IQueryable<TCollection>, IQueryable<TCollection>>? queryModifier = null,
+        CancellationToken cancelToken = default)
+        where TEntity : BaseEntity
+        where TCollection : BaseEntity
+    {
+        Guard.NotNull(entity);
+        Guard.NotNull(navigationProperty);
+
+        if (entity.Id == 0)
+        {
+            return null;
+        }
+
+        var entry = ctx.Entry(entity);
+        if (entry.State == Microsoft.EntityFrameworkCore.EntityState.Deleted)
+        {
+            return null;
+        }
+
+        var collection = entry.Collection(navigationProperty);
+        // TODO: (core) Entities with hashSets as collections always return true here, as they are never null (for example: Product.ProductVariantAttributes).
+        var isLoaded = collection.CurrentValue != null || collection.IsLoaded;
+
+        if (!isLoaded && entry.State == Microsoft.EntityFrameworkCore.EntityState.Detached)
+        {
+            try
+            {
+                // Attaching an entity while another instance with same primary key is attached will throw.
+                // First we gonna try to locate an already attached entity.
+                var other = ctx.Set<TEntity>().Local.FindEntry(entity.Id)?.Entity;
+                if (other != null)
+                {
+                    // An entity with same key is attached already. So we gonna load the navigation property of attached entity
+                    // and copy the result to this detached entity. This way we don't need to attach the source entity.
+                    var otherCollection = await ctx.LoadCollectionAsync(other, navigationProperty, force, queryModifier, cancelToken: cancelToken);
+
+                    // Copy collection over to detached entity.
+                    collection.CurrentValue = otherCollection?.CurrentValue;
+                    collection.IsLoaded = true;
+                    isLoaded = true;
+                    force = false;
+                }
+                else
+                {
+                    ctx.Attach(entity);
+                }
+            }
+            catch
+            {
+                // Attach may throw!
+            }
+        }
+
+        if (force)
+        {
+            collection.IsLoaded = false;
+            isLoaded = false;
+        }
+
+        if (!isLoaded)
+        {
+            if (queryModifier != null)
+            {
+                var query = queryModifier(collection.Query());
+                collection.CurrentValue = await query.ToListAsync(cancellationToken: cancelToken);
+            }
+            else
+            {
+                await collection.LoadAsync(cancelToken);
+            }
+
+            collection.IsLoaded = true;
+        }
+
+        return collection;
     }
 }

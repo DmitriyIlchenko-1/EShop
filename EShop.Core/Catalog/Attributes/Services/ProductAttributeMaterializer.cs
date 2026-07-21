@@ -245,7 +245,8 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
 
                     return new Dictionary<int, CombinationAvailabilityInfo>();
                 },
-                new CacheEntryOptions() { AbsoluteExpiration = TimeSpan.FromSeconds(60) });
+                //TODO: change the cache time after debugging's over.
+                new CacheEntryOptions() { AbsoluteExpiration = TimeSpan.FromSeconds(1) });
 
 
         // No UNavailable combinations - return null unless the product needs a combination to be ordered.

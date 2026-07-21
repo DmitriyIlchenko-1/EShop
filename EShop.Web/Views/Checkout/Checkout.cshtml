@@ -1,0 +1,33 @@
+@using EShop.Web.Components
+@using EShop.Web.Controllers
+@using EShop.Web.Models.Checkout
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model EShop.Web.Models.Checkout.CheckoutModel
+@{
+    ViewData["Title"] = "Checkout";
+    var getAddressUrl = Url.Action(nameof(CheckoutController.GetAddressById), "Checkout");
+}
+<section class="section section--content-middle color-scheme-1 spacing-style"
+         style=" --padding-block-start: max(20px, calc(var(--spacing-scale) * 68px)); --padding-block-end:max(20px, calc(var(--spacing-scale) * 68px))">
+    <div class="checkout customer">
+        <checkout-flow
+            data-get-address-url="@getAddressUrl">
+            <div id="checkout-address-load" 
+                 class="checkout-address">
+                <partial name="_Checkout.Address" model="Model.CheckoutShippingAddressModel"/>
+            </div>
+            <div id="checkout-payment-load" class="checkout__payment checkout__block">
+                <fieldset class="field-group">
+                    <legend class="field-group__label">Payment</legend>
+                    @await Component.InvokeAsync("CheckoutPaymentMethodList")
+                </fieldset>
+            </div>
+        </checkout-flow>
+        @await Component.InvokeAsync("CheckoutSummary")
+    </div>
+</section>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial"/>
+}
+ 

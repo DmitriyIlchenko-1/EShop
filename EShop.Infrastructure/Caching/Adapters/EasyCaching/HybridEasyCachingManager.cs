@@ -24,7 +24,7 @@ public class HybridEasyCachingManager : ICacheManager
         CacheEntryOptions options = null, CancellationToken cancellationToken = default)
         => (await _cache.GetAsync<T>(key,
             factory,
-            options?.AbsoluteExpiration ?? TimeSpan.FromDays(999), //<--- TODO: This is a severe violation of the LSP. This is a temporary workaround. It does needs fixing!
+            options.AbsoluteExpiration,
             cancellationToken)).Value;
 
     public async Task SetAsync<T>(string key, T value, CacheEntryOptions options,

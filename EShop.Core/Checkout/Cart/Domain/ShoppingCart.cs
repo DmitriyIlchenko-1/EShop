@@ -4,11 +4,17 @@ using EShop.Infrastructure.Utilities;
 
 namespace EShop.Core.Data.Cart.Domain;
 
-public class ShoppingCart
+public class ShoppingCart 
 {
-    
-    public int UserId { get; set; }
-    public ICollection<ShoppingCartItem> Items { get; set; } = [];
+    public ShoppingCart(User user, IEnumerable<ShoppingCartItem> items)
+    {
+        Guard.NotNull(user);
+        Guard.NotNull(items);
+        User = user;
+        Items = items.ToArray();
+    }
+    public User User { get; set; }
+    public ICollection<ShoppingCartItem> Items { get; set; }
 
     public int GetCount()
     {
@@ -18,7 +24,7 @@ public class ShoppingCart
     {
         return HashCodeCombiner
             .Start()
-            .Add(UserId)
+            .Add(User.Id)
             .AddRange(Items)
             .GetCombinedHash();
     }

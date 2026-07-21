@@ -27,9 +27,11 @@ using EShop.Core.Platform.Web;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Common;
 using EShop.Infrastructure.Email;
+using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Media;
 using EShop.Infrastructure.Media.Images;
 using EShop.Infrastructure.Modules;
+using EShop.Infrastructure.Modules.Launch;
 using EShop.Infrastructure.Storage;
 using EShop.Infrastructure.Utilities;
 using EShop.Web.Common.Razor;
@@ -47,6 +49,7 @@ public class CoreStartup : BaseStartup
     
     public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
+         
         services.AddSingleton<IJsonSerializer, NewtonsoftJsonSerializer>();
         services.AddScoped<IWidgetInstanceService, WidgetInstanceService>();
         services.AddScoped<IMediaStorageProvider, FileMediaStorageProvider>();
@@ -82,7 +85,9 @@ public class CoreStartup : BaseStartup
         services.AddScoped<IViewRendererFactory, DefaultViewRendererFactory>();
         services.AddScoped<IShoppingCartService, DefaultShoppingCartService>();
         services.AddScoped<IOrderService, DefaultOrderService>();
-        
+        services.AddScoped<IAddressService, DefaultAddressService>();
+        services.AddScoped<ICityService, CityService>();
+         
         /*
          * Caching 
          */
@@ -92,7 +97,7 @@ public class CoreStartup : BaseStartup
         services.AddDbContextPool<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(configuration["DbConnections:DefaultDbConnection"],
-                x => x.MigrationsAssembly("EShop.Web"));
+                x => x.MigrationsAssembly("EShop.Web")).EnableSensitiveDataLogging();
         });
 
 
@@ -114,8 +119,9 @@ public class CoreStartup : BaseStartup
         services.AddScoped<SlugRouteValueTransformer>();
     }
 
-    public override void ConfigureContainer(ContainerBuilder builder)
+    public override void ConfigureContainer(ContainerBuilder builder, IApplicationContext applicationContext)
     {
+        builder.RegisterModule(new ModuleDiscoveryModule(applicationContext));
         builder.RegisterModule(new DbHandlerModule());
         builder.RegisterModule(new PriceModule());
         builder.RegisterModule(new MediaModule());

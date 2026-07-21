@@ -225,7 +225,7 @@ class MainMenu extends HTMLElement {
     *  before removing is-open.
     */
     handleMainContentTransition(event) {
-        console.log('handleMainContentTransition');
+        //console.log('handleMainContentTransition');
         const parentToggle = event.target.closest('.main-menu__toggle');
         if (parentToggle !== this.mainToggle || event.propertyName !== 'opacity')
             return;
@@ -457,6 +457,8 @@ class MainMenu extends HTMLElement {
         el.querySelector('.main-nav__toggle')
             ?.setAttribute('aria-expanded', 'true');
 
+        // We call this first rAF because we first want the display value to change from none to block and only then apply styles to get the transition work.
+        // This is simply because when the value of display is changed from none to block, no transition will run the first time e.g. in the same frame.
         requestAnimationFrame(() => {
 
             const panel = el.querySelector(':scope > .child-nav__panel');
@@ -563,7 +565,6 @@ class QuantitySelector extends HTMLElement {
         this.plusBtn = this.querySelector('.quantity-plus');
         this.minusBtn.addEventListener('click', this.decreaseQuantity.bind(this));
         this.plusBtn.addEventListener('click', this.increaseQuantity.bind(this));
-        this.changeEvent = new Event('change', {bubbles : true});
         this.init();
     }
 
@@ -582,7 +583,6 @@ class QuantitySelector extends HTMLElement {
         );
         this.quantityInput.value = nextValue.toString();
         this.updateButtonStates();
-        this.quantityInput.dispatchEvent(this.changeEvent);
     }
 
     getEffectiveMax() {
@@ -654,10 +654,9 @@ class QuantitySelector extends HTMLElement {
             this.quantityInput.reportValidity();
             return;
         }
-        
+
         this.quantityInput.value = quantity.toString();
         this.updateButtonStates();
-        this.quantityInput.dispatchEvent(this.changeEvent);
     }
 
     updateButtonStates() {
@@ -849,3 +848,5 @@ if (!customElements.get('product-comparison-grid')) {
     customElements.define('product-comparison-grid', ProductComparisonGrid);
 }
  
+
+

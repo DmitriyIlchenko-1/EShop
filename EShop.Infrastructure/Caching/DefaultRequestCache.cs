@@ -70,8 +70,13 @@ public class DefaultRequestCache : Disposable, IRequestCache
     public bool Contains(object key)
         => EnsureCreated()
             .ContainsKey(key);
-    
-    
+
+    public void Remove(object key)
+    {
+        var requestCache = EnsureCreated();
+        requestCache.Remove(key);
+    }
+
 
     private IDictionary<object, object> EnsureCreated()
     {

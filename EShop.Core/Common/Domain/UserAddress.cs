@@ -9,10 +9,7 @@ internal class ProductLinkMap : IEntityTypeConfiguration<UserAddress>
 {
     public void Configure(EntityTypeBuilder<UserAddress> builder)
     {
-        builder
-            .HasOne(p => p.User)
-            .WithMany(p => p.UserAddresses)
-            .HasForeignKey(x => x.UserId);
+      
     }
 }
 

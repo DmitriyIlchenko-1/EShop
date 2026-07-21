@@ -11,7 +11,7 @@ internal class BrandMap : IEntityTypeConfiguration<Brand>
 {
     public void Configure(EntityTypeBuilder<Brand> builder)
     {
-        builder.HasQueryFilter(x => !x.Deleted);
+        builder.HasQueryFilter(x => !x.IsDeleted);
 
         builder
             .HasOne(x => x.MediaFile)
@@ -26,7 +26,7 @@ public class Brand : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IDispla
     public string Name { get; set; }
     [StringLength(3000)]
     public string Description { get; set; }
-    public bool Deleted { get; set; }
+    public bool IsDeleted { get; set; }
     public bool IsPublished { get; set; }
  
     public DateTime CreatedOnUtc { get; set; }

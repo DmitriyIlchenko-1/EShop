@@ -10,7 +10,7 @@ internal class ReplyMap : IEntityTypeConfiguration<Reply>
 {
     public void Configure(EntityTypeBuilder<Reply> builder)
     {
-        builder.HasQueryFilter(x => !x.Deleted);
+        builder.HasQueryFilter(x => !x.IsDeleted);
         builder
             .HasOne(x => x.User)
             .WithMany()
@@ -24,7 +24,7 @@ public class Reply : BaseEntity, IAuditableEntity, ISoftDeletableEntity
     public string ReplierName { get; set; }
     [StringLength(4000)]
     public string ReplyText { get; set; }
-    public bool Deleted { get; set; }
+    public bool IsDeleted { get; set; }
     public ReplyStatus ReplyStatus { get; set; }
     public DateTime CreatedOnUtc { get; set; }
     public DateTime ModifiedOnUtc { get; set; }

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Products.Domain;
+using EShop.Core.Platform.Identity.Domain;
 using EShop.Infrastructure.Domain;
 using EShop.Infrastructure.Utilities;
 
@@ -8,7 +9,6 @@ namespace EShop.Core.Data.Cart.Domain;
 
 public class ShoppingCartItem : BaseEntity
 {
-    public int ShoppingCartId { get; set; }
     public int ProductId { get; set; }
     public int UserId { get; set; }
     public int Quantity { get; set; }

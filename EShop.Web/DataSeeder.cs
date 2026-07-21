@@ -19,9 +19,13 @@ using EShop.Core.Content.Media.Domain;
 using EShop.Core.Data;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Configuration.Domain;
+using EShop.Core.Platform.Configuration.Services;
 using EShop.Core.Platform.Routing.Domain;
+using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Utilities;
 using EShop.Web.Models.Identity;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Newtonsoft.Json.Linq;
 
 public class DataSeeder
@@ -30,20 +34,37 @@ public class DataSeeder
     private readonly UserManager<User> _userManager;
     private readonly RoleManager<Role> _roleManager;
     private readonly IProductAttributeMaterializer _materializer;
+    private readonly ISettingFactory _settingFactory;
 
-    public DataSeeder(ApplicationDbContext dbContext, UserManager<User> userManager, RoleManager<Role> roleManager)
+    public DataSeeder(ApplicationDbContext dbContext, UserManager<User> userManager, RoleManager<Role> roleManager,
+        ISettingFactory settingFactory)
     {
         _dbContext = dbContext;
         _userManager = userManager;
         _roleManager = roleManager;
+        _settingFactory = settingFactory;
     }
 
     public async Task SeedDataAsync()
     {
-        await _dbContext.Database.EnsureDeletedAsync();
-        await _dbContext.Database.MigrateAsync();
-        await _dbContext.Database.EnsureCreatedAsync();
+        bool needsSeeding = false;
+        if (await _dbContext.Database.EnsureCreatedAsync() || (_dbContext.Database.HasPendingModelChanges() ||
+                                                               (await _dbContext.Database
+                                                                   .GetPendingMigrationsAsync()).Any()))
+        {
+            await _dbContext.Database.EnsureDeletedAsync();
+            await _dbContext.Database.MigrateAsync();
+            await _dbContext.Database.EnsureCreatedAsync();
+            needsSeeding = true;
+        }
 
+        if (!needsSeeding)
+        {
+            return;
+        }
+
+
+        await SeedCitiesAsync();
         await SeedLabels();
         await SeedUsersAsync();
         await SeedBrandsAsync();
@@ -60,6 +81,31 @@ public class DataSeeder
         await SeedCombinationsAsync();
 
         await SeedSettingsAsync();
+    }
+
+    private async Task SeedCitiesAsync()
+    {
+        var cities = await _dbContext.Cities.ToListAsync();
+        if (cities.Any())
+        {
+            return;
+        }
+
+        var appDataRoot = EngineContext.Current.ApplicationContext.AppDataRoot;
+        var cityFile = appDataRoot.GetFileInfo("InstallationData/cities.txt");
+        await using var stream = cityFile.CreateReadStream();
+        using var reader = new StreamReader(stream);
+        string cityString = await reader.ReadToEndAsync();
+        var cityArray = cityString.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var cityName in cityArray)
+        {
+            var city = new City();
+            city.Name = cityName;
+            cities.Add(city);
+        }
+
+        _dbContext.AddRange(cities);
+        await _dbContext.SaveChangesAsync();
     }
 
     private async Task SeedSlugsAsync()
@@ -194,7 +240,7 @@ public class DataSeeder
             Name = "UserSettings.UserLoginType",
             Value = "UsernameOrEmail"
         };
-        
+
         await _dbContext.Settings.AddRangeAsync([userSetting, userSetting2, userSetting3]);
 
         var inventorySetting = new Setting()
@@ -205,7 +251,6 @@ public class DataSeeder
 
 
         await _dbContext.Settings.AddAsync(inventorySetting);
-
 
 
         await _dbContext.SaveChangesAsync();
@@ -227,7 +272,2012 @@ public class DataSeeder
                     CreatedOnUtc = DateTime.UtcNow,
                     IsActive = true,
                     EmailConfirmed = true,
-                    SecurityStamp = ""
+                    SecurityStamp = "",
+                    Addresses = new List<Address>()
+                    {
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                            new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PhoneNumber = "555-0101",
+                            AddressLine1 = "123 Main St",
+                            AddressLine2 = "Apt 4B",
+                            ZipCode = "90210",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 12
+                        },
+                        new Address
+                        {
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PhoneNumber = "555-0102",
+                            AddressLine1 = "456 Oak Avenue",
+                            AddressLine2 = null,
+                            ZipCode = "33101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 84
+                        },
+                        new Address
+                        {
+                            FirstName = "Michael",
+                            LastName = "Johnson",
+                            PhoneNumber = "555-0103",
+                            AddressLine1 = "789 Pine Road",
+                            AddressLine2 = "Suite 100",
+                            ZipCode = "60601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 33
+                        },
+                        new Address
+                        {
+                            FirstName = "Emily",
+                            LastName = "Williams",
+                            PhoneNumber = "555-0104",
+                            AddressLine1 = "321 Maple Drive",
+                            AddressLine2 = null,
+                            ZipCode = "10001",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 7
+                        },
+                        new Address
+                        {
+                            FirstName = "David",
+                            LastName = "Brown",
+                            PhoneNumber = "555-0105",
+                            AddressLine1 = "654 Elm Street",
+                            AddressLine2 = "Unit 2",
+                            ZipCode = "73301",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 91
+                        },
+                        new Address
+                        {
+                            FirstName = "Sarah",
+                            LastName = "Jones",
+                            PhoneNumber = "555-0106",
+                            AddressLine1 = "987 Cedar Lane",
+                            AddressLine2 = null,
+                            ZipCode = "94105",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 45
+                        },
+                        new Address
+                        {
+                            FirstName = "James",
+                            LastName = "Garcia",
+                            PhoneNumber = "555-0107",
+                            AddressLine1 = "147 Birch Blvd",
+                            AddressLine2 = "Building C",
+                            ZipCode = "98101",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 68
+                        },
+                        new Address
+                        {
+                            FirstName = "Jessica",
+                            LastName = "Miller",
+                            PhoneNumber = "555-0108",
+                            AddressLine1 = "258 Walnut Way",
+                            AddressLine2 = null,
+                            ZipCode = "30301",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 21
+                        },
+                        new Address
+                        {
+                            FirstName = "Robert",
+                            LastName = "Davis",
+                            PhoneNumber = "555-0109",
+                            AddressLine1 = "369 Cherry Court",
+                            AddressLine2 = "Floor 3",
+                            ZipCode = "02108",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 55
+                        },
+                        new Address
+                        {
+                            FirstName = "Laura",
+                            LastName = "Rodriguez",
+                            PhoneNumber = "555-0110",
+                            AddressLine1 = "741 Spruce Circle",
+                            AddressLine2 = null,
+                            ZipCode = "75201",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 89
+                        },
+                        new Address
+                        {
+                            FirstName = "William",
+                            LastName = "Martinez",
+                            PhoneNumber = "555-0111",
+                            AddressLine1 = "852 Aspen Trace",
+                            AddressLine2 = "Apt 12",
+                            ZipCode = "80202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 15
+                        },
+                        new Address
+                        {
+                            FirstName = "Linda",
+                            LastName = "Hernandez",
+                            PhoneNumber = "555-0112",
+                            AddressLine1 = "963 Willow Street",
+                            AddressLine2 = null,
+                            ZipCode = "19102",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 77
+                        },
+                        new Address
+                        {
+                            FirstName = "Richard",
+                            LastName = "Lopez",
+                            PhoneNumber = "555-0113",
+                            AddressLine1 = "159 Cypress Avenue",
+                            AddressLine2 = "Suite 5B",
+                            ZipCode = "48226",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 38
+                        },
+                        new Address
+                        {
+                            FirstName = "Barbara",
+                            LastName = "Gonzalez",
+                            PhoneNumber = "555-0114",
+                            AddressLine1 = "753 Redwood Road",
+                            AddressLine2 = null,
+                            ZipCode = "28202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 94
+                        },
+                        new Address
+                        {
+                            FirstName = "Joseph",
+                            LastName = "Wilson",
+                            PhoneNumber = "555-0115",
+                            AddressLine1 = "456 Magnolia Blvd",
+                            AddressLine2 = "Unit 90",
+                            ZipCode = "37203",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 2
+                        },
+                        new Address
+                        {
+                            FirstName = "Susan",
+                            LastName = "Anderson",
+                            PhoneNumber = "555-0116",
+                            AddressLine1 = "123 Sycamore Lane",
+                            AddressLine2 = null,
+                            ZipCode = "85004",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 49
+                        },
+                        new Address
+                        {
+                            FirstName = "Thomas",
+                            LastName = "Thomas",
+                            PhoneNumber = "555-0117",
+                            AddressLine1 = "852 Poplar Drive",
+                            AddressLine2 = "Apt 101",
+                            ZipCode = "97204",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 62
+                        },
+                        new Address
+                        {
+                            FirstName = "Margaret",
+                            LastName = "Taylor",
+                            PhoneNumber = "555-0118",
+                            AddressLine1 = "963 Hickory Court",
+                            AddressLine2 = null,
+                            ZipCode = "20001",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 8
+                        },
+                         new Address
+                        {
+                            FirstName = "Jessica",
+                            LastName = "Miller",
+                            PhoneNumber = "555-0108",
+                            AddressLine1 = "258 Walnut Way",
+                            AddressLine2 = null,
+                            ZipCode = "30301",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 21
+                        },
+                        new Address
+                        {
+                            FirstName = "Robert",
+                            LastName = "Davis",
+                            PhoneNumber = "555-0109",
+                            AddressLine1 = "369 Cherry Court",
+                            AddressLine2 = "Floor 3",
+                            ZipCode = "02108",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 55
+                        },
+                        new Address
+                        {
+                            FirstName = "Laura",
+                            LastName = "Rodriguez",
+                            PhoneNumber = "555-0110",
+                            AddressLine1 = "741 Spruce Circle",
+                            AddressLine2 = null,
+                            ZipCode = "75201",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 89
+                        },
+                        new Address
+                        {
+                            FirstName = "William",
+                            LastName = "Martinez",
+                            PhoneNumber = "555-0111",
+                            AddressLine1 = "852 Aspen Trace",
+                            AddressLine2 = "Apt 12",
+                            ZipCode = "80202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 15
+                        },
+                        new Address
+                        {
+                            FirstName = "Linda",
+                            LastName = "Hernandez",
+                            PhoneNumber = "555-0112",
+                            AddressLine1 = "963 Willow Street",
+                            AddressLine2 = null,
+                            ZipCode = "19102",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 77
+                        },
+                        new Address
+                        {
+                            FirstName = "Richard",
+                            LastName = "Lopez",
+                            PhoneNumber = "555-0113",
+                            AddressLine1 = "159 Cypress Avenue",
+                            AddressLine2 = "Suite 5B",
+                            ZipCode = "48226",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 38
+                        },
+                        new Address
+                        {
+                            FirstName = "Barbara",
+                            LastName = "Gonzalez",
+                            PhoneNumber = "555-0114",
+                            AddressLine1 = "753 Redwood Road",
+                            AddressLine2 = null,
+                            ZipCode = "28202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 94
+                        },
+                        new Address
+                        {
+                            FirstName = "Joseph",
+                            LastName = "Wilson",
+                            PhoneNumber = "555-0115",
+                            AddressLine1 = "456 Magnolia Blvd",
+                            AddressLine2 = "Unit 90",
+                            ZipCode = "37203",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 2
+                        },
+                        new Address
+                        {
+                            FirstName = "Susan",
+                            LastName = "Anderson",
+                            PhoneNumber = "555-0116",
+                            AddressLine1 = "123 Sycamore Lane",
+                            AddressLine2 = null,
+                            ZipCode = "85004",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 49
+                        },
+                        new Address
+                        {
+                            FirstName = "Thomas",
+                            LastName = "Thomas",
+                            PhoneNumber = "555-0117",
+                            AddressLine1 = "852 Poplar Drive",
+                            AddressLine2 = "Apt 101",
+                            ZipCode = "97204",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 62
+                        },
+                        new Address
+                        {
+                            FirstName = "Margaret",
+                            LastName = "Taylor",
+                            PhoneNumber = "555-0118",
+                            AddressLine1 = "963 Hickory Court",
+                            AddressLine2 = null,
+                            ZipCode = "20001",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 8
+                        },
+                         new Address
+                        {
+                            FirstName = "Jessica",
+                            LastName = "Miller",
+                            PhoneNumber = "555-0108",
+                            AddressLine1 = "258 Walnut Way",
+                            AddressLine2 = null,
+                            ZipCode = "30301",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 21
+                        },
+                        new Address
+                        {
+                            FirstName = "Robert",
+                            LastName = "Davis",
+                            PhoneNumber = "555-0109",
+                            AddressLine1 = "369 Cherry Court",
+                            AddressLine2 = "Floor 3",
+                            ZipCode = "02108",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 55
+                        },
+                        new Address
+                        {
+                            FirstName = "Laura",
+                            LastName = "Rodriguez",
+                            PhoneNumber = "555-0110",
+                            AddressLine1 = "741 Spruce Circle",
+                            AddressLine2 = null,
+                            ZipCode = "75201",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 89
+                        },
+                        new Address
+                        {
+                            FirstName = "William",
+                            LastName = "Martinez",
+                            PhoneNumber = "555-0111",
+                            AddressLine1 = "852 Aspen Trace",
+                            AddressLine2 = "Apt 12",
+                            ZipCode = "80202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 15
+                        },
+                        new Address
+                        {
+                            FirstName = "Linda",
+                            LastName = "Hernandez",
+                            PhoneNumber = "555-0112",
+                            AddressLine1 = "963 Willow Street",
+                            AddressLine2 = null,
+                            ZipCode = "19102",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 77
+                        },
+                        new Address
+                        {
+                            FirstName = "Richard",
+                            LastName = "Lopez",
+                            PhoneNumber = "555-0113",
+                            AddressLine1 = "159 Cypress Avenue",
+                            AddressLine2 = "Suite 5B",
+                            ZipCode = "48226",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 38
+                        },
+                        new Address
+                        {
+                            FirstName = "Barbara",
+                            LastName = "Gonzalez",
+                            PhoneNumber = "555-0114",
+                            AddressLine1 = "753 Redwood Road",
+                            AddressLine2 = null,
+                            ZipCode = "28202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 94
+                        },
+                        new Address
+                        {
+                            FirstName = "Joseph",
+                            LastName = "Wilson",
+                            PhoneNumber = "555-0115",
+                            AddressLine1 = "456 Magnolia Blvd",
+                            AddressLine2 = "Unit 90",
+                            ZipCode = "37203",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 2
+                        },
+                        new Address
+                        {
+                            FirstName = "Susan",
+                            LastName = "Anderson",
+                            PhoneNumber = "555-0116",
+                            AddressLine1 = "123 Sycamore Lane",
+                            AddressLine2 = null,
+                            ZipCode = "85004",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 49
+                        },
+                        new Address
+                        {
+                            FirstName = "Thomas",
+                            LastName = "Thomas",
+                            PhoneNumber = "555-0117",
+                            AddressLine1 = "852 Poplar Drive",
+                            AddressLine2 = "Apt 101",
+                            ZipCode = "97204",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 62
+                        },
+                        new Address
+                        {
+                            FirstName = "Margaret",
+                            LastName = "Taylor",
+                            PhoneNumber = "555-0118",
+                            AddressLine1 = "963 Hickory Court",
+                            AddressLine2 = null,
+                            ZipCode = "20001",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 8
+                        },
+                         new Address
+                        {
+                            FirstName = "Jessica",
+                            LastName = "Miller",
+                            PhoneNumber = "555-0108",
+                            AddressLine1 = "258 Walnut Way",
+                            AddressLine2 = null,
+                            ZipCode = "30301",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 21
+                        },
+                        new Address
+                        {
+                            FirstName = "Robert",
+                            LastName = "Davis",
+                            PhoneNumber = "555-0109",
+                            AddressLine1 = "369 Cherry Court",
+                            AddressLine2 = "Floor 3",
+                            ZipCode = "02108",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 55
+                        },
+                        new Address
+                        {
+                            FirstName = "Laura",
+                            LastName = "Rodriguez",
+                            PhoneNumber = "555-0110",
+                            AddressLine1 = "741 Spruce Circle",
+                            AddressLine2 = null,
+                            ZipCode = "75201",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 89
+                        },
+                        new Address
+                        {
+                            FirstName = "William",
+                            LastName = "Martinez",
+                            PhoneNumber = "555-0111",
+                            AddressLine1 = "852 Aspen Trace",
+                            AddressLine2 = "Apt 12",
+                            ZipCode = "80202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 15
+                        },
+                        new Address
+                        {
+                            FirstName = "Linda",
+                            LastName = "Hernandez",
+                            PhoneNumber = "555-0112",
+                            AddressLine1 = "963 Willow Street",
+                            AddressLine2 = null,
+                            ZipCode = "19102",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 77
+                        },
+                        new Address
+                        {
+                            FirstName = "Richard",
+                            LastName = "Lopez",
+                            PhoneNumber = "555-0113",
+                            AddressLine1 = "159 Cypress Avenue",
+                            AddressLine2 = "Suite 5B",
+                            ZipCode = "48226",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 38
+                        },
+                        new Address
+                        {
+                            FirstName = "Barbara",
+                            LastName = "Gonzalez",
+                            PhoneNumber = "555-0114",
+                            AddressLine1 = "753 Redwood Road",
+                            AddressLine2 = null,
+                            ZipCode = "28202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 94
+                        },
+                        new Address
+                        {
+                            FirstName = "Joseph",
+                            LastName = "Wilson",
+                            PhoneNumber = "555-0115",
+                            AddressLine1 = "456 Magnolia Blvd",
+                            AddressLine2 = "Unit 90",
+                            ZipCode = "37203",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 2
+                        },
+                        new Address
+                        {
+                            FirstName = "Susan",
+                            LastName = "Anderson",
+                            PhoneNumber = "555-0116",
+                            AddressLine1 = "123 Sycamore Lane",
+                            AddressLine2 = null,
+                            ZipCode = "85004",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 49
+                        },
+                        new Address
+                        {
+                            FirstName = "Thomas",
+                            LastName = "Thomas",
+                            PhoneNumber = "555-0117",
+                            AddressLine1 = "852 Poplar Drive",
+                            AddressLine2 = "Apt 101",
+                            ZipCode = "97204",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 62
+                        },
+                        new Address
+                        {
+                            FirstName = "Margaret",
+                            LastName = "Taylor",
+                            PhoneNumber = "555-0118",
+                            AddressLine1 = "963 Hickory Court",
+                            AddressLine2 = null,
+                            ZipCode = "20001",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 8
+                        },
+                         new Address
+                        {
+                            FirstName = "Jessica",
+                            LastName = "Miller",
+                            PhoneNumber = "555-0108",
+                            AddressLine1 = "258 Walnut Way",
+                            AddressLine2 = null,
+                            ZipCode = "30301",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 21
+                        },
+                        new Address
+                        {
+                            FirstName = "Robert",
+                            LastName = "Davis",
+                            PhoneNumber = "555-0109",
+                            AddressLine1 = "369 Cherry Court",
+                            AddressLine2 = "Floor 3",
+                            ZipCode = "02108",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 55
+                        },
+                        new Address
+                        {
+                            FirstName = "Laura",
+                            LastName = "Rodriguez",
+                            PhoneNumber = "555-0110",
+                            AddressLine1 = "741 Spruce Circle",
+                            AddressLine2 = null,
+                            ZipCode = "75201",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 89
+                        },
+                        new Address
+                        {
+                            FirstName = "William",
+                            LastName = "Martinez",
+                            PhoneNumber = "555-0111",
+                            AddressLine1 = "852 Aspen Trace",
+                            AddressLine2 = "Apt 12",
+                            ZipCode = "80202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 15
+                        },
+                        new Address
+                        {
+                            FirstName = "Linda",
+                            LastName = "Hernandez",
+                            PhoneNumber = "555-0112",
+                            AddressLine1 = "963 Willow Street",
+                            AddressLine2 = null,
+                            ZipCode = "19102",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 77
+                        },
+                        new Address
+                        {
+                            FirstName = "Richard",
+                            LastName = "Lopez",
+                            PhoneNumber = "555-0113",
+                            AddressLine1 = "159 Cypress Avenue",
+                            AddressLine2 = "Suite 5B",
+                            ZipCode = "48226",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 38
+                        },
+                        new Address
+                        {
+                            FirstName = "Barbara",
+                            LastName = "Gonzalez",
+                            PhoneNumber = "555-0114",
+                            AddressLine1 = "753 Redwood Road",
+                            AddressLine2 = null,
+                            ZipCode = "28202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 94
+                        },
+                        new Address
+                        {
+                            FirstName = "Joseph",
+                            LastName = "Wilson",
+                            PhoneNumber = "555-0115",
+                            AddressLine1 = "456 Magnolia Blvd",
+                            AddressLine2 = "Unit 90",
+                            ZipCode = "37203",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 2
+                        },
+                        new Address
+                        {
+                            FirstName = "Susan",
+                            LastName = "Anderson",
+                            PhoneNumber = "555-0116",
+                            AddressLine1 = "123 Sycamore Lane",
+                            AddressLine2 = null,
+                            ZipCode = "85004",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 49
+                        },
+                        new Address
+                        {
+                            FirstName = "Thomas",
+                            LastName = "Thomas",
+                            PhoneNumber = "555-0117",
+                            AddressLine1 = "852 Poplar Drive",
+                            AddressLine2 = "Apt 101",
+                            ZipCode = "97204",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 62
+                        },
+                        new Address
+                        {
+                            FirstName = "Margaret",
+                            LastName = "Taylor",
+                            PhoneNumber = "555-0118",
+                            AddressLine1 = "963 Hickory Court",
+                            AddressLine2 = null,
+                            ZipCode = "20001",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 8
+                        },
+                         new Address
+                        {
+                            FirstName = "Jessica",
+                            LastName = "Miller",
+                            PhoneNumber = "555-0108",
+                            AddressLine1 = "258 Walnut Way",
+                            AddressLine2 = null,
+                            ZipCode = "30301",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 21
+                        },
+                        new Address
+                        {
+                            FirstName = "Robert",
+                            LastName = "Davis",
+                            PhoneNumber = "555-0109",
+                            AddressLine1 = "369 Cherry Court",
+                            AddressLine2 = "Floor 3",
+                            ZipCode = "02108",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 55
+                        },
+                        new Address
+                        {
+                            FirstName = "Laura",
+                            LastName = "Rodriguez",
+                            PhoneNumber = "555-0110",
+                            AddressLine1 = "741 Spruce Circle",
+                            AddressLine2 = null,
+                            ZipCode = "75201",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 89
+                        },
+                        new Address
+                        {
+                            FirstName = "William",
+                            LastName = "Martinez",
+                            PhoneNumber = "555-0111",
+                            AddressLine1 = "852 Aspen Trace",
+                            AddressLine2 = "Apt 12",
+                            ZipCode = "80202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 15
+                        },
+                        new Address
+                        {
+                            FirstName = "Linda",
+                            LastName = "Hernandez",
+                            PhoneNumber = "555-0112",
+                            AddressLine1 = "963 Willow Street",
+                            AddressLine2 = null,
+                            ZipCode = "19102",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 77
+                        },
+                        new Address
+                        {
+                            FirstName = "Richard",
+                            LastName = "Lopez",
+                            PhoneNumber = "555-0113",
+                            AddressLine1 = "159 Cypress Avenue",
+                            AddressLine2 = "Suite 5B",
+                            ZipCode = "48226",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 38
+                        },
+                        new Address
+                        {
+                            FirstName = "Barbara",
+                            LastName = "Gonzalez",
+                            PhoneNumber = "555-0114",
+                            AddressLine1 = "753 Redwood Road",
+                            AddressLine2 = null,
+                            ZipCode = "28202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 94
+                        },
+                        new Address
+                        {
+                            FirstName = "Joseph",
+                            LastName = "Wilson",
+                            PhoneNumber = "555-0115",
+                            AddressLine1 = "456 Magnolia Blvd",
+                            AddressLine2 = "Unit 90",
+                            ZipCode = "37203",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 2
+                        },
+                        new Address
+                        {
+                            FirstName = "Susan",
+                            LastName = "Anderson",
+                            PhoneNumber = "555-0116",
+                            AddressLine1 = "123 Sycamore Lane",
+                            AddressLine2 = null,
+                            ZipCode = "85004",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 49
+                        },
+                        new Address
+                        {
+                            FirstName = "Thomas",
+                            LastName = "Thomas",
+                            PhoneNumber = "555-0117",
+                            AddressLine1 = "852 Poplar Drive",
+                            AddressLine2 = "Apt 101",
+                            ZipCode = "97204",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 62
+                        },
+                        new Address
+                        {
+                            FirstName = "Margaret",
+                            LastName = "Taylor",
+                            PhoneNumber = "555-0118",
+                            AddressLine1 = "963 Hickory Court",
+                            AddressLine2 = null,
+                            ZipCode = "20001",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 8
+                        },
+                        new Address
+                        {
+                            FirstName = "Charles",
+                            LastName = "Moore",
+                            PhoneNumber = "555-0119",
+                            AddressLine1 = "147 Chestnut Way",
+                            AddressLine2 = "Room 304",
+                            ZipCode = "46204",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 81
+                        },
+                        new Address
+                        {
+                            FirstName = "Lisa",
+                            LastName = "Jackson",
+                            PhoneNumber = "555-0120",
+                            AddressLine1 = "258 Ash Street",
+                            AddressLine2 = null,
+                            ZipCode = "43215",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 27
+                        },
+                        new Address
+                        {
+                            FirstName = "Christopher",
+                            LastName = "Martin",
+                            PhoneNumber = "555-0121",
+                            AddressLine1 = "369 Beech Avenue",
+                            AddressLine2 = "Building A",
+                            ZipCode = "78701",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 99
+                        },
+                        new Address
+                        {
+                            FirstName = "Nancy",
+                            LastName = "Lee",
+                            PhoneNumber = "555-0122",
+                            AddressLine1 = "741 Alder Circle",
+                            AddressLine2 = null,
+                            ZipCode = "32202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 18
+                        },
+                        new Address
+                        {
+                            FirstName = "Daniel",
+                            LastName = "Perez",
+                            PhoneNumber = "555-0123",
+                            AddressLine1 = "852 Dogwood Trace",
+                            AddressLine2 = "Suite 400",
+                            ZipCode = "76102",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 53
+                        },
+                        new Address
+                        {
+                            FirstName = "Karen",
+                            LastName = "Thompson",
+                            PhoneNumber = "555-0124",
+                            AddressLine1 = "963 Holly Road",
+                            AddressLine2 = null,
+                            ZipCode = "38103",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 71
+                        },
+                        new Address
+                        {
+                            FirstName = "Matthew",
+                            LastName = "White",
+                            PhoneNumber = "555-0125",
+                            AddressLine1 = "159 Juniper Blvd",
+                            AddressLine2 = "Apt 22",
+                            ZipCode = "40202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 36
+                        },
+                        new Address
+                        {
+                            FirstName = "Betty",
+                            LastName = "Harris",
+                            PhoneNumber = "555-0126",
+                            AddressLine1 = "753 Larch Street",
+                            AddressLine2 = null,
+                            ZipCode = "21201",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 65
+                        },
+                        new Address
+                        {
+                            FirstName = "Anthony",
+                            LastName = "Sanchez",
+                            PhoneNumber = "555-0127",
+                            AddressLine1 = "456 Olive Lane",
+                            AddressLine2 = "Penthouse",
+                            ZipCode = "53202",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 9
+                        },
+                        new Address
+                        {
+                            FirstName = "Helen",
+                            LastName = "Clark",
+                            PhoneNumber = "555-0128",
+                            AddressLine1 = "123 Palm Drive",
+                            AddressLine2 = null,
+                            ZipCode = "68102",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 88
+                        },
+                        new Address
+                        {
+                            FirstName = "Mark",
+                            LastName = "Ramirez",
+                            PhoneNumber = "555-0129",
+                            AddressLine1 = "852 Pecan Court",
+                            AddressLine2 = "Unit B",
+                            ZipCode = "27601",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 42
+                        },
+                        new Address
+                        {
+                            FirstName = "Sandra",
+                            LastName = "Lewis",
+                            PhoneNumber = "555-0130",
+                            AddressLine1 = "963 Sequoia Way",
+                            AddressLine2 = null,
+                            ZipCode = "55402",
+                            CreatedOnUtc = DateTime.UtcNow,
+                            CityId = 100
+                        }
+                    }
                 },
                 new User
                 {
@@ -378,7 +2428,7 @@ public class DataSeeder
                     MaxAddToCartNumber = Random.Shared.Next(5, 15),
                     Sku = $"SKU-{i.ToString().PadLeft(3, '0')}", // Create a SKU
                     IsAvailable = true,
-                    Published = true,
+                    IsPublished = true,
                     ShowOnHomePage = true,
                     AttributeCombinationRequired = true,
                     DisplayStockQuantity = true,
@@ -429,14 +2479,18 @@ public class DataSeeder
 
             for (int i = 0; i < products.Count; i++)
             {
-                _dbContext.ProductMedias.AddRange(imageModels.Select(x =>
-                {
-                    return new ProductMedia
+                _dbContext.ProductMedias.AddRange(imageModels
+                    .Select(x =>
                     {
-                        Product = products[i],
-                        MediaFile = x,
-                    };
-                }).OrderBy(x => Guid.NewGuid().ToString()));
+                        return new ProductMedia
+                        {
+                            Product = products[i],
+                            MediaFile = x,
+                        };
+                    })
+                    .OrderBy(x => Guid
+                        .NewGuid()
+                        .ToString()));
             }
 
 
@@ -994,7 +3048,6 @@ public class DataSeeder
                 .ToList();
             if (!productVariantAttributeList.Any()) continue; // Skip if no attributes
 
-             
 
             decimal priceAdjustment = 0;
             decimal weightAdjustment = 0;
@@ -1013,95 +3066,94 @@ public class DataSeeder
                     IsActive = Random.Shared.Next(0, 5) != 0,
                     Price = product.Price, // Start with product's base price
                     Weight = product.Weight, // Start with product's base weight
-                    StockQuantity =  count2 < 4 ? 0 : (count2 < 7 ? 15 : Random.Shared.Next(20, 300))
+                    StockQuantity = count2 < 4 ? 0 : (count2 < 7 ? 15 : Random.Shared.Next(20, 300))
                 };
                 var selection = new ProductVariantAttributeSelection();
                 foreach (var value in pair)
                 {
-                   selection.AddAttribute(value.ProductVariantAttributeId, value.Id); 
+                    selection.AddAttribute(value.ProductVariantAttributeId, value.Id);
                 }
+
                 combination.HashCode = selection.GetHashCode();
                 combination.Price = decimal.Round(Random.Shared.NextDecimal(10, 900), 4);
                 combination.Weight = decimal.Round(Random.Shared.NextDecimal(10, 900), 4);
                 _dbContext.ProductVariantAttributeCombinations.Add(combination);
             }
-            
         }
 
         await _dbContext.SaveChangesAsync();
- 
+
         IEnumerable<IEnumerable<T>> CrossProduct<T>(
             IEnumerable<IEnumerable<T>> source) =>
             source.Aggregate(
                 (IEnumerable<IEnumerable<T>>)new[] { Enumerable.Empty<T>() },
                 (acc, src) => src.SelectMany(x => acc.Select(a => a.Concat(new[] { x }))));
-
     }
 
     private async Task SeedProductCategoriesAsync()
+    {
+        if (!_dbContext.ProductCategories.Any())
         {
-            if (!_dbContext.ProductCategories.Any())
+            var products = _dbContext.Products.ToList();
+            var categories = new List<Category>
             {
-                var products = _dbContext.Products.ToList();
-                var categories = new List<Category>
+                new Category
                 {
-                    new Category
-                    {
-                        Name = "Electronics", DisplayOrder = 1, Description = "Electronics category", IsPublished = true
-                    },
-                    new Category
-                        { Name = "Clothing", DisplayOrder = 2, Description = "Clothing category", IsPublished = true },
-                    new Category
-                        { Name = "Books", DisplayOrder = 3, Description = "Books category", IsPublished = true }
-                };
+                    Name = "Electronics", DisplayOrder = 1, Description = "Electronics category", IsPublished = true
+                },
+                new Category
+                    { Name = "Clothing", DisplayOrder = 2, Description = "Clothing category", IsPublished = true },
+                new Category
+                    { Name = "Books", DisplayOrder = 3, Description = "Books category", IsPublished = true }
+            };
 
-                //DISCOUNTS
-                var discounts = await _dbContext
-                    .Discounts.Where(x => x.DiscountType == DiscountType.CategoryDiscount)
-                    .ToListAsync();
+            //DISCOUNTS
+            var discounts = await _dbContext
+                .Discounts.Where(x => x.DiscountType == DiscountType.CategoryDiscount)
+                .ToListAsync();
 
-                for (int i = 0; i < categories.Count; i++)
+            for (int i = 0; i < categories.Count; i++)
+            {
+                var numberToApply = Random.Shared.Next(0, 3);
+                var selectedDiscounts = discounts
+                    .OrderBy((x) => Guid.NewGuid())
+                    .Take(numberToApply)
+                    .ToList();
+
+                foreach (var discount in selectedDiscounts)
                 {
-                    var numberToApply = Random.Shared.Next(0, 3);
-                    var selectedDiscounts = discounts
-                        .OrderBy((x) => Guid.NewGuid())
-                        .Take(numberToApply)
-                        .ToList();
-
-                    foreach (var discount in selectedDiscounts)
-                    {
-                        categories[i]
-                            .AppliedDiscounts.Add(discount);
-                        categories[i].HasDiscountsApplied = true;
-                    }
+                    categories[i]
+                        .AppliedDiscounts.Add(discount);
+                    categories[i].HasDiscountsApplied = true;
                 }
-
-                await _dbContext.Categories.AddRangeAsync(categories);
-                await _dbContext.SaveChangesAsync();
-
-                foreach (var product in products)
-                {
-                    var categoryCount = new Random().Next(1, 3); // Assign 1 or 2 categories per product
-                    var selectedCategories = categories
-                        .OrderBy(x => Guid.NewGuid())
-                        .Take(categoryCount)
-                        .ToList();
-
-                    foreach (var category in selectedCategories)
-                    {
-                        _dbContext.ProductCategories.Add(new ProductCategory
-                        {
-                            ProductId = product.Id,
-                            CategoryId = category.Id,
-                            DisplayOrder = new Random().Next(1, 4) // Assign a random display order
-                        });
-                    }
-                }
-
-                await _dbContext.SaveChangesAsync();
             }
+
+            await _dbContext.Categories.AddRangeAsync(categories);
+            await _dbContext.SaveChangesAsync();
+
+            foreach (var product in products)
+            {
+                var categoryCount = new Random().Next(1, 3); // Assign 1 or 2 categories per product
+                var selectedCategories = categories
+                    .OrderBy(x => Guid.NewGuid())
+                    .Take(categoryCount)
+                    .ToList();
+
+                foreach (var category in selectedCategories)
+                {
+                    _dbContext.ProductCategories.Add(new ProductCategory
+                    {
+                        ProductId = product.Id,
+                        CategoryId = category.Id,
+                        DisplayOrder = new Random().Next(1, 4) // Assign a random display order
+                    });
+                }
+            }
+
+            await _dbContext.SaveChangesAsync();
         }
     }
+}
 
 public static class Utils
 {
@@ -1112,7 +3164,7 @@ public static class Utils
         return firstBits | lastBits;
     }
 
-     public static decimal NextDecimalSample(this Random random)
+    public static decimal NextDecimalSample(this Random random)
     {
         var sample = 1m;
         //After ~200 million tries this never took more than one attempt but it is possible to generate combinations of a, b, and c with the approach below resulting in a sample >= 1.
@@ -1124,6 +3176,7 @@ public static class Utils
             var c = random.Next(542101087);
             sample = new Decimal(a, b, c, false, 28);
         }
+
         return sample;
     }
 
@@ -1142,5 +3195,4 @@ public static class Utils
         var nextDecimalSample = NextDecimalSample(random);
         return maxValue * nextDecimalSample + minValue * (1 - nextDecimalSample);
     }
-
 }

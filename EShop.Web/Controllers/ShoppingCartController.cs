@@ -1,8 +1,10 @@
 using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Data;
 using EShop.Core.Data.Cart.Services;
+using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Logging.Services;
 using EShop.Infrastructure.Caching;
+using EShop.Infrastructure.Extensions;
 using EShop.Web.Common.Controllers;
 using EShop.Web.Models.Checkout;
 using Microsoft.AspNetCore.Mvc;
@@ -15,24 +17,26 @@ public class ShoppingCartController : EShopBaseController
     private readonly ApplicationDbContext _db;
     private readonly IShoppingCartService _shoppingCartService;
     private readonly IActivityLogger _activityLogger;
-    readonly CheckoutHelper _checkoutHelper;
+    readonly ShoppingCartHelper _shoppingCartHelper;
     readonly IRequestCache _requestCache;
+    readonly IWorkContext _workContext;
 
     public ShoppingCartController(ApplicationDbContext db, IShoppingCartService shoppingCartService,
-        IActivityLogger activityLogger, IRequestCache requestCache, CheckoutHelper checkoutHelper)
+        IActivityLogger activityLogger, IRequestCache requestCache, ShoppingCartHelper shoppingCartHelper, IWorkContext workContext)
     {
         _db = db;
         _shoppingCartService = shoppingCartService;
         _activityLogger = activityLogger;
         _requestCache = requestCache;
-        _checkoutHelper = checkoutHelper;
+        _shoppingCartHelper = shoppingCartHelper;
+        _workContext = workContext;
     }
 
     [HttpGet("/cart", Name = "ShoppingCart")]
     public async Task<IActionResult> Cart()
     {
         var cart = await _shoppingCartService.GetUserCartAsync();
-        var model = await _checkoutHelper.PrepareShoppingCartModelAsync(cart);
+        var model = await _shoppingCartHelper.PrepareShoppingCartModelAsync(cart);
         return View(model);
     }
     
@@ -65,17 +69,8 @@ public class ShoppingCartController : EShopBaseController
             VariantQuery = query
         };
 
-        (bool result, ICollection<string> errors) = await _shoppingCartService.AddProductToCart(addToCartContext);
-
-        if (!result)
-        {
-            return Json(new
-            {
-                productId,
-                success = false,
-                errors,
-            });
-        }
+         ICollection<string> warnings  = await _shoppingCartService.AddProductToCart(addToCartContext);
+         
 
         _activityLogger.InsertActivity(KnownActivityLogType.AddToShoppingCart,
             KnownActivityFormats.AddToShoppingCart,
@@ -85,10 +80,10 @@ public class ShoppingCartController : EShopBaseController
         return Json(new
         {
             productId,
-            success = true,
+            warnings,
             partials = new
             {
-                AddToCartCount = await RenderComponentToStringAsync("AddToCartCount", cartCount)
+                addToCartCount = await RenderComponentToStringAsync("AddToCartCount", cartCount)
             }
         });
     }
@@ -97,51 +92,45 @@ public class ShoppingCartController : EShopBaseController
     [HttpPost]
     public async Task<IActionResult> UpdateCartItem(UpdateCartItemModel model)
         => await UpdateCartItemInternal(model);
+  
+    [HttpPost]
+    public async Task<IActionResult> RemoveCartItem(UpdateCartItemModel model)
+        => await UpdateCartItemInternal(model, true);
 
     private async Task<IActionResult> UpdateCartItemInternal(UpdateCartItemModel model, bool delete = false)
     {
         string message = string.Empty;
-        bool success = false;
-        string cartHtml = string.Empty;
-        string totalSummaryHtml = string.Empty;
-        string cartCountHtml = string.Empty;
-        
         var cartItem = await _db.ShoppingCartItems.FirstOrDefaultAsync(x => x.Id == model.CartItemId);
         if (cartItem is null)
         {
             return Json(new
             {
                 success = false,
-                error = "Failed to perform the action."
+                message = "Failed to perform the action."
             });
         }
-        
-        var (result, warnings) =
-            await _shoppingCartService.UpdateCartItemAsync(cartItem, delete ? 0 :  model.NewQuantity);
-        message = string.Join(". ", warnings.Take(2));
-        success = result;
 
-        if (!success)
+        if (delete || model.NewQuantity == 0)
         {
-            return Json(new
-            {
-                success,
-                message
-            });
+            await _shoppingCartService.RemoveCartItemAsync(cartItem);
         }
-        
+        else
+        {
+            var warnings = await _shoppingCartService.UpdateCartItemAsync(cartItem,  model.NewQuantity);
+            message = string.Join(". ", warnings.Take(2));
+        }
+         
         var cart = await _shoppingCartService.GetUserCartAsync();
-        var cartModel = await _checkoutHelper.PrepareShoppingCartModelAsync(cart);
-        cartHtml = await RenderPartialViewToStringAsync("_ShoppingCart.CartItems", cartModel);
-        totalSummaryHtml = await RenderPartialViewToStringAsync("_ShoppingCart.TotalSummary", cartModel);
-        cartCountHtml = await RenderComponentToStringAsync("AddToCartCount", cart.GetCount());
+        var cartCount = cart.GetCount();
+        var cartModel = await _shoppingCartHelper.PrepareShoppingCartModelAsync(cart);
         return Json(new
         {
-            success,
-            cartHtml,
-            totalSummaryHtml,
-            cartCountHtml
-
+            success = true,
+            message,
+            cartHtml = await RenderPartialViewToStringAsync("_ShoppingCart.CartItems", cartModel),
+            totalSummaryHtml = await RenderPartialViewToStringAsync("_ShoppingCart.TotalSummary", cartModel),
+            cartCountHtml = await RenderComponentToStringAsync("AddToCartCount", cartCount),
+            cartCount
         });
     }
 }

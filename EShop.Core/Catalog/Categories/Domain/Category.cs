@@ -11,7 +11,7 @@ internal class CategoryMap : IEntityTypeConfiguration<Category>
 {
     public void Configure(EntityTypeBuilder<Category> builder)
     {
-        builder.HasQueryFilter(x => !x.Deleted);
+        builder.HasQueryFilter(x => !x.IsDeleted);
         builder
             .HasOne(x => x.Parent)
             .WithMany(x => x.Children)
@@ -47,7 +47,7 @@ public class Category : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IDis
     public bool IncludeInMenu { get; set; }
     public bool IsPublished { get; set; }
     public bool IsRootParent { get; set; }
-    public bool Deleted { get; set; }
+    public bool IsDeleted { get; set; }
     public int DisplayOrder { get; set; }
     public bool HasDiscountsApplied { get; set; }
     public Category Parent { get; set; }

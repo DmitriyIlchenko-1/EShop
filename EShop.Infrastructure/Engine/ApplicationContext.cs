@@ -1,5 +1,6 @@
  
 using EShop.Infrastructure.Engine.Configuration;
+using EShop.Infrastructure.Modules;
 using EShop.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +12,8 @@ public class DefaultApplicationContext : IApplicationContext
 {
     public IFileProvider AppDataRoot { get; private set; }
     public IFileProvider WebRoot { get; private set; }
+    public IFileProvider ModuleRoot { get; private set; }
+    public IModuleCollection ModuleCollection { get; set; }
     public IFileProvider ContentRoot => Environment.ContentRootFileProvider;
    
     public IWebHostEnvironment Environment { get; init; }
@@ -34,6 +37,12 @@ public class DefaultApplicationContext : IApplicationContext
         if (Directory.Exists(Path.Combine(contentRootPath, "App_Data")))
         {
             AppDataRoot = new PhysicalFileProvider(Path.Combine(contentRootPath, "App_Data"));
+        }
+
+        var moduleRootDirectory = Path.Combine(contentRootPath, "Modules");
+        if (Directory.Exists(moduleRootDirectory))
+        {
+            ModuleRoot = new PhysicalFileProvider(moduleRootDirectory);
         }
     }
 }

@@ -1,8 +1,13 @@
 using EShop.Core.Data.DbHandlers;
+ 
 using EShop.Infrastructure.Data.DbHandlers;
+using EShop.Infrastructure.Domain;
 using EShop.Infrastructure.Engine;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
+using EfState =  Microsoft.EntityFrameworkCore.EntityState;
 namespace EShop.Infrastructure.Data;
 
 public abstract class DbHandlerContext : DbContext
@@ -11,9 +16,10 @@ public abstract class DbHandlerContext : DbContext
 
     public DbHandlerContext(DbContextOptions options) : base(options)
     {
+        
     }
 
-    
+     
 
     private IDbHandlerDispatcher ActivateDbHandlerDispatcher()
     {
@@ -111,4 +117,6 @@ public abstract class DbHandlerContext : DbContext
     {
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
+
+   
 }

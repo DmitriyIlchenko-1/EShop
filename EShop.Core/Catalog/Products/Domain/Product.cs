@@ -17,7 +17,7 @@ internal class ProductMap : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
-        builder.HasQueryFilter(x => !x.Deleted);
+        builder.HasQueryFilter(x => !x.IsDeleted);
 
         builder
             .HasOne(x => x.Brand)
@@ -48,7 +48,8 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IMerg
     [StringLength(400)] public string MetaTitle { get; set; }
     [StringLength(400)] public string MetaDescription { get; set; }
     [StringLength(400)] public string MetaKeywords { get; set; }
-    public int? MaxAddToCartNumber { get; set; }
+    public int MaxAddToCartNumber { get; set; }
+    public int MinAddToCartNumber { get; set; }
     public DateTime CreatedOnUtc { get; set; }
     public DateTime ModifiedOnUtc { get; set; }
     public bool HasDiscountsApplied { get; set; }
@@ -74,8 +75,8 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IMerg
     public bool IsAvailable { get; set; }
     public bool AttributeCombinationRequired { get; set; }
     public bool DisplayStockQuantity { get; set; }
-    public bool Published { get; set; }
-    public bool Deleted { get; set; }
+    public bool IsPublished { get; set; }
+    public bool IsDeleted { get; set; }
     private int? _deliveryTimeId;
 
     public int? DeliveryTimeId

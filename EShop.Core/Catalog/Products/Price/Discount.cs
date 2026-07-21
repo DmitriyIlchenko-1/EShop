@@ -26,7 +26,7 @@ internal class DiscountMap : IEntityTypeConfiguration<Discount>
 {
     public void Configure(EntityTypeBuilder<Discount> builder)
     {
-        builder.HasQueryFilter(x => !x.Deleted);
+        builder.HasQueryFilter(x => !x.IsDeleted);
         builder
             .HasMany(x => x.AppliedToProducts)
             .WithMany(x => x.AppliedDiscounts)
@@ -84,7 +84,7 @@ public class Discount : BaseEntity, IAuditableEntity, ISoftDeletableEntity
     public int DiscountUsageAmount { get; set; }
     public DateTime CreatedOnUtc { get; set; }
     public DateTime ModifiedOnUtc { get; set; }
-    public bool Deleted { get; set; }
+    public bool IsDeleted { get; set; }
     public DiscountBadge Badge { get; set; }
     public ICollection<Product> AppliedToProducts { get; set; } = [];
 

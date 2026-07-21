@@ -33,11 +33,9 @@ class ProductForm extends HTMLElement{
             const action = this.form.getAttribute('action');
             const response = await fetch(action, fetchOptions)
             const data = await response.json();
-            if (!data.success){
-                
-            }
-            const errors = data.errors;
             ProductForm.updateCartIcon(data);
+            this.displayNotifications(data.warnings);
+            
             
         }
         catch (error) {
@@ -50,14 +48,24 @@ class ProductForm extends HTMLElement{
         
     }
     
+    displayNotifications(notifications) {
+        const notyf = new Notyf();
+        notifications.forEach(n => {
+            notyf.error(n);
+        })
+    }
+
+
     static updateCartIcon(response){
         const cartIconCount = document.getElementById('cart-icon-count');
         if (response.partials.addToCartCount && cartIconCount){
             cartIconCount.innerHTML = response.partials.addToCartCount;
         }
     }
-    
-    
+
+
+
+
 }
 
 if (!customElements.get('product-form')) {

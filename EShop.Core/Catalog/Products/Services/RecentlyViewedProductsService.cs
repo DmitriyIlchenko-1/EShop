@@ -59,7 +59,7 @@ public class RecentlyViewedProductsService : IRecentlyViewedProductsService
         var products = await _db
             .Products.AsNoTracking()
             .Where(x => productIds.Contains(x.Id))
-            .Where(x => x.Published)
+            .Where(x => x.IsPublished)
             .SelectSummaryOnly()
             .OrderBy(x => x.Id)
             .Take(count)

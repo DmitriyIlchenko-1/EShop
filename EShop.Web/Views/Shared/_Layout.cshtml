@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="en-US" class="js">
 <head>
     <meta charset="utf-8"/>
     <title>@ViewBag.Title</title>
@@ -16,8 +16,10 @@
     <link href="~/css/utils.css" rel="stylesheet" type="text/css"/>
     <link href="~/css/cart-items.css" rel="stylesheet" type="text/css"/>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
 
+    
     <script src="~/js/critical.js" type="module"></script>
     <script src="~/js/header.js" type="module"></script>
     <script src="~/js/main.js" type="module"></script>
@@ -26,6 +28,9 @@
     <script type="module" src="~/js/product-form.js"></script>
     <script type="module" src="~/js/media-gallery.js"></script>
     <script type="module" src="~/js/cart-items.js"></script>
+    <script type="module" src="~/js/checkout-flow.js"></script>
+   
+
 
 
 
@@ -94,6 +99,9 @@
             --gap-2xl: 3.2rem;
             --gap-3xl: 4.8rem;
 
+
+            --product-thumbnail-bagde-offset: .4rem;
+            
             /*Borders*/
             --style-border-radius-buttons: 10px; /*from settings*/
 
@@ -211,7 +219,7 @@
             --font-size--h2: clamp(3.6rem, 4.8vw, 4.8rem);
             --font-size--h3: 3.2rem;
             --font-size--h4: 2.4rem;
-            --font-size--h5: 1.4rem;
+            --font-size--h5: 1.7rem;
             --font-size--h6: 1.2rem;
 
 
@@ -219,7 +227,7 @@
             --focus-outline-width: 0.2rem;
             --focus-outline-style: solid;
             --focus-outline-color: #0071e3;
-            --focus-outline-offset: 0.1rem;
+            --focus-outline-offset: 0.2rem;
 
 
             /*|| Product Cards*/
@@ -327,6 +335,16 @@
             --star-color-rgb: 255 159 28;
 
 
+            /*Button colors*/
+            --color-danger-primary-button-background: rgb(255, 255, 255);
+            --color-danger-primary-button-text: rgb(244, 10, 31);
+            --color-danger-primary-button-hover-background: rgb(255, 255, 255);
+            --color-danger-primary-button-hover-text: rgb(255, 0, 0);
+            --color-danger-primary-button-border: rgb(0, 0, 0);
+            --color-danger-primary-button-hover-border: rgb(0, 0, 0);
+
+
+
             --product-card-price-color: rgb(0, 0, 0);
             --product-label-text--refurbished: #ffffff;
             --product-label-gradient--refurbished: linear-gradient(145deg, rgba(42, 156, 44, 1) 20%, rgba(42, 156, 44, 0.76) 82%);
@@ -358,6 +376,21 @@
 
             --overlay-color: rgba(18, 18, 18, 0.4);
             --modal-overlay-color: 0 0 0;
+
+
+            /*Alert colors*/
+            --error-bg-color-rgb:252 237 238;
+            --error-text-color-rgb:180 12 28;
+            --success-bg-color-rgb: 232 246 234;
+            --success-text-color-rgb: 44 126 63;
+            --info-bg-color-rgb: 228 237 250;
+            --info-text-color-rgb: 26 102 210;
+            --error-bg-color: rgb(252 237 238);
+            --error-text-color: rgb(180 12 28);
+            --success-bg-color: rgb(232 246 234);
+            --success-text-color: rgb(44 126 63);
+            --info-bg-color: rgb(228 237 250);
+            --info-text-color: rgb(26 102 210);
 
         }
 
@@ -454,4 +487,5 @@
 
 </body>
 @(await RenderSectionAsync("Scripts", false))
+<script  src="~/lib/notyf/notyf.min.js"></script>
 </html>

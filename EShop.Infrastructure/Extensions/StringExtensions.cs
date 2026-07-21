@@ -56,6 +56,9 @@ public static partial class StringExtensions
 
 
     }
+    public static String EnsureEndsWith(this String input, String suffix, Boolean ignoreCase = true) {
+        return input.EndsWith(suffix, ignoreCase, CultureInfo.InvariantCulture) ? input : String.Concat(input, suffix);
+    }
     
     public static string ToStringInvariant(this IFormattable source)
         => source.ToString(null, CultureInfo.InvariantCulture);

@@ -10,7 +10,7 @@ internal class ProductReviewMap : IEntityTypeConfiguration<ProductReview>
 {
     public void Configure(EntityTypeBuilder<ProductReview> builder)
     {
-        builder.HasQueryFilter(x => !x.Deleted);
+        builder.HasQueryFilter(x => !x.IsDeleted);
         builder
             .HasOne(x => x.User)
             .WithMany()
@@ -38,7 +38,7 @@ public class ProductReview : BaseEntity, IAuditableEntity, ISoftDeletableEntity
     [StringLength(100)] public string ReviewerName { get; set; }
     public DateTime CreatedOnUtc { get; set; }
     public DateTime ModifiedOnUtc { get; set; }
-    public bool Deleted { get; set; }
+    public bool IsDeleted { get; set; }
     public ReviewStatus ReviewStatus { get; set; }
     public int UserId { get; set; }
     public User User { get; set; }

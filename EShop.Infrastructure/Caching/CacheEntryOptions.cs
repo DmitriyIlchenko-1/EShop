@@ -6,6 +6,14 @@ namespace EShop.Infrastructure.Caching;
  
 public class CacheEntryOptions
 {
+    public CacheEntryOptions()
+    {
+        
+    }
+    public CacheEntryOptions(TimeSpan absExpiration)
+    {
+        AbsoluteExpiration = absExpiration;
+    }
     private TimeSpan _absoluteExpiration;
     private TimeSpan? _slidingExpiration;
     public TimeSpan AbsoluteExpiration

@@ -3,7 +3,7 @@
     height: var(--icon-size-lg);
 }
 
-.customer {
+.customer:is(.login, .register) {
     width: 33rem;
 
     @media screen and (width >= 769px) {

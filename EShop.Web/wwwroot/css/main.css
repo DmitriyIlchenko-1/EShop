@@ -1,7 +1,6 @@
 /* || BASE */
 
 html {
-
     font-size: 62.5%;
 }
 
@@ -37,7 +36,14 @@ body, .paragraph > * {
     color: rgb(var(--text-color-rgb));
 }
 
-
+fieldset {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+legend {
+    padding: 0;
+}
 h1, .h1, .text-block.h1 > * {
     font-family: var(--font-h1--family);
     font-size: var(--font-size--h1);
@@ -110,7 +116,7 @@ h6, .h6, .text-block.h6 > * {
     margin-inline: 0 0;
 }
 
-.text-theme-light{
+.text-theme-light {
     color: rgba(var(--color-foreground-rgb), .6);
 }
 
@@ -128,14 +134,16 @@ img {
     width: 100%;
 }
 
-summary {
+/*summary {
     list-style: none;
     cursor: pointer;
-}
-table{
+}*/
+
+table {
     border-collapse: collapse;
 }
-th,td{
+
+th, td {
     border-collapse: collapse;
 }
 
@@ -254,13 +262,22 @@ p {
 
 .button-secondary {
     --button-color: var(--color-secondary-button-text);
-    --button-background-color: var(--color-secondary-button-background);
     --button-color-hover: var(--color-secondary-button-hover-text);
     --button-bg-color: var(--color-secondary-button-background);
     --button-bg-hover-color: var(--color-secondary-button-hover-background);
     --button-border-color: var(--color-secondary-button-border);
     --button-border-hover-color: var(--color-secondary-button-hover-border);
 }
+
+.button--danger {
+    --button-color: var(--color-danger-primary-button-text);
+    --button-color-hover: var(--color-danger-primary-button-hover-text);
+    --button-bg-color: var(--color-danger-primary-button-background);
+    --button-bg-hover-color: var(--color-danger-primary-button-hover-background);
+    --button-border-color: var(--color-danger-primary-button-border);
+    --button-border-hover-color: var(--color-danger-primary-button-hover-border);
+}
+
 
 button {
     padding: 0;
@@ -428,6 +445,7 @@ a, .link {
 }
 
 .link:hover, .rte a:hover {
+    cursor: pointer;
     text-decoration-color: transparent;
     opacity: .6;
 }
@@ -439,15 +457,25 @@ a, .link {
 }
 
 
-.field-group {
-    margin: var(--margin-4xl) 0 0 0;
+.field-group__label {
+    font-size: var(--font-h4--size);
+    font-weight: var(--font-heading--weight);
+
+}
+
+.checkout .field {
+    --input-border-radius: 8px;
+}
+
+
+:is(.login, .register) .field-group {
     padding: 0;
     border: none;
     border-top: var(--input-border-width) solid var(--color-input-border);
     background-color: rgb(var(--color-foreground-rgb), .01);
 }
 
-.field-group__label {
+:is(.login, .register) .field-group__label {
     font-size: .88em;
     font-weight: bold;
     padding-inline: var(--padding-sm) 3rem;
@@ -523,23 +551,24 @@ a, .link {
 
 .radio > input[type="radio"] + label::before {
     border-color: transparent;
-    box-shadow: 0 0 0 0 rgb(0 0 0); /**/
+    box-shadow: 0 0 0 0 rgb(0 0 0);
 }
 
 .radio > input[type="radio"]:checked + label::before {
     border-color: transparent;
-    box-shadow: 0 0 0 2px #0d5192;
+    box-shadow: 0 0 0 2px var(--color-foreground);;
 }
+
 
 .radio > input[type="radio"]:checked + label::after {
     border-color: var(--color-white);
     border-width: 4px;
-    box-shadow: inset 0 0 0 5px #0d5192;
+    box-shadow: inset 0 0 0 5px var(--color-foreground);
 }
 
 .radio > input[type="radio"]:focus-visible + label::before {
     border-color: transparent;
-    box-shadow: 0 0 0 4px #228BEC;
+    box-shadow: 0 0 0 4px rgb(var(--color-foreground-rgb), .6);
 }
 
 
@@ -561,8 +590,8 @@ a, .link {
 }
 
 .field input ~ label.required::after {
-    content: ' *';
-    color: var(--color-text-danger);
+    content: '*';
+    color: var(--color-foreground)
 }
 
 .field:has(input.input-validation-error) {
@@ -577,23 +606,74 @@ a, .link {
     --color-input-border: var(--color-input-border-success-rgb);
 }
 
-.customer span.field-validation-error > span {
-    display: inline-block;
-    padding-block-start: var(--padding-xs);
+.customer span.field-validation-error {
     color: var(--color-text-danger);
 }
 
 
-.field--text input {
+.field--text :is(input) {
+    padding-inline: 1.5rem;
+}
+
+.field-select-simple {
+    position: relative;
+    --color-input-border: var(--color-foreground-rgb);
+}
+
+.field-select-simple select {
+
+    box-sizing: border-box;
+
+    padding-inline: 1.5rem 3rem;
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    border: var(--input-border-width) solid rgb(var(--color-foreground-rgb), var(--input-border-opacity));
+    border-radius: var(--input-border-radius);
+    height: 4.7rem;
+    letter-spacing: .04rem;
+}
+
+.field-select-simple::after {
+    content: '';
+    background-image: url("data:image/svg+xml, %3Csvg%20class%3D%22icon%20icon-chevron-down%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20height%3D%2220%22%20viewBox%3D%220%200%2021%2021%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23000000%22%20stroke-linecap%3D%22round%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20stroke-linejoin%3D%22round%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20d%3D%22m14.5%208.5l-4%204l-4-4%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fsvg%3E");
+    position: absolute;
+    background-repeat: no-repeat;
+    background-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+    background-position: center center;
+    top: 50%;
+    pointer-events: none;
+    transform: translateY(-50%);
+    right: .5rem;
+}
+
+
+.field--text :is(input, select) {
+    min-width: 0;
     box-sizing: border-box;
     flex: 1;
-    padding: 1.5rem;
+    line-height: 1.2;
+    padding-block: 2rem .6rem;
     appearance: none;
     -webkit-appearance: none;
     position: relative;
     border: var(--input-border-width) solid rgb(var(--color-input-border), var(--input-border-opacity));
+    border-radius: var(--input-border-radius);
     height: 4.7rem;
     letter-spacing: .04rem;
+}
+
+.field--text select {
+    padding-inline: 2rem 1.5rem;
+}
+
+.field--text select ~ .icon-chevron-down {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 1rem;
 }
 
 .field--text :is(input:focus-visible, input:not(:placeholder-shown)) {
@@ -618,29 +698,34 @@ a, .link {
 }
 
 
-.field--text input:focus-visible {
+.field--text :is(input, select):focus-visible {
     outline: var(--focus-outline-width) var(--focus-outline-style) var(--focus-outline-color);
     outline-offset: 4px;
 }
 
-.field--text:hover::before {
+.field--text:hover::before,
+.field-select-simple:hover::before {
     box-shadow: 0 0 0 1px rgb(var(--color-input-border), var(--input-border-opacity));
 }
 
-.field--text:has(:is(input:active, input:focus-visible))::before {
+.field--text:has(:is(:is(input, select):active, :is(input, select):focus-visible))::before,
+.field-select-simple:has(select:active, select:focus-visible)::before {
     box-shadow: 0 0 0 1px rgb(var(--color-input-border), 1);
 }
 
-.field--text :is(input:active, input:focus-visible) {
+.field--text :is(:is(input, select):active, :is(input, select):focus-visible),
+.field-select-simple :is(select:active, select:focus-visible) {
     border-color: rgb(var(--color-input-border), 1);
 }
 
-.field--text::before {
+.field--text::before,
+.field-select-simple::before {
     pointer-events: none;
     content: "";
     position: absolute;
     inset: 0;
     transition: box-shadow .1s ease;
+    border-radius: var(--input-border-radius);
 }
 
 .field--text input::placeholder {
@@ -656,6 +741,15 @@ a, .link {
     letter-spacing: .1rem;
     line-height: 1.5rem;
     color: rgb(var(--color-foreground-rgb), .7);
+}
+
+.heighten-label {
+    position: absolute;
+    left: calc(var(--input-border-width) + 2rem);
+    top: calc(var(--input-border-width) + .5rem);
+    font-size: 1rem;
+    letter-spacing: .04rem;
+    pointer-events: none;
 }
 
 .field--text :is(input:focus-visible, input:not(:placeholder-shown)) ~ label {
@@ -1239,12 +1333,13 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
 
 /*|| MEDIA CONTROLS*/
 
-.media-gallery__controls{
+.media-gallery__controls {
     position: absolute;
     inset: 0;
     z-index: var(--layer-overlay);
     mix-blend-mode: difference;
 }
+
 .media-controls {
     display: flex;
     pointer-events: none;
@@ -1288,7 +1383,6 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
     outline: 3px var(--focus-outline-style) var(--focus-outline-color);
     outline-offset: 3px;
 }
-
 
 
 /*|| MEDIA DOTS*/
@@ -1349,6 +1443,7 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
 .media-gallery__viewer {
     position: relative;
 }
+
 .media-viewer,
 .media-thumbs {
     position: relative;
@@ -1387,7 +1482,6 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
         object-fit: cover;
     }
 }
-
 
 
 .product-card__main-content {
@@ -1873,6 +1967,278 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     color: var(--color-input-text);
 }
 
+.alert {
+    background-color: var(--alert-bg-color);
+    color: var(--alert-text-color);
+    padding-inline: var(--padding-xl);
+    padding-block: var(--padding-lg);
+    border: 1px solid rgb(var(--error-text-color-rgb) / .2);
+    width: fit-content;
+}
+
+.alert--error {
+    --alert-bg-color: var(--error-bg-color);
+    --alert-text-color: var(--error-text-color);
+}
+
+.checkout__new-address .field-validation-error {
+    margin-block-start: .5rem;
+}
+
+.checkout__new-address .button-secondary[name='add'] {
+    padding-block: 0;
+    min-height: var(--minimum-touch-target);
+}
+
+.checkout__choose-existing-address-select {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    @media screen and (width >= 1024px) {
+        grid-template-columns: 1fr auto auto;
+    }
+}
+
+ 
+
+
+.checkout__existing-address:has(.checkout__choose-existing-address-panel) > * {
+    padding-inline-start: var(--padding-sm);
+}
+
+.checkout__address-actions {
+    --button-padding-block: 1.1rem;
+    display: flex;
+    justify-content: flex-start;
+    gap: var(--gap-md);
+    @media screen and (width >= 1024px) {
+        justify-content: flex-end;
+    }
+}
+
+.disclosure {
+    @supports (interpolate-size: allow-keywords) {
+        interpolate-size: allow-keywords;
+    }
+
+
+    &::details-content {
+        transition: height .5s ease, content-visibility .5s allow-discrete;
+        height: 0;
+        overflow: clip;
+    }
+
+    &[open]::details-content {
+        height: auto;
+    }
+
+}
+
+.disclosure__summary {
+    list-style: none;
+    position: relative;
+
+    &::after {
+        content: "";
+        background: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/PjxzdmcgYmFzZVByb2ZpbGU9InRpbnkiIGhlaWdodD0iMjRweCIgaWQ9IkxheWVyXzEiIHZlcnNpb249IjEuMiIgdmlld0JveD0iMCAwIDI0IDI0IiB3aWR0aD0iMjRweCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+PHBhdGggZD0iTTguNTg2LDUuNTg2Yy0wLjc4MSwwLjc4MS0wLjc4MSwyLjA0NywwLDIuODI4TDEyLjE3MSwxMmwtMy41ODUsMy41ODZjLTAuNzgxLDAuNzgxLTAuNzgxLDIuMDQ3LDAsMi44MjggIEM4Ljk3NiwxOC44MDUsOS40ODgsMTksMTAsMTlzMS4wMjQtMC4xOTUsMS40MTQtMC41ODZMMTcuODI5LDEybC02LjQxNS02LjQxNEMxMC42MzQsNC44MDUsOS4zNjYsNC44MDUsOC41ODYsNS41ODZ6Ii8+PC9zdmc+");
+        background-repeat: no-repeat;
+        background-size: cover;
+        display: block;
+        width: 2.5rem;
+        height: 2.5rem;
+        right: 0;
+        top: 50%;
+        transform: rotate(90deg);
+        transition: transform .5s ease;
+
+    }
+
+    .disclosure[open] &::after {
+        transform: rotate(270deg);
+    }
+}
+
+.disclosure__summary::-webkit-details-marker {
+    display: none;
+}
+
+
+.checkout__order-disclosure-summary {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: var(--gap-sm);
+    background: rgb(var(--color-foreground-rgb), .04);
+    padding: var(--padding-sm);
+}
+
+.checkout__summary-info--open,
+.checkout__summary-info--closed {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+}
+
+.checkout__order-disclosure:not([open]) .checkout__summary-info--open,
+.checkout__order-disclosure[open] .checkout__summary-info--closed {
+    opacity: 0;
+    visibility: hidden
+}
+
+.checkout__order-disclosure[open] .checkout__summary-info--open,
+.checkout__order-disclosure:not([open]) .checkout__summary-info--closed {
+    transition: visibility .3s, opacity .3s ease;
+    opacity: 1;
+    visibility: visible
+}
+
+
+.checkout__cart-items {
+    padding-block: var(--padding-md);
+}
+
+.checkout__cart-item:not(:first-child){
+    margin-block-start: var(--margin-xl);
+}
+
+.checkout__cart-item {
+    display: grid;
+    grid-template-columns: 7.4rem 1fr auto auto;
+    align-items: center;
+}
+
+.checkout__cart-item-image {
+    justify-self: center;
+}
+
+.checkout__cart-item-image .image-container {
+    position: relative;
+    aspect-ratio: 1;
+    width: 6.4rem;
+    background: rgb(var(--color-foreground-rgb), .02);
+    box-shadow: 0 1px 1.75px 0 rgba(0, 0, 0, .12), 0 -.5px 1.5px 0 rgba(0, 0, 0, .09), 0 3px 4px 0 rgba(0, 0, 0, .03);
+    padding: .3rem;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-lg);
+}
+
+.checkout__cart-item-image .image-container img {
+    object-fit: contain;
+    height: 100%;
+    width: 100%;
+}
+
+.checkout__cart-quantity-badge {
+    position: absolute;
+    top: calc(var(--product-thumbnail-bagde-offset) * -1);
+    right: calc(var(--product-thumbnail-bagde-offset) * -1);
+    background: var(--color-foreground);
+    min-height: 2rem;
+    min-width: 2rem;
+    border-radius: var(--border-radius-md);
+    padding-inline: .4rem;
+    font-size: 1.2rem;
+    line-height: 2;
+    text-align: center;
+    color: var(--color-background);
+    font-weight: 600;
+}
+
+.checkout__cart-item--total {
+    font-size: .8em;
+}
+.checkout__payment {
+}
+
+.checkout__payment-list {
+    position: relative;
+    background-color: rgb(var(--color-foreground-rgb), .04);
+    border-radius: var(--border-radius-lg);
+    padding-block: var(--padding-xs);
+    padding-inline: var(--padding-md);
+}
+
+.checkout__payment-list--empty {
+    padding-block: var(--padding-lg);
+}
+
+.checkout__payment-info:not(:first-child) {
+    margin-block-start: var(--margin-xs);
+}
+
+.checkout__payment-info {
+    position: relative;
+}
+
+.checkout__block {
+    margin-block: var(--margin-2xl);
+}
+.checkout__block--small{
+    margin-block: var(--margin-md);
+}
+.checkout__order-summary {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, auto);
+    position: sticky;
+    top: 1px;
+}
+
+
+.checkout-address :is(.js-select-panel, .js-form-panel).is-open {
+    display: block;
+}
+
+.checkout-address :is(.js-select-panel, .js-form-panel)  {
+    display: none;
+}
+
+.checkout-address :is(.js-select-panel, .js-form-panel) {
+    overflow: hidden;
+    transition: height .2s ease-in-out;
+}
+
+.checkout__addnew-btn {
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.checkout__addnew-btn > .icon {
+    width: var(--icon-size-lg);
+}
+
+
+.pointer-events-none .checkout__payment-list{
+    opacity: .3;
+}
+
+.checkout__payment-loader {
+    position: absolute;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    inset: 0;
+}
+
+
+
+
+
+
+.is-loading::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid;
+    border-radius: var(--border-radius-50);
+    border-color: var(--color-foreground);
+    border-top-color: transparent;
+    animation: spinner .6s linear infinite;
+}
+
 
 /*Animations*/
 @keyframes arrowSlideIn {
@@ -1883,5 +2249,11 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 
     100% {
         opacity: 1;
+    }
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
     }
 }

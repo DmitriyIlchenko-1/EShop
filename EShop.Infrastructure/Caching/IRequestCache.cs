@@ -8,5 +8,6 @@ public interface IRequestCache
     T Get<T>(object key);
     bool TryGet<T>(object key, out T result);
     bool Contains(object key);
+    void Remove(object key);
     
 }

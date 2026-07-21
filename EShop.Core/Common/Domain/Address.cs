@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Infrastructure.Domain;
+using EShop.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,37 +16,37 @@ internal class AddressMap : IEntityTypeConfiguration<Address>
             .WithMany()
             .HasForeignKey(x => x.CityId)
             .OnDelete(DeleteBehavior.SetNull);
-
-        //We can't set both to 'SetNull' explicitly because we'll get an exception.
-        //The default (implicit) behaviour for nullable structures is going to be the same, though.
-        builder
-            .HasOne(x => x.District)
-            .WithMany()
-            .HasForeignKey(x => x.DistrictId);
-
-
     }
 }
 
 public class Address : BaseEntity
 {
-    [StringLength(200)]
-    public string FirstName { get; set; }
-    [StringLength(200)]
-    public string LastName { get; set; }
-    [StringLength(100)]
-    public string PhoneNumber { get; set; }
-    [StringLength(500)]
-    public string AddressLine1 { get; set; }
-    [StringLength(500)]
-    public string AddressLine2 { get; set; }
-    [StringLength(100)]
-    public string ZipCode { get; set; }
+    [StringLength(200)] public string FirstName { get; set; }
+    [StringLength(200)] public string LastName { get; set; }
+    [StringLength(100)] public string PhoneNumber { get; set; }
+    [StringLength(500)] public string AddressLine1 { get; set; }
+    [StringLength(500)] public string AddressLine2 { get; set; }
+    [StringLength(100)] public string ZipCode { get; set; }
 
     public DateTime CreatedOnUtc { get; set; }
 
     public int? CityId { get; set; }
     public City City { get; set; }
-    public int? DistrictId { get; set; }
-    public District District { get; set; }
+
+    public override bool Equals(BaseEntity other)
+    {
+        return base.Equals(other) ||
+               other is Address otherAddress && (otherAddress.AddressLine1 == AddressLine1
+                                                                    && otherAddress.AddressLine2 == AddressLine2
+                                                                    && otherAddress.FirstName == FirstName &&
+                                                                    otherAddress.LastName == LastName &&
+                                                                    otherAddress.PhoneNumber == PhoneNumber
+                                                                    && otherAddress.ZipCode == ZipCode &&
+                                                                    otherAddress.CityId == CityId);
+    }
+
+    public override string ToString()
+    {
+        return $"{FirstName}, {LastName}. {AddressLine1}.";
+    }
 }

@@ -23,7 +23,7 @@ public abstract class BaseStartup : IEStartup, IContainerSetup
         
     }
 
-    public virtual void ConfigureContainer(ContainerBuilder builder)
+    public virtual void ConfigureContainer(ContainerBuilder builder,IApplicationContext applicationContext)
     {
     }
 }

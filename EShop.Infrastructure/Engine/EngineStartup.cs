@@ -44,7 +44,7 @@ public abstract class EngineStartup<TEngine> : Disposable, IEngineStartup where 
 
     private IEngine _engine;
     private IEStartup[] _startups;
- 
+
     // The ctor acts as a template method.
     protected EngineStartup(IEngine engine)
     {
@@ -59,12 +59,12 @@ public abstract class EngineStartup<TEngine> : Disposable, IEngineStartup where 
     {
         foreach (var containerSetup in _startups.OfType<IContainerSetup>())
         {
-            containerSetup.ConfigureContainer(builder);
+            containerSetup.ConfigureContainer(builder, Engine.ApplicationContext);
         }
 
         ConfigureContainerCore(builder);
     }
-    
+
     protected virtual void ConfigureContainerCore(ContainerBuilder builder)
     {
     }
@@ -73,13 +73,15 @@ public abstract class EngineStartup<TEngine> : Disposable, IEngineStartup where 
     {
         services.AddSingleton<IEngine>(_engine);
         services.AddSingleton<ITypeScanner>(Singleton<ITypeScanner>.Instance);
-        
+
         foreach (var instance in _startups)
         {
             instance.ConfigureServices(services, configuration);
         }
+
         ConfigureServicesCore(services, configuration);
     }
+
     protected virtual void ConfigureServicesCore(IServiceCollection services, IConfiguration configuration)
     {
     }
@@ -117,7 +119,17 @@ public abstract class EngineStartup<TEngine> : Disposable, IEngineStartup where 
         var typeScanner = new DefaultTypeScanner(coreAssemblies);
         Singleton<ITypeScanner>.Instance = typeScanner;
         var modules = FindAllModules();
-        
+
+        foreach (var module in modules)
+        {
+            LoadModule(module as ModuleDescriptor);
+        }
+
+        Engine.ApplicationContext.ModuleCollection = new ModuleCollection(modules);
+        void LoadModule(ModuleDescriptor descriptor)
+        {
+            descriptor.ModuleAssemblyContext = new ModuleAssemblyContext(descriptor);
+        }
     }
 
     protected virtual IEnumerable<IModuleDescriptor> FindAllModules()
@@ -161,7 +173,7 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
             startup.ConfigureMvc(mvcBuilder, services);
         }
     }
-    
+
     protected override IEnumerable<Assembly> ResolveCoreAssemblies()
     {
         var assemblies = new HashSet<Assembly>();
@@ -218,14 +230,13 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
 
     protected override IEnumerable<IModuleDescriptor> FindAllModules()
     {
-        GlobalConfiguration.ContentRootPath = Engine.Environment.ContentRootPath;
+        var allDirectories = Engine.ApplicationContext.ModuleRoot.GetDirectoryContents("/");
+        var modules = allDirectories
+            .Where(x => x.IsDirectory)
+            .Select(x => new DirectoryInfo(x.PhysicalPath))
+            .Select(x => ModuleDescriptor.Create(x, x.Parent!.FullName))
+            .Where(x => x != null);
 
-        foreach (ModuleInfo moduleInfo in ModuleManager.LoadModules())
-        {
-            moduleInfo.Assembly = Assembly.Load(new AssemblyName(moduleInfo.Name));
-            GlobalConfiguration.Modules.Add(moduleInfo);
-        }
-
-        return [];
+        return modules.ToArray();
     }
 }

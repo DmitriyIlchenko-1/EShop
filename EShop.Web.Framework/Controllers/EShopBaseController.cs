@@ -1,5 +1,4 @@
 
-using System.Web.Mvc;
 using EShop.Core.Data;
 using EShop.Core.Data.DbHandlers;
 using EShop.Core.Platform.Logging.Filters;
@@ -9,6 +8,7 @@ using EShop.Infrastructure.Utilities;
 using EShop.Web.Common.Razor;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -42,7 +42,7 @@ public abstract class EShopBaseController : Controller
         return User?.Identity?.IsAuthenticated == true ? Forbid() : Challenge();
     }
 
-    protected async Task<string> RenderPartialViewToStringAsync<T>(string viewName, T model)
+    protected async Task<string> RenderPartialViewToStringAsync<T>(string viewName, T model, ViewDataDictionary viewData = null)
     {
         Guard.NotEmpty(viewName);
         Guard.NotNull(model);
@@ -54,13 +54,13 @@ public abstract class EShopBaseController : Controller
             ViewName = viewName,
         };
         var result = await viewRenderer.RenderViewAsync(
-            new ViewRendererContext(ControllerContext) { TempData = TempData, ViewData = ViewData,Model = model },
+            new ViewRendererContext(ControllerContext) { TempData = TempData, ViewData = (viewData ?? ViewData), Model = model },
             desciptor);
       
         return result.ToHtmlString().ToString();
     }
 
-    protected async Task<string> RenderComponentToStringAsync(string componentName, object? arguments = null)
+    protected async Task<string> RenderComponentToStringAsync(string componentName, object? arguments = null, ViewDataDictionary viewData = null)
     {
         Guard.NotEmpty(componentName);
        
@@ -72,7 +72,7 @@ public abstract class EShopBaseController : Controller
             Arguments = arguments,
         };
         var result = await viewRenderer.RenderViewAsync(
-            new ViewRendererContext(ControllerContext) { TempData = TempData, ViewData = ViewData, },
+            new ViewRendererContext(ControllerContext) { TempData = TempData, ViewData = (viewData ?? ViewData), },
             desciptor);
       
         return result.ToHtmlString().ToString();

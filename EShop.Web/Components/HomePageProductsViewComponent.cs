@@ -28,7 +28,7 @@ public class HomePageProductsViewComponent : BaseViewComponent
     {
         var products = await _dbContext
             .Products.AsNoTracking()
-            .Where(x => x.Published)
+            .Where(x => x.IsPublished)
             .Where(x => x.ShowOnHomePage)
             .OrderBy(x => x.HomePageDisplayOrder)
             .SelectSummaryOnly()

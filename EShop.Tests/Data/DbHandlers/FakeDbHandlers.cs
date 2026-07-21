@@ -85,7 +85,7 @@ internal class DbHandler_SoftDeletable_Deleting_ChangingState : DbHandler<ISoftD
 {
     protected override DbHandlerResult OnDeleting(ISoftDeletableEntity entity, IHandleEntityContext entityContext)
     {
-        entity.Deleted = true;
+        entity.IsDeleted = true;
         entityContext.EntityState = EntityState.Modified;
         return DbHandlerResult.Ok;
     }

@@ -1,12 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+
 namespace EShop.Infrastructure.Domain;
 
 public abstract class BaseEntity : IEquatable<BaseEntity>
 {
-
-
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
     
+
     //INFO: GetHashCode() should 'match' the Equals()'s logic to work properly in hash tables. 
     public override int GetHashCode()
     {
@@ -17,7 +21,7 @@ public abstract class BaseEntity : IEquatable<BaseEntity>
         }
 
         unchecked
-        { 
+        {
             var hashCode = GetType()
                 .GetHashCode();
             return (hashCode * 31) ^ Id.GetHashCode();
