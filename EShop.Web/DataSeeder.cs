@@ -10,13 +10,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Helpers;
+
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Configuration;
 using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Content.Media.Domain;
 using EShop.Core.Data;
+using EShop.Core.Data.Cart.Domain;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Configuration.Domain;
 using EShop.Core.Platform.Configuration.Services;
@@ -2425,6 +2426,7 @@ public class DataSeeder
                     Name = productName,
                     Description = description,
                     ShortDescription = shortDescription,
+                    MinAddToCartNumber = 3,
                     MaxAddToCartNumber = Random.Shared.Next(5, 15),
                     Sku = $"SKU-{i.ToString().PadLeft(3, '0')}", // Create a SKU
                     IsAvailable = true,

@@ -33,8 +33,8 @@ public class ThemeRegisterTests
             .Setup(x => x.ContentRootPath)
             .Returns(currentLocation);
         var webEnv = envMock.Object;
-        ILocalFileProvider fileProvider = new DefaultLocalFileProvider(webEnv.WebRootPath);
-        _themeRegistry = new DefaultThemeRegistry(new PhysicalFileProvider(webEnv.WebRootPath));
+        // ILocalFileProvider fileProvider = new DefaultLocalFileProvider(webEnv.WebRootPath);
+        // _themeRegistry = new DefaultThemeRegistry(new PhysicalFileProvider(webEnv.WebRootPath));
     }
 
     private void PrepareThemes()

@@ -10,12 +10,14 @@ public class DefaultRequestCache : Disposable, IRequestCache
     public DefaultRequestCache(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
+        Items = EnsureCreated();
     }
+
+    public IDictionary<object, object> Items { get; }
     
     public T GetOrCreate<T>(object key, Func<T> factory)
     {
-        var requestCache = EnsureCreated();
-        if (requestCache.TryGetValue(key, out var result) && result is T typedRes)
+        if (Items.TryGetValue(key, out var result) && result is T typedRes)
         {
             return typedRes;
         }
@@ -23,13 +25,12 @@ public class DefaultRequestCache : Disposable, IRequestCache
             return default;
         
         result = factory();
-        requestCache[key] = result;
+        Items[key] = result;
         return (T)result;
     }
     public async Task<T> GetOrCreateAsync<T>(object key, Func<Task<T>> factory)
     {
-        var requestCache = EnsureCreated();
-        if (requestCache.TryGetValue(key, out var result) && result is T typedRes)
+        if (Items.TryGetValue(key, out var result) && result is T typedRes)
         {
             return typedRes;
         }
@@ -38,20 +39,18 @@ public class DefaultRequestCache : Disposable, IRequestCache
             return default;
         
         result = await factory();
-        requestCache[key] = result;
+        Items[key] = result;
         return (T)result;
     }
 
     public void Put(object key, object value)
     {
-        var requestCache = EnsureCreated();
-        requestCache[key] = value;
+        Items[key] = value;
     }
 
     public bool TryGet<T>(object key, out T result)
     {
-        var requestCache = EnsureCreated();
-        if (requestCache.TryGetValue(key, out var res))
+        if (Items.TryGetValue(key, out var res))
         {
             result = (T)res;
             return true;
@@ -63,21 +62,17 @@ public class DefaultRequestCache : Disposable, IRequestCache
 
     public T Get<T>(object key)
     {
-        var requestCache = EnsureCreated();
-        return (T)requestCache[key];
+        return (T)Items[key];
     }
 
     public bool Contains(object key)
-        => EnsureCreated()
-            .ContainsKey(key);
+        => Items.ContainsKey(key);
 
     public void Remove(object key)
     {
-        var requestCache = EnsureCreated();
-        requestCache.Remove(key);
+        Items.Remove(key);
     }
-
-
+    
     private IDictionary<object, object> EnsureCreated()
     {
         var items = _httpContextAccessor?.HttpContext?.Items;
@@ -98,8 +93,7 @@ public class DefaultRequestCache : Disposable, IRequestCache
     {
         if (disposing)
         {
-            EnsureCreated()
-                .Clear();
+            Items.Clear();
         }
     }
 }

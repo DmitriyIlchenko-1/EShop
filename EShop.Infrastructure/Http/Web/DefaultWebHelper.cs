@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace EShop.Core.Platform.Web;
@@ -26,8 +27,9 @@ public class DefaultWebHelper : IWebHelper
     public string GetClientIdentity()
     {
         var ipAddress = GetClientIpAddress();
-        HttpContext?.Request.Headers.TryGetValue(HeaderNames.UserAgent, out var userAgent);
-
+        StringValues userAgent = default;
+        HttpContext?.Request.Headers.TryGetValue(HeaderNames.UserAgent, out userAgent);
+        
         if (ipAddress != IPAddress.None && !string.IsNullOrWhiteSpace(userAgent))
         {
             var hashCode = System.IO.Hashing.XxHash64.HashToUInt64(Encoding.UTF8.GetBytes(ipAddress + userAgent));

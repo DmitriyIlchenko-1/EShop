@@ -19,7 +19,7 @@ internal class AddressMap : IEntityTypeConfiguration<Address>
     }
 }
 
-public class Address : BaseEntity
+public class Address : BaseEntity 
 {
     [StringLength(200)] public string FirstName { get; set; }
     [StringLength(200)] public string LastName { get; set; }
@@ -48,5 +48,20 @@ public class Address : BaseEntity
     public override string ToString()
     {
         return $"{FirstName}, {LastName}. {AddressLine1}.";
+    }
+
+    public Address Clone()
+    {
+        return new Address()
+        {
+            AddressLine1 = AddressLine1,
+            AddressLine2 = AddressLine2,
+            CreatedOnUtc = CreatedOnUtc,
+            CityId = CityId,
+            FirstName = FirstName,
+            LastName = LastName,
+            PhoneNumber = PhoneNumber,
+            ZipCode = ZipCode,
+        };
     }
 }

@@ -4,6 +4,7 @@ using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Catalog.Products.Services;
+using EShop.Core.Checkout.Orders.Services;
 using EShop.Core.Common.Services;
 using EShop.Core.Content.Media.Services;
 using EShop.Core.Content.Widgets.Services;
@@ -13,7 +14,7 @@ using EShop.Core.Data.Cart.Services;
 using EShop.Core.Data.Categories.Services;
 using EShop.Core.Data.DbHandlers;
 using EShop.Core.Data.Launch;
-using EShop.Core.Data.Order.Services;
+using EShop.Core.Data.Payment.Services;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Configuration.Domain;
 using EShop.Core.Platform.Configuration.Services;
@@ -87,6 +88,7 @@ public class CoreStartup : BaseStartup
         services.AddScoped<IOrderService, DefaultOrderService>();
         services.AddScoped<IAddressService, DefaultAddressService>();
         services.AddScoped<ICityService, CityService>();
+        services.AddScoped<IPaymentService, PaymentService>();
          
         /*
          * Caching 

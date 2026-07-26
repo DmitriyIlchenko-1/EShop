@@ -51,8 +51,7 @@ public partial class CheckoutHelper
         Guard.NotNull(cart);
         var user = _workContext.CurrentUser;
         model.ExistingAddresses ??= new List<AddressModel>();
-        var addresses = await LoadUserAddressesAsync(user, true);
-        foreach (var address in addresses.OrderBy(x => x.Id))
+        foreach (var address in user.Addresses.OrderBy(x => x.Id))
         {
             var addressModel = new AddressModel();
             await PrepareAddressModelAsync(addressModel, address, user);
@@ -146,16 +145,5 @@ public partial class CheckoutHelper
         }
 
         return model;
-    }
-
-
-    protected async Task<IEnumerable<Address>> LoadUserAddressesAsync(User user, bool force = false)
-    {
-        Guard.NotNull(user);
-        await _dbContext.LoadCollectionAsync(user,
-            x => x.Addresses,
-            force,
-            x => x.OrderBy(x => x.Id));
-        return user.Addresses;
     }
 }

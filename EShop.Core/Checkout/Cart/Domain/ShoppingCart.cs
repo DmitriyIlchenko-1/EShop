@@ -11,7 +11,7 @@ public class ShoppingCart
         Guard.NotNull(user);
         Guard.NotNull(items);
         User = user;
-        Items = items.ToArray();
+        Items = items.ToList();
     }
     public User User { get; set; }
     public ICollection<ShoppingCartItem> Items { get; set; }

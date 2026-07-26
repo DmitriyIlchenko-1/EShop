@@ -7,25 +7,35 @@
     ViewData["Title"] = "Checkout";
     var getAddressUrl = Url.Action(nameof(CheckoutController.GetAddressById), "Checkout");
 }
-<section class="section section--content-middle color-scheme-1 spacing-style"
-         style=" --padding-block-start: max(20px, calc(var(--spacing-scale) * 68px)); --padding-block-end:max(20px, calc(var(--spacing-scale) * 68px))">
+@*TODO: Once hot reload is fixed, apply appropriate landmarst throuthout the checkout.cshtml page including all the partials and components it contains.*@
+<div class="section section--content-middle color-scheme-1 spacing-style" style="
+            --padding-block-start: max(20px, calc(var(--spacing-scale) * 48px));
+            --padding-block-end: max(20px, calc(var(--spacing-scale) * 48px))">
     <div class="checkout customer">
-        <checkout-flow
-            data-get-address-url="@getAddressUrl">
-            <div id="checkout-address-load" 
-                 class="checkout-address">
-                <partial name="_Checkout.Address" model="Model.CheckoutShippingAddressModel"/>
+        <h1 class="h3">Checkout</h1>
+        <div class="checkout__container">
+            <div class="checkout__left">
+                <div class="checkout__main-flow">
+                    <checkout-flow data-get-address-url="@getAddressUrl">
+                        <div id="checkout-address-load"
+                             class="checkout-address">
+                            <partial name="_Checkout.Address" model="Model.CheckoutShippingAddressModel"/>
+                        </div>
+                        <div id="checkout-payment-load" class="checkout__payment checkout__block">
+                            <fieldset class="field-group">
+                                <legend class="field-group__label">Payment</legend>
+                                @await Component.InvokeAsync("CheckoutPaymentMethodList")
+                            </fieldset>
+                        </div>
+                    </checkout-flow>
+                </div>
             </div>
-            <div id="checkout-payment-load" class="checkout__payment checkout__block">
-                <fieldset class="field-group">
-                    <legend class="field-group__label">Payment</legend>
-                    @await Component.InvokeAsync("CheckoutPaymentMethodList")
-                </fieldset>
+            <div class="checkout__right">
+                @await Component.InvokeAsync("CheckoutSummary")
             </div>
-        </checkout-flow>
-        @await Component.InvokeAsync("CheckoutSummary")
+        </div>
     </div>
-</section>
+</div>
 
 @section Scripts{
     <partial name="_ValidationScriptsPartial"/>

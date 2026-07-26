@@ -2020,7 +2020,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
         interpolate-size: allow-keywords;
     }
 
-
+    
     &::details-content {
         transition: height .5s ease, content-visibility .5s allow-discrete;
         height: 0;
@@ -2061,15 +2061,73 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     display: none;
 }
 
+ 
+
+.checkout__container{
+    display: grid;
+    grid-template-columns: 1fr;
+    @media screen and (width >= 1024px) {
+        grid-column: 1/-1;
+        grid-template-columns: minmax(min-content, calc(50% + calc(calc(58rem - 48rem) / 2))) 1fr;
+    }
+}
+
+.checkout__left {
+    @media screen and (width >= 1024px) {
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+.checkout__right {
+    background-color: rgb(var(--color-foreground-rgb), .04);
+}
+
+.checkout__order-summary {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, auto);
+
+
+    @media screen and (width >= 1024px) {
+        position: sticky;
+        top: var(--header-end);
+        flex: 1;
+        max-width: var(--checkout-summary-inline-size);
+        padding: var(--padding-4xl);
+
+
+    }
+}
+
+
+.checkout__main-flow {
+    @media screen and (width >= 1024px) {
+        position: relative;
+        flex: 1;
+        max-width: var(--checkout-main-flow-inline-size);
+        padding-inline: var(--padding-5xl);
+        border-right: 1px solid rgb(var(--color-foreground-rgb) , .1);
+
+    }
+}
 
 .checkout__order-disclosure-summary {
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
     column-gap: var(--gap-sm);
-    background: rgb(var(--color-foreground-rgb), .04);
     padding: var(--padding-sm);
+    @media screen and (width >= 1024px){
+        pointer-events: none;
+    }
 }
+@media screen and (width >= 1024px){
+    .checkout__order-disclosure-summary::after{
+        display: none;
+    }
+}
+ 
 
 .checkout__summary-info--open,
 .checkout__summary-info--closed {
@@ -2088,6 +2146,12 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     transition: visibility .3s, opacity .3s ease;
     opacity: 1;
     visibility: visible
+}
+
+@media screen and (width >= 1024px) {
+    .checkout__summary-info--closed{
+        display: none;
+    }
 }
 
 
@@ -2174,13 +2238,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 .checkout__block--small{
     margin-block: var(--margin-md);
 }
-.checkout__order-summary {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(2, auto);
-    position: sticky;
-    top: 1px;
-}
+
 
 
 .checkout-address :is(.js-select-panel, .js-form-panel).is-open {

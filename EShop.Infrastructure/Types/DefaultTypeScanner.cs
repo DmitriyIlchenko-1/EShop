@@ -4,7 +4,7 @@ using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-
+using EnumerableExtensions = EShop.Infrastructure.Extensions.EnumerableExtensions;
 namespace EShop.Infrastructure.Types;
 
 public class DefaultTypeScanner : ITypeScanner
@@ -13,7 +13,7 @@ public class DefaultTypeScanner : ITypeScanner
     {
         ArgumentNullException.ThrowIfNull(assemblies);
         var coreAssemblies = new HashSet<Assembly>(assemblies);
-        Assemblies = coreAssemblies.AsReadOnly();
+        Assemblies = EnumerableExtensions.AsReadOnly(coreAssemblies);
     }
 
     public IEnumerable<Assembly> Assemblies { get; private set; }

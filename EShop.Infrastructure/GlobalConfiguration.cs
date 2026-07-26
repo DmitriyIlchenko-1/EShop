@@ -1,5 +1,5 @@
 using EShop.Infrastructure.Modules;
-
+ 
 namespace EShop.Infrastructure;
 
 public static class GlobalConfiguration

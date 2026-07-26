@@ -5,7 +5,7 @@ namespace EShop.Core.Catalog.Products.Domain;
 
 public class CalculatedProductPrice
 {
-    public Discount AppliedDiscount { get; set; }
+    public Discount? AppliedDiscount { get; set; }
     public decimal RegularPrice { get; set; }
     public decimal FinalPrice { get; set; }
     public decimal? DiscountAmount { get; set; }
@@ -26,4 +26,5 @@ public class CalculatedPrice
     public Money? DiscountAmount { get; set; }
     public PriceSaving PriceSaving { get; set; }
     public Money RegularPrice { get; set; }
+    public Discount? AppliedDiscount { get; set; }
 }

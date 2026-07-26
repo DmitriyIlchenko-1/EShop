@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using EShop.Core.Catalog.Products.Price;
+using EShop.Core.Checkout.Orders.Domain;
 using EShop.Core.Data;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Identity.Extensions;
@@ -20,6 +21,7 @@ public interface IDiscountService
     Task<ICollection<Discount>> GetAllDiscountsAsync(DiscountType? discountType, string couponCode = null,
         bool tracking = false,
         bool includeHidden = false);
+
     Task<bool> IsDiscountValidAsync(Discount discount, User user);
 }
 
@@ -38,11 +40,16 @@ public class DefaultDiscountService : IDiscountService
         _requestCache = requestCache;
     }
 
-    public async Task<ICollection<Discount>> GetAllDiscountsAsync(DiscountType? discountType, string couponCode = null, bool tracking = false,
+    public async Task<ICollection<Discount>> GetAllDiscountsAsync(DiscountType? discountType, string couponCode = null,
+        bool tracking = false,
         bool includeHidden = false)
     {
         couponCode ??= string.Empty;
-        var cacheKey = string.Format(CultureInfo.InvariantCulture, DiscountsAllKeyFormat, discountType, couponCode, includeHidden);
+        var cacheKey = string.Format(CultureInfo.InvariantCulture,
+            DiscountsAllKeyFormat,
+            discountType,
+            couponCode,
+            includeHidden);
         return await _requestCache.GetOrCreateAsync(cacheKey,
             async () =>
             {
@@ -77,7 +84,6 @@ public class DefaultDiscountService : IDiscountService
                 return await query
                     .OrderByDescending(x => x.Id)
                     .ToListAsync();
-
             });
     }
 
@@ -134,7 +140,7 @@ public class DefaultDiscountService : IDiscountService
                 var count = await _db
                     .DiscountUsageHistories.AsNoTracking()
                     .CountAsync(x => x.DiscountId == discount.Id);
-                return count < discount.CouponUsageAmount;
+                return count < discount.AppliedTimes;
             }
             case CouponUsageType.NTimesPerUser:
             {
@@ -145,12 +151,11 @@ public class DefaultDiscountService : IDiscountService
                         .Include(x => x.Order)
                         .CountAsync(x => x.DiscountId == discount.Id
                                          && x.Order.UserId == user.Id);
-                    return count < discount.DiscountUsageAmount;
+                    return count < discount.AppliedTimes;
                 }
 
                 return true;
             }
-
             case CouponUsageType.Unlimited:
                 return true;
             default:

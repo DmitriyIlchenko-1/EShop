@@ -90,14 +90,15 @@ public class CurrentUserWorkContextSource : ICurrentUserWorkContextSource
         return user;
     }
 
+    
+
     private string GetUserAgent()
     {
+        
         _ = _httpContextAccessor?.HttpContext?.Request.Headers.TryGetValue(HeaderNames.UserAgent,
             out var userAgent);
-        return userAgent.ToString();
+        return "userAgent.ToString();";
     }
-
-
     private static Task<User?> DetectAuthenticated(DetectUserContext context)
     {
         return context.UserService.GetAuthenticatedUserAsync();

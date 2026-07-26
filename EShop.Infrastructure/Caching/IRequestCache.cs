@@ -2,6 +2,7 @@ namespace EShop.Infrastructure.Caching;
 
 public interface IRequestCache
 {
+    public IDictionary<object,object> Items { get; }
     T GetOrCreate<T>(object key, Func<T> factory);
     Task<T> GetOrCreateAsync<T>(object key, Func<Task<T>> factory);
     void Put(object key, object value);

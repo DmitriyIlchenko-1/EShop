@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EShop.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -118,12 +118,13 @@ namespace EShop.Web.Migrations
                     Alt = table.Column<string>(type: "text", nullable: true),
                     MimeType = table.Column<string>(type: "text", nullable: true),
                     MediaType = table.Column<string>(type: "text", nullable: true),
+                    Type = table.Column<int>(type: "integer", nullable: false),
                     Size = table.Column<int>(type: "integer", nullable: false),
                     Width = table.Column<int>(type: "integer", nullable: false),
                     Height = table.Column<int>(type: "integer", nullable: false),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Deleted = table.Column<bool>(type: "boolean", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -301,7 +302,7 @@ namespace EShop.Web.Migrations
                     DiscountUsageAmount = table.Column<int>(type: "integer", nullable: false),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     BadgeId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
@@ -392,7 +393,7 @@ namespace EShop.Web.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     Description = table.Column<string>(type: "character varying(3000)", maxLength: 3000, nullable: true),
-                    Deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     IsPublished = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -428,7 +429,7 @@ namespace EShop.Web.Migrations
                     IncludeInMenu = table.Column<bool>(type: "boolean", nullable: false),
                     IsPublished = table.Column<bool>(type: "boolean", nullable: false),
                     IsRootParent = table.Column<bool>(type: "boolean", nullable: false),
-                    Deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DisplayOrder = table.Column<int>(type: "integer", nullable: false),
                     HasDiscountsApplied = table.Column<bool>(type: "boolean", nullable: false),
                     ParentId = table.Column<int>(type: "integer", nullable: true),
@@ -581,7 +582,8 @@ namespace EShop.Web.Migrations
                     MetaTitle = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
                     MetaDescription = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
                     MetaKeywords = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
-                    MaxAddToCartNumber = table.Column<int>(type: "integer", nullable: true),
+                    MaxAddToCartNumber = table.Column<int>(type: "integer", nullable: false),
+                    MinAddToCartNumber = table.Column<int>(type: "integer", nullable: false),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     HasDiscountsApplied = table.Column<bool>(type: "boolean", nullable: false),
@@ -591,8 +593,8 @@ namespace EShop.Web.Migrations
                     IsAvailable = table.Column<bool>(type: "boolean", nullable: false),
                     AttributeCombinationRequired = table.Column<bool>(type: "boolean", nullable: false),
                     DisplayStockQuantity = table.Column<bool>(type: "boolean", nullable: false),
-                    Published = table.Column<bool>(type: "boolean", nullable: false),
-                    Deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    IsPublished = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeliveryTimeId = table.Column<int>(type: "integer", nullable: true),
                     Sku = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
                     QuantityUnitId = table.Column<int>(type: "integer", nullable: false),
@@ -655,11 +657,29 @@ namespace EShop.Web.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<int>(type: "integer", nullable: false)
+                    OrderGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    ShippingAddressId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    PaymentMethodSystemName = table.Column<string>(type: "text", nullable: true),
+                    OrderSubtotalWithDiscount = table.Column<decimal>(type: "numeric", nullable: false),
+                    OrderSubtotalWithNoDiscount = table.Column<decimal>(type: "numeric", nullable: false),
+                    OrderDiscount = table.Column<decimal>(type: "numeric", nullable: false),
+                    PaidOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    OrderStatus = table.Column<int>(type: "integer", nullable: false),
+                    PaymentStatus = table.Column<int>(type: "integer", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Checkout_Order", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Checkout_Order_Common_Address_ShippingAddressId",
+                        column: x => x.ShippingAddressId,
+                        principalTable: "Common_Address",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Checkout_Order_Platform_User_UserId",
                         column: x => x.UserId,
@@ -815,7 +835,7 @@ namespace EShop.Web.Migrations
                     ReviewerName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     ReviewStatus = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     ProductId = table.Column<int>(type: "integer", nullable: false)
@@ -1039,6 +1059,32 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Checkout_OrderItem",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    OrderItemGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrderId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    SubtotalWithDiscount = table.Column<decimal>(type: "numeric", nullable: false),
+                    SubtotalWithNoDiscount = table.Column<decimal>(type: "numeric", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    RawAttributes = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Checkout_OrderItem", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Checkout_OrderItem_Checkout_Order_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Checkout_Order",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Catalog_ProductVariantAttributeValue",
                 columns: table => new
                 {
@@ -1074,7 +1120,7 @@ namespace EShop.Web.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ReplierName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     ReplyText = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true),
-                    Deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     ReplyStatus = table.Column<int>(type: "integer", nullable: false),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -1224,9 +1270,19 @@ namespace EShop.Web.Migrations
                 column: "SpecificationAttributeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Checkout_Order_ShippingAddressId",
+                table: "Checkout_Order",
+                column: "ShippingAddressId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Checkout_Order_UserId",
                 table: "Checkout_Order",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Checkout_OrderItem_OrderId",
+                table: "Checkout_OrderItem",
+                column: "OrderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Common_Address_CityId",
@@ -1332,6 +1388,9 @@ namespace EShop.Web.Migrations
                 name: "Catalog_Reply");
 
             migrationBuilder.DropTable(
+                name: "Checkout_OrderItem");
+
+            migrationBuilder.DropTable(
                 name: "Common_ProductLabel");
 
             migrationBuilder.DropTable(
@@ -1377,9 +1436,6 @@ namespace EShop.Web.Migrations
                 name: "Platform_UserRole");
 
             migrationBuilder.DropTable(
-                name: "Checkout_Order");
-
-            migrationBuilder.DropTable(
                 name: "Catalog_ProductAttributeOptionsSet");
 
             migrationBuilder.DropTable(
@@ -1393,6 +1449,9 @@ namespace EShop.Web.Migrations
 
             migrationBuilder.DropTable(
                 name: "Catalog_ProductReview");
+
+            migrationBuilder.DropTable(
+                name: "Checkout_Order");
 
             migrationBuilder.DropTable(
                 name: "Common_Label");

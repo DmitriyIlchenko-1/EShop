@@ -80,8 +80,8 @@ public class Discount : BaseEntity, IAuditableEntity, ISoftDeletableEntity
     public bool IsCouponRequired { get; set; }
     [StringLength(100)] public string CouponCode { get; set; }
     public CouponUsageType CouponUsageType { get; set; }
-    public int CouponUsageAmount { get; set; }
-    public int DiscountUsageAmount { get; set; }
+    public int AppliedTimes { get; set; }
+    
     public DateTime CreatedOnUtc { get; set; }
     public DateTime ModifiedOnUtc { get; set; }
     public bool IsDeleted { get; set; }

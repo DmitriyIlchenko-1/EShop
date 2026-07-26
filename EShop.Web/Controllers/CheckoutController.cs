@@ -1,3 +1,4 @@
+using EShop.Core.Checkout.Orders.Services;
 using EShop.Core.Common.Domain;
 using EShop.Core.Common.Services;
 using EShop.Core.Data;
@@ -23,26 +24,26 @@ public class CheckoutController : EShopBaseController
     private readonly CheckoutSettings _checkoutSettings;
     private readonly IPaymentProviderManager _paymentProviderManager;
     private readonly IWorkContext _workContext;
-    private readonly IAddressService _addressService;
+    private readonly IOrderService _orderService;
     private readonly CheckoutHelper _checkoutHelper;
     private readonly ApplicationDbContext _db;
 
 
     public CheckoutController(IShoppingCartService shoppingCartService, IWorkContext workContext,
         CheckoutSettings checkoutSettings, IPaymentProviderManager paymentProviderManager,
-        IAddressService addressService, CheckoutHelper checkoutHelper, ApplicationDbContext db)
+        IAddressService addressService, CheckoutHelper checkoutHelper, ApplicationDbContext db, IOrderService orderService)
     {
         _shoppingCartService = shoppingCartService;
         _workContext = workContext;
         _checkoutSettings = checkoutSettings;
         _paymentProviderManager = paymentProviderManager;
-        _addressService = addressService;
         _checkoutHelper = checkoutHelper;
         _db = db;
+        _orderService = orderService;
     }
 
 
-    [Microsoft.AspNetCore.Mvc.HttpGet("checkout", Name = "Checkout")]
+    [HttpGet("checkout", Name = "Checkout")]
     public virtual async Task<IActionResult> Checkout()
     {
         if (!_checkoutSettings.AllowGuestsToOrder && _workContext.CurrentUser.IsGuest())
@@ -54,7 +55,7 @@ public class CheckoutController : EShopBaseController
         var paymentMethods = _paymentProviderManager.GetActivePaymentMethods();
         if (!paymentMethods.Any())
         {
-            return RedirectToRoute("ShoppingCart");
+            //return RedirectToRoute("ShoppingCart");
         }
 
         var cart = await _shoppingCartService.GetUserCartAsync(user);
@@ -81,7 +82,7 @@ public class CheckoutController : EShopBaseController
         }
 
         var addressModel = model.NewAddress;
-        var address = await _addressService.GetUserAddressById(user.Id, addressModel.Id);
+        var address =  user.Addresses.FirstOrDefault(x => x.Id == model.Id);
         if (address == null)
         {
         }
@@ -98,9 +99,6 @@ public class CheckoutController : EShopBaseController
         address.AddressLine2 = addressModel.AddressLine2;
         address.ZipCode = addressModel.ZipCode;
         address.CityId = addressModel.CityId;
-
-
-        _db.Addresses.Update(address);
         user.ShippingAddressId = address.Id;
         await _db.SaveChangesAsync();
 
@@ -125,10 +123,9 @@ public class CheckoutController : EShopBaseController
         {
             return await GetResultAfterInvalidValidationUpdate(model);
         }
-
-        var existingAddresses = await _addressService.GetAddressesByUserIdAsync(user.Id, false);
+        
         var address = newAddress.ToEntity();
-        var existingAddressWithTheSameFields = existingAddresses.SingleOrDefault(x => x == address);
+        var existingAddressWithTheSameFields = user.Addresses.FirstOrDefault(x => x == address);
         if (existingAddressWithTheSameFields == null)
         {
             user.Addresses.Add(address);
@@ -142,9 +139,10 @@ public class CheckoutController : EShopBaseController
     public virtual async Task<IActionResult> GetAddressById(int addressId)
     {
         Address address = null;
+        var user = _workContext.CurrentUser;
         if (addressId != 0)
         {
-            address = await _addressService.GetUserAddressById(_workContext.CurrentUser.Id, addressId);
+            address = user.Addresses.FirstOrDefault(x => x.Id == addressId);
         }
 
         var model = new AddressModel();
@@ -202,7 +200,21 @@ public class CheckoutController : EShopBaseController
             return Challenge();
         }
 
+        var paymentRequest = new ProcessPaymentRequest()
+        {
+            OrderGuid = Guid.NewGuid(),
+        };
+        var result = await _orderService.PlaceOrderAsync(paymentRequest);
+        if (result.Succeeded)
+        {
+            return Json(new
+            {
+                success = true,
+            });
+        }
+
         throw new NotImplementedException();
+
     }
 
     protected virtual Task<ValidationFlowResult> ValidateCheckoutFlow(User user, ShoppingCart shoppingCart)

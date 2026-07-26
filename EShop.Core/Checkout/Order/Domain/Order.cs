@@ -1,10 +1,27 @@
+using EShop.Core.Common.Domain;
 using EShop.Core.Platform.Identity.Domain;
+using EShop.Core.Platform.Modules.Payment;
 using EShop.Infrastructure.Domain;
 
-namespace EShop.Core.Checkout.Order.Domain;
+namespace EShop.Core.Checkout.Orders.Domain;
 
-public class Order : BaseEntity
+public class Order : BaseEntity, ISoftDeletableEntity, IAuditableEntity
 {
-    public User User { get; set; }
+    public Guid OrderGuid { get; set; }
+    public int ShippingAddressId { get; set; }
+    public Address ShippingAddress { get; set; }
     public int UserId { get; set; }
+    public User User { get; set; }
+    public string PaymentMethodSystemName { get; set; }
+    public decimal OrderSubtotalWithDiscount { get; set; }
+    public decimal OrderSubtotalWithNoDiscount { get; set; }
+
+    public decimal OrderDiscount { get; set; }
+    public DateTime? PaidOnUtc { get; set; }
+    public OrderStatus OrderStatus { get; set; }
+    public PaymentStatus PaymentStatus { get; set; }
+    public ICollection<OrderItem> OrderItems { get; set; }
+    public bool IsDeleted { get; set; }
+    public DateTime CreatedOnUtc { get; set; }
+    public DateTime ModifiedOnUtc { get; set; }
 }

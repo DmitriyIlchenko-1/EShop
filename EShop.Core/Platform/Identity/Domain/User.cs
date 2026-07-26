@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EShop.Core.Checkout.Orders.Domain;
 using EShop.Core.Common.Domain;
 using EShop.Core.Data.Cart.Domain;
 using EShop.Infrastructure.Domain;
@@ -25,7 +26,6 @@ internal class UserMap : IEntityTypeConfiguration<User>
 
 public class User : BaseEntity
 {
-     
     public Guid UserGuid { get; set; } = Guid.NewGuid();
     public bool IsActive { get; set; }
     public bool IsSystemAccount { get; set; }
@@ -114,12 +114,32 @@ public class User : BaseEntity
 
     public ICollection<Address> Addresses
     {
-        get => _addresses ?? LazyLoader.Load(this, ref _addresses) ?? (_addresses = new HashSet<Address>());
+        get => _addresses ?? LazyLoader.Load(this, ref _addresses) ?? (_addresses ??= new HashSet<Address>());
         set => _addresses = value;
     }
 
-    
-     
-    public ICollection<UserRole> UserRoles { get; set; } = [];
-    public ICollection<ShoppingCartItem> ShoppingCartItems { get; set; }
+    private ICollection<UserRole> _userRoles;
+
+    public ICollection<UserRole> UserRoles
+    {
+        get => _userRoles ?? LazyLoader.Load(this, ref _userRoles) ?? (_userRoles ??= new HashSet<UserRole>());
+        set => _userRoles = value;
+    }
+
+    private ICollection<ShoppingCartItem> _shoppingCartItems;
+
+    public ICollection<ShoppingCartItem> ShoppingCartItems
+    {
+        get => _shoppingCartItems ?? LazyLoader.Load(this, ref _shoppingCartItems) ?? (_shoppingCartItems ??= new HashSet<ShoppingCartItem>());
+        set => _shoppingCartItems = value;
+    }
+
+
+    private ICollection<Order> _orders;
+
+    public ICollection<Order> Orders
+    {
+        get => _orders ?? LazyLoader.Load(this, ref _orders) ?? (_orders ??= new HashSet<Order>());
+        set => _orders = value;
+    }
 }

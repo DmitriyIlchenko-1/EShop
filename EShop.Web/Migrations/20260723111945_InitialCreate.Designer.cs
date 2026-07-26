@@ -12,15 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EShop.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260709144150_12")]
-    partial class _12
+    [Migration("20260723111945_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.16")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -380,15 +380,15 @@ namespace EShop.Web.Migrations
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Description")
                         .HasMaxLength(3000)
                         .HasColumnType("character varying(3000)");
 
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
@@ -421,9 +421,6 @@ namespace EShop.Web.Migrations
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Description")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -435,6 +432,9 @@ namespace EShop.Web.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IncludeInMenu")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsPublished")
@@ -542,9 +542,6 @@ namespace EShop.Web.Migrations
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("boolean");
-
                     b.Property<int?>("DeliveryTimeId")
                         .HasColumnType("integer");
 
@@ -574,6 +571,12 @@ namespace EShop.Web.Migrations
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsShippingEnabled")
                         .HasColumnType("boolean");
 
@@ -583,7 +586,7 @@ namespace EShop.Web.Migrations
                     b.Property<decimal>("Length")
                         .HasColumnType("numeric");
 
-                    b.Property<int?>("MaxAddToCartNumber")
+                    b.Property<int>("MaxAddToCartNumber")
                         .HasColumnType("integer");
 
                     b.Property<string>("MetaDescription")
@@ -597,6 +600,9 @@ namespace EShop.Web.Migrations
                     b.Property<string>("MetaTitle")
                         .HasMaxLength(400)
                         .HasColumnType("character varying(400)");
+
+                    b.Property<int>("MinAddToCartNumber")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
@@ -614,9 +620,6 @@ namespace EShop.Web.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
-
-                    b.Property<bool>("Published")
-                        .HasColumnType("boolean");
 
                     b.Property<int>("QuantityUnitId")
                         .HasColumnType("integer");
@@ -689,7 +692,7 @@ namespace EShop.Web.Migrations
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("Deleted")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("ModifiedOnUtc")
@@ -735,7 +738,7 @@ namespace EShop.Web.Migrations
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("Deleted")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("ModifiedOnUtc")
@@ -791,9 +794,6 @@ namespace EShop.Web.Migrations
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("boolean");
-
                     b.Property<decimal>("DiscountAmount")
                         .HasColumnType("numeric");
 
@@ -807,6 +807,9 @@ namespace EShop.Web.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsCouponRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("ModifiedOnUtc")
@@ -871,7 +874,7 @@ namespace EShop.Web.Migrations
                     b.ToTable("Catalog_DiscountUsageHistory", (string)null);
                 });
 
-            modelBuilder.Entity("EShop.Core.Checkout.Order.Domain.Order", b =>
+            modelBuilder.Entity("EShop.Core.Checkout.Orders.Domain.Order", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -879,14 +882,91 @@ namespace EShop.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("OrderDiscount")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("OrderGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("OrderSubtotalWithDiscount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("OrderSubtotalWithNoDiscount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("PaidOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PaymentMethodSystemName")
+                        .HasColumnType("text");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ShippingAddressId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ShippingAddressId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Checkout_Order", (string)null);
+                });
+
+            modelBuilder.Entity("EShop.Core.Checkout.Orders.Domain.OrderItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("OrderItemGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RawAttributes")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("SubtotalWithDiscount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("SubtotalWithNoDiscount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Checkout_OrderItem", (string)null);
                 });
 
             modelBuilder.Entity("EShop.Core.Common.Domain.Address", b =>
@@ -1081,14 +1161,14 @@ namespace EShop.Web.Migrations
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("FileName")
                         .HasColumnType("text");
 
                     b.Property<int>("Height")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("MediaType")
                         .HasColumnType("text");
@@ -1100,6 +1180,9 @@ namespace EShop.Web.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Size")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
                         .HasColumnType("integer");
 
                     b.Property<int>("Width")
@@ -1858,7 +1941,7 @@ namespace EShop.Web.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("EShop.Core.Checkout.Order.Domain.Order", "Order")
+                    b.HasOne("EShop.Core.Checkout.Orders.Domain.Order", "Order")
                         .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1869,15 +1952,32 @@ namespace EShop.Web.Migrations
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("EShop.Core.Checkout.Order.Domain.Order", b =>
+            modelBuilder.Entity("EShop.Core.Checkout.Orders.Domain.Order", b =>
                 {
-                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", "User")
+                    b.HasOne("EShop.Core.Common.Domain.Address", "ShippingAddress")
                         .WithMany()
+                        .HasForeignKey("ShippingAddressId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", "User")
+                        .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("ShippingAddress");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EShop.Core.Checkout.Orders.Domain.OrderItem", b =>
+                {
+                    b.HasOne("EShop.Core.Checkout.Orders.Domain.Order", null)
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EShop.Core.Common.Domain.Address", b =>
@@ -1918,7 +2018,7 @@ namespace EShop.Web.Migrations
                         .IsRequired();
 
                     b.HasOne("EShop.Core.Platform.Identity.Domain.User", "User")
-                        .WithMany("UserAddresses")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -2072,6 +2172,11 @@ namespace EShop.Web.Migrations
                     b.Navigation("Replies");
                 });
 
+            modelBuilder.Entity("EShop.Core.Checkout.Orders.Domain.Order", b =>
+                {
+                    b.Navigation("OrderItems");
+                });
+
             modelBuilder.Entity("EShop.Core.Platform.Identity.Domain.Role", b =>
                 {
                     b.Navigation("UserRoles");
@@ -2079,9 +2184,9 @@ namespace EShop.Web.Migrations
 
             modelBuilder.Entity("EShop.Core.Platform.Identity.Domain.User", b =>
                 {
-                    b.Navigation("ShoppingCartItems");
+                    b.Navigation("Orders");
 
-                    b.Navigation("UserAddresses");
+                    b.Navigation("ShoppingCartItems");
 
                     b.Navigation("UserRoles");
                 });

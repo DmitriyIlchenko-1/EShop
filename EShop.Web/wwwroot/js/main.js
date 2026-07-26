@@ -1,4 +1,5 @@
 import {ElementError, canHover, isDesktopBreakpoint, isMobileBreakpoint} from "./utilities.js";
+import {QuantitySelectorUpdateEvent} from "./events.js";
 
 /*TODO:
 *  1. Read about progressive einhansment. is showHideButton.removeAttribute('hidden'); all what's needed to be done?
@@ -570,7 +571,7 @@ class QuantitySelector extends HTMLElement {
 
     init() {
         const {min, max, step} = this.getCurrentValues();
-        this.updateConstraints(min, max, step);
+        //TODO: TEMP DURING TESTING UNCOMMENT AFTERWARD this.updateConstraints(min, max, step);
     }
 
 
@@ -582,6 +583,7 @@ class QuantitySelector extends HTMLElement {
             Math.max(min, value + step * stepMultiplier)
         );
         this.quantityInput.value = nextValue.toString();
+        this.onQuantityChange();
         this.updateButtonStates();
     }
 
@@ -656,7 +658,9 @@ class QuantitySelector extends HTMLElement {
         }
 
         this.quantityInput.value = quantity.toString();
+        this.onQuantityChange();
         this.updateButtonStates();
+      
     }
 
     updateButtonStates() {
@@ -668,6 +672,11 @@ class QuantitySelector extends HTMLElement {
 
     getQuantity(){
         return this.quantityInput.value;
+    }
+    
+    onQuantityChange(){
+        const newValue = parseInt(this.quantityInput.value);
+        this.quantityInput.dispatchEvent(new QuantitySelectorUpdateEvent(newValue));
     }
 
     getCurrentValues() {
@@ -848,5 +857,44 @@ if (!customElements.get('product-comparison-grid')) {
     customElements.define('product-comparison-grid', ProductComparisonGrid);
 }
  
+class AdvancedDisclosure extends HTMLElement {
+    constructor() {
+        super();
+        this.disclosure = this.querySelector('details');
+        this.summary = this.querySelector('summary');
+        this.maximizeOnLargeScreen = this.dataset.maximizeOnLargeScreen;
+        const largeScreenWidth = Number.parseInt(this.dataset.largeScreenWidth);
+        if (largeScreenWidth <= 0 && this.maximizeOnLargeScreen){
+            this.largeScreenWidth = theme.mediaQueries.md;
+        }
+        else{
+            this.largeScreenWidth = largeScreenWidth;
+        }
+        if (this.maximizeOnLargeScreen){
+            this.reset();
+            this.handleReset = this.reset.bind(this);
+            window.addEventListener('on:breakpoint-change', this.handleReset);
+        }
+        
+    }
 
+    disconnectedCallback(){
+        window.removeEventListener('on:breakpoint-change', this.handleReset);
+    }
+    
+    
+    reset(){
+       const isLargeScreen = window.matchMedia(`(min-width:${this.largeScreenWidth}px)`).matches;
+       this.disclosure.open = isLargeScreen;
+       if (isLargeScreen){
+           this.summary.setAttribute('tabindex', '-1');
+       }
+       else{
+           this.summary.removeAttribute('tabindex');
+       }
+    }
+}
 
+if (!customElements.get('advanced-disclosure')) {
+    customElements.define('advanced-disclosure', AdvancedDisclosure);
+}

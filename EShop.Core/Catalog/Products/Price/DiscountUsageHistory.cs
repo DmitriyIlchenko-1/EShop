@@ -1,4 +1,4 @@
-using EShop.Core.Checkout.Order.Domain;
+using EShop.Core.Checkout.Orders.Domain;
 using EShop.Infrastructure.Domain;
 
 namespace EShop.Core.Catalog.Products.Price;

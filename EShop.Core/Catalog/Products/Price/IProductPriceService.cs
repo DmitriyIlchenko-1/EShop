@@ -81,18 +81,23 @@ public class DefaultProductPriceService : IProductPriceService
     private async Task<CalculatedPrice> GetFinalPriceAsync(CalculatorPriceContext context, int subTotalQuantity = 1)
     {
         var product = context.Product;
-        
+
 
         var calculatedPrice = new CalculatedPrice()
         {
             Product = product,
             FinalPrice = ConvertToMoney(context.CalculatedProductPrice.FinalPrice, true, context, subTotalQuantity)
                 .Value,
-            DiscountAmount = ConvertToMoney(context.CalculatedProductPrice.DiscountAmount, false, context, subTotalQuantity)
+            DiscountAmount = ConvertToMoney(context.CalculatedProductPrice.DiscountAmount,
+                false,
+                context,
+                subTotalQuantity),
+            AppliedDiscount = context.CalculatedProductPrice.AppliedDiscount
         };
 
-        calculatedPrice.RegularPrice = ConvertToMoney(context.CalculatedProductPrice.RegularPrice, false, context, subTotalQuantity)
-            .Value;
+        calculatedPrice.RegularPrice =
+            ConvertToMoney(context.CalculatedProductPrice.RegularPrice, false, context, subTotalQuantity)
+                .Value;
 
         var savingPrice = calculatedPrice.RegularPrice;
         var hasSaving = savingPrice > 0 && calculatedPrice.FinalPrice < savingPrice;
@@ -106,9 +111,9 @@ public class DefaultProductPriceService : IProductPriceService
         return calculatedPrice;
     }
 
-    protected virtual Money? ConvertToMoney(decimal? amount, bool isFinalPrice, CalculatorPriceContext ctx, int subtotalQuantity = 1)
+    protected virtual Money? ConvertToMoney(decimal? amount, bool isFinalPrice, CalculatorPriceContext ctx,
+        int subtotalQuantity = 1)
     {
-         
         if (amount == null)
         {
             return null;
@@ -121,7 +126,7 @@ public class DefaultProductPriceService : IProductPriceService
 
         var options = ctx.Options;
         var money = new Money(amount.Value * subtotalQuantity);
-        
+
         if (isFinalPrice && ctx.HasPriceRange)
         {
             var finalPricePostFormat = money.PostFormat != null

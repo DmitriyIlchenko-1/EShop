@@ -1,24 +1,31 @@
-using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Products;
 using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Catalog.Products.Services;
-using EShop.Core.Checkout.Order.Domain;
+using EShop.Core.Checkout.Orders.Domain;
 using EShop.Core.Common.Domain;
+using EShop.Core.Data;
 using EShop.Core.Data.Cart.Domain;
 using EShop.Core.Data.Cart.Services;
+using EShop.Core.Data.Payment.Services;
 using EShop.Core.Data.Settings;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Identity.Extensions;
+using EShop.Core.Platform.Modules;
+using EShop.Core.Platform.Modules.Payment;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Utilities;
 
-namespace EShop.Core.Data.Order.Services;
+namespace EShop.Core.Checkout.Orders.Services;
 
 public interface IOrderService
 {
-    Task<ShoppingCartSubtotal> GetShoppingCartSubtotal(ShoppingCart cart, ProductBatchContext batchContext = null, bool cache = true);
+    Task<ShoppingCartSubtotal> GetShoppingCartSubtotal(ShoppingCart cart, ProductBatchContext batchContext = null,
+        bool cache = true);
+
+    Task<PlaceOrderResult> PlaceOrderAsync(ProcessPaymentRequest paymentRequest);
 }
+
 public class DefaultOrderService : IOrderService
 {
     private readonly IProductPriceService _productPriceService;
@@ -27,9 +34,16 @@ public class DefaultOrderService : IOrderService
     private readonly IWorkContext _workContext;
     private readonly CheckoutSettings _checkoutSettings;
     private readonly IShoppingCartService _shoppingCartService;
+    private readonly IPaymentService _paymentService;
+    private readonly IDiscountService _discountService;
+    private readonly ApplicationDbContext _db;
 
 
-    public DefaultOrderService(IProductPriceService productPriceService, IProductService productService, IRequestCache requestCache, IWorkContext workContext, CheckoutSettings checkoutSettings, IShoppingCartService shoppingCartService)
+    public DefaultOrderService(IProductPriceService productPriceService, IProductService productService,
+        IRequestCache requestCache, IWorkContext workContext, CheckoutSettings checkoutSettings,
+        IShoppingCartService shoppingCartService, IPaymentProviderManager paymentProviderManager,
+        IProviderManager providerManager, PaymentSettings paymentSettings, IPaymentService paymentService,
+        ApplicationDbContext db, IDiscountService discountService)
     {
         _productPriceService = productPriceService;
         _productService = productService;
@@ -37,11 +51,13 @@ public class DefaultOrderService : IOrderService
         _workContext = workContext;
         _checkoutSettings = checkoutSettings;
         _shoppingCartService = shoppingCartService;
+        _paymentService = paymentService;
+        _db = db;
+        _discountService = discountService;
     }
-    
-    
 
-    public virtual async Task PlaceOrderAsync(PaymentRequestInfo paymentRequest)
+
+    public virtual async Task<PlaceOrderResult> PlaceOrderAsync(ProcessPaymentRequest paymentRequest)
     {
         Guard.NotNull(paymentRequest);
         if (paymentRequest.OrderGuid == Guid.Empty)
@@ -52,8 +68,110 @@ public class DefaultOrderService : IOrderService
         OrderPlacementContext orderContext = new OrderPlacementContext();
         PrepareUserDetailsAsync(orderContext);
         await PrepareAndValidateShoppingCartAsync(orderContext);
-      
+        PrepareAndValidateShippingDetailsAsync(orderContext);
+        await PrepareOrderTotalAsync(orderContext);
+        var paymentResult = await ProcessPaymentAsync(paymentRequest);
+        var placeOrderResult = new PlaceOrderResult();
+        try
+        {
+            if (paymentResult.Succeeded)
+            {
+                var order = await SaveOrderAsync(paymentRequest, paymentResult, orderContext);
+                await MigrateShoppingCartItemsToOrderAsync(order, orderContext);
+                placeOrderResult.Order = order;
+            }
+            else
+            {
+                foreach (var error in paymentResult.Errors)
+                {
+                    placeOrderResult.Errors.Add(error);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            placeOrderResult.Errors.Add(e.Message);
+        }
+        
+        return placeOrderResult;
+    }
 
+
+    protected virtual async Task<Order> SaveOrderAsync(ProcessPaymentRequest paymentRequest,
+        ProcessPaymentResult paymentResult, OrderPlacementContext ctx)
+    {
+        var user = ctx.User;
+        var order = new Order()
+        {
+            OrderGuid = paymentRequest.OrderGuid,
+            UserId = user.Id,
+            PaymentMethodSystemName = paymentRequest.PaymentMethodSystemName,
+            OrderSubtotalWithNoDiscount = ctx.CartSubtotal.SubtotalWithDiscount,
+            OrderSubtotalWithDiscount = ctx.CartSubtotal.SubtotalWithDiscount,
+            OrderDiscount = ctx.CartSubtotal.DiscountAmount,
+            PaymentStatus = paymentResult.PaymentStatus,
+            OrderStatus = OrderStatus.Pending,
+            PaidOnUtc = null, // we look up if the order has been paid for later down the workflow.
+            ShippingAddress = ctx.ShippingAddress
+        };
+
+        user.Orders.Add(order);
+        // Save here to carry on with order item mapping.
+        await _db.SaveChangesAsync();
+
+        return order;
+    }
+
+    protected virtual async Task MigrateShoppingCartItemsToOrderAsync(Order order, OrderPlacementContext ctx)
+    {
+        foreach (var item in ctx.Cart.Items)
+        {
+            var product = item.Product;
+            var lineSubtotal = ctx.CartSubtotal.ShoppingCartLines
+                .FirstOrDefault(x => x.ShoppingCartItem.Id == item.Id);
+            var orderItem = new OrderItem()
+            {
+                OrderItemGuid = Guid.NewGuid(),
+                OrderId = order.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                RawAttributes = item.RawAttributes,
+                SubtotalWithDiscount = lineSubtotal.Subtotal.FinalPrice,
+                SubtotalWithNoDiscount = lineSubtotal.Subtotal.PriceSaving.SavingPrice,
+                UnitPrice = lineSubtotal.UnitPrice.FinalPrice
+            };
+
+            order.OrderItems.Add(orderItem);
+
+            // Save here to safely adjust the product's stock
+            await _db.SaveChangesAsync();
+
+            await _productService.AdjustProductInventoryAsync(product, -item.Quantity, item.RawAttributes);
+            await _shoppingCartService.ResetCartAsync(ctx.Cart);
+
+            var historyRecords = new List<DiscountUsageHistory>();
+            foreach (var discount in ctx
+                         .CartSubtotal.ShoppingCartLines.Select(x => x.Subtotal.AppliedDiscount)
+                         .Where(x => x != null))
+            {
+                historyRecords.Add(new DiscountUsageHistory()
+                {
+                    Order = order,
+                    Discount = discount,
+                    CreatedOnUtc = DateTime.UtcNow
+                });
+
+                if (historyRecords.Any())
+                {
+                    _db.DiscountUsageHistories.AddRange(historyRecords);
+                }
+            }
+        }
+    }
+
+    protected virtual async Task<ProcessPaymentResult> ProcessPaymentAsync(ProcessPaymentRequest processPayment)
+    {
+        return await _paymentService.ProcessPaymentAsync(processPayment);
     }
 
     protected virtual void PrepareUserDetailsAsync(OrderPlacementContext context)
@@ -61,18 +179,25 @@ public class DefaultOrderService : IOrderService
         context.User = _workContext.CurrentUser;
         if (!_checkoutSettings.AllowGuestsToOrder && context.User.IsGuest())
         {
-           throw new InvalidOperationException("Orders cannot be placed by guests");
+            throw new InvalidOperationException("Orders cannot be placed by guests");
         }
     }
 
-    protected virtual async Task PrepareAndValidateShippingDetailsAsync(OrderPlacementContext context)
+    protected virtual void PrepareAndValidateShippingDetailsAsync(OrderPlacementContext context)
     {
         if (!context.User.ShippingAddressId.HasValue)
         {
             throw new InvalidOperationException("Shipping address must be specified to place order");
         }
-        
-        
+
+        if (context.User.ShippingAddressId == null)
+        {
+            throw new InvalidOperationException("Shipping address must be specified to place order");
+        }
+
+        var shippingAddress = context.User.ShippingAddress;
+        context.ShippingAddress = shippingAddress.Clone();
+        context.ShippingStatus = ShippingStatus.NotShipped;
     }
 
     protected virtual async Task PrepareAndValidateShoppingCartAsync(OrderPlacementContext context)
@@ -98,11 +223,16 @@ public class DefaultOrderService : IOrderService
                 throw new InvalidOperationException(string.Join(";", warnings));
             }
         }
-
     }
-     
 
-    public virtual async Task<ShoppingCartSubtotal> GetShoppingCartSubtotal(ShoppingCart cart, ProductBatchContext batchContext = null, bool cache = true)
+    protected virtual async Task PrepareOrderTotalAsync(OrderPlacementContext context)
+    {
+        var subtotal = await GetShoppingCartSubtotal(context.Cart);
+        context.CartSubtotal = subtotal;
+    }
+
+    public virtual async Task<ShoppingCartSubtotal> GetShoppingCartSubtotal(ShoppingCart cart,
+        ProductBatchContext batchContext = null, bool cache = true)
     {
         Guard.NotNull(cart);
         var hashCode = cart.GetHashCode();
@@ -114,7 +244,7 @@ public class DefaultOrderService : IOrderService
                 return _requestCache.Get<ShoppingCartSubtotal>(cacheKey);
             }
         }
-       
+
         batchContext ??= _productService.CreateProductBatchContext(cart.Items.Select(x => x.Product), false);
         ShoppingCartSubtotal result = new ShoppingCartSubtotal();
         var subtotalWithNoDiscount = 0m;
@@ -135,17 +265,20 @@ public class DefaultOrderService : IOrderService
                 UnitPrice = unitPrice,
             });
         }
-        var subtotalWithDiscount = result.ShoppingCartLines.Select(x => x.Subtotal.FinalPrice.Amount).Sum();
+
+        var subtotalWithDiscount = result
+            .ShoppingCartLines.Select(x => x.Subtotal.FinalPrice.Amount)
+            .Sum();
         result.SubtotalWithNoDiscount = new Money(subtotalWithNoDiscount);
         result.SubtotalWithDiscount = new Money(subtotalWithDiscount);
         if (cache)
         {
             _requestCache.Put(cacheKey, result);
         }
+
         return result;
     }
 }
-
 
 public class ShoppingCartSubtotalContext
 {
@@ -153,15 +286,22 @@ public class ShoppingCartSubtotalContext
     {
         ShoppingCart = cart;
     }
+
     public ShoppingCart ShoppingCart { get; set; }
     public ProductBatchContext BatchContext { get; set; }
 }
 
-public class PaymentRequestInfo
+public class ProcessPaymentRequest
 {
-    
     public Guid OrderGuid { get; set; }
     public string PaymentMethodSystemName { get; set; }
+}
+
+public class PlaceOrderResult
+{
+    public bool Succeeded => !Errors.Any();
+    public ICollection<string> Errors { get; } = [];
+    public Order? Order { get; set; }
 }
 
 public class OrderPlacementContext
@@ -169,4 +309,12 @@ public class OrderPlacementContext
     public User User { get; set; }
     public ShoppingCart Cart { get; set; }
     public Address ShippingAddress { get; set; }
+    public ShoppingCartSubtotal CartSubtotal { get; set; }
+    public ShippingStatus ShippingStatus { get; set; }
+}
+
+public enum ShippingStatus
+{
+    NotShipped,
+    Shipped
 }

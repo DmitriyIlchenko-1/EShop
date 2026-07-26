@@ -1,4 +1,6 @@
-using EShop.Core.Checkout.Order.Domain;
+ 
+
+using EShop.Core.Checkout.Orders.Domain;
 
 namespace EShop.Web.Models.Checkout;
 

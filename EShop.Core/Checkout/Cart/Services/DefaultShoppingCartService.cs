@@ -1,3 +1,4 @@
+using EShop.Caching;
 using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Products.Domain;
@@ -16,6 +17,7 @@ public interface IShoppingCartService
 {
     Task<ICollection<string>> AddProductToCart(AddToCartContext ctx);
     Task<ICollection<string>> UpdateCartItemAsync(ShoppingCartItem cartItem, int newQuantity);
+    Task ResetCartAsync(ShoppingCart cart);
     Task RemoveCartItemAsync(ShoppingCartItem cartItem);
     Task<int> GetUserCartItemCountAsync(User user = null);
     Task<ShoppingCart> GetUserCartAsync(User? user = null);
@@ -35,6 +37,8 @@ public class DefaultShoppingCartService : IShoppingCartService
 
     // 0 - user's id
     private const string ShoppingCartCacheKey = "shoppingcart:{0}";
+    private const string ShoppingCartKeyPattern = "shoppingcart:*";
+
 
     public DefaultShoppingCartService(ApplicationDbContext db, IWorkContext workContext,
         IProductAttributeMaterializer attributeMaterializer, IRequestCache requestCache, CheckoutSettings settings,
@@ -51,17 +55,24 @@ public class DefaultShoppingCartService : IShoppingCartService
     public virtual async Task<ICollection<string>> AddProductToCart(AddToCartContext ctx)
     {
         Guard.NotNull(ctx);
+        var warnings = new List<string>();
         var quantity = ctx.Quantity;
         var query = ctx.VariantQuery;
         var product = ctx.Product;
-        List<string> warnings = new List<string>();
+        var userCart = await GetUserCartAsync();
+        var errors = await ValidateShoppingCartAsync(userCart);
         if (quantity < 1)
         {
             warnings.Add("Quantity must be greater than 0");
             return warnings;
         }
 
-        var userCart = await GetUserCartAsync();
+        if (errors.Any())
+        {
+            return errors;
+        }
+
+
         var selection =
             _attributeMaterializer.CreateAttributeSelection(query, product.ProductVariantAttributes, product.Id);
         var rawAttributes = selection.AsJson();
@@ -71,89 +82,140 @@ public class DefaultShoppingCartService : IShoppingCartService
                 $"A combination is required to order {product.Id}:{product.Name} product");
         }
 
-        var cartItem =
+        var item =
             userCart.Items.FirstOrDefault(x => x.ProductId == product.Id && x.RawAttributes == rawAttributes);
-        if (cartItem == null)
+        if (item == null)
         {
-            cartItem = new ShoppingCartItem()
+            item = new ShoppingCartItem()
             {
                 UserId = userCart.User.Id,
                 ProductId = ctx.Product.Id,
                 RawAttributes = rawAttributes,
                 AddedOnUtc = DateTime.UtcNow,
+                Product = product,
             };
+        }
 
-            userCart.User.ShoppingCartItems.Add(cartItem);
+
+        if (!userCart.Items.Contains(item) && quantity < product.MinAddToCartNumber)
+        {
+            item.Quantity = product.MinAddToCartNumber;
+
+            warnings.Add(
+                $"{product.MinAddToCartNumber} has been added to your cart because of the min. limit of {product.MinAddToCartNumber}");
+        }
+        else
+        {
+            int canAddLeft = 0;
+            if (item.Quantity < product.MaxAddToCartNumber)
+            {
+                canAddLeft = product.MaxAddToCartNumber - item.Quantity;
+            }
+
+            int correctedQuantity = canAddLeft > quantity ? quantity : canAddLeft;
+            if (canAddLeft < quantity)
+            {
+                var limitStr = canAddLeft == 0 ? "None" : correctedQuantity.ToString();
+                warnings.Add(
+                    $"{limitStr} has been added to your cart because of the limit: {product.MaxAddToCartNumber}");
+            }
+
+            item.Quantity += correctedQuantity;
+        }
+
+
+        errors = await ValidateShoppingCartItemAsync(item);
+        if (errors.Any())
+        {
+            return errors;
         }
 
         var cacheKey = string.Format(ShoppingCartCacheKey, userCart.User.Id);
         _requestCache.Remove(cacheKey);
 
-        int canAddLeft = 0;
-        // if (product.MaxAddToCartNumber.HasValue)
-        // {
-        //     if (cartItem.Quantity < product.MaxAddToCartNumber)
-        //         canAddLeft = (int)product.MaxAddToCartNumber - cartItem.Quantity;
-        // }
-        // else
-        // {
-        //     canAddLeft = _settings.MaxAddToCartNumber - cartItem.Quantity;
-        // }
-
-        int correctedQuantity = canAddLeft > quantity ? quantity : canAddLeft;
-        // if (canAddLeft < quantity)
-        // {
-        //     var limitStr = canAddLeft == 0 ? "None" : correctedQuantity.ToString();
-        //     warnings.Add(
-        //         $"{limitStr} has been added to your cart because of the limit: {product.MaxAddToCartNumber ?? _settings.MaxAddToCartNumber}");
-        // }
-
-        cartItem.Quantity += correctedQuantity;
-
+        if (!userCart.User.ShoppingCartItems.Contains(item))
+        {
+            userCart.User.ShoppingCartItems.Add(item);
+        }
 
         await _db.SaveChangesAsync();
         return warnings;
     }
 
+
     public async Task<ICollection<string>> UpdateCartItemAsync(ShoppingCartItem cartItem, int newQuantity)
     {
         Guard.NotNull(cartItem);
+        var userCart = await GetUserCartAsync();
         var warnings = new List<string>();
-        if (newQuantity < 0)
+        var errors = await ValidateShoppingCartAsync(userCart);
+        if (newQuantity < 1)
         {
-            warnings.Add("Quantity must be greater than 0");
-            return warnings;
+            return ["Quantity must be greater than 0"];
         }
 
-        var product = await _db.Products.FirstOrDefaultAsync(x => x.Id == cartItem.ProductId);
+        if (errors.Any())
+        {
+            return errors;
+        }
+
+        var product = cartItem.Product;
         if (product == null)
         {
             throw new InvalidOperationException(
                 $"Cannot update cart info for non-existing product {cartItem.ProductId}.");
         }
 
-        // if (product.MaxAddToCartNumber.HasValue && product.MaxAddToCartNumber.Value >= newQuantity)
-        // {
-        //     cartItem.Quantity = newQuantity;
-        // }
-        // else if (product.MaxAddToCartNumber.HasValue && product.MaxAddToCartNumber.Value < newQuantity)
-        // {
-        //     if (cartItem.Quantity <= product.MaxAddToCartNumber.Value &&
-        //         product.MaxAddToCartNumber.Value <= newQuantity)
-        //     {
-        //         warnings.Add($"{product.MaxAddToCartNumber.Value} has been added to your cart because of the limit.");
-        //     }
-        //
-        //     cartItem.Quantity = product.MaxAddToCartNumber.Value;
-        // }
+
+        if (newQuantity < product.MinAddToCartNumber)
+        {
+            cartItem.Quantity = product.MinAddToCartNumber;
+            warnings.Add(
+                $"{product.MinAddToCartNumber} has been added to your cart because of the min. limit of {product.MinAddToCartNumber}");
+        }
+        else
+        {
+            if (product.MaxAddToCartNumber >= newQuantity)
+            {
+                cartItem.Quantity = newQuantity;
+            }
+            else if (product.MaxAddToCartNumber < newQuantity)
+            {
+                if (cartItem.Quantity <= product.MaxAddToCartNumber &&
+                    product.MaxAddToCartNumber <= newQuantity)
+                {
+                    warnings.Add($"{product.MaxAddToCartNumber} has been added to your cart because of the limit.");
+                }
+
+                cartItem.Quantity = product.MaxAddToCartNumber;
+            }
+        }
+
+
+        errors = await ValidateShoppingCartItemAsync(cartItem);
+        if (errors.Any())
+        {
+            return errors;
+        }
 
         await _db.SaveChangesAsync();
         return warnings;
     }
 
+    public async Task ResetCartAsync(ShoppingCart cart)
+    {
+        Guard.NotNull(cart);
+        var user = cart.User;
+        user.ShoppingCartItems.Clear();
+        await _db.SaveChangesAsync();
+        _requestCache.RemoveByPattern(ShoppingCartKeyPattern);
+    }
+
     public async Task RemoveCartItemAsync(ShoppingCartItem cartItem)
     {
         Guard.NotNull(cartItem);
+        var userCart = await GetUserCartAsync();
+        userCart.Items.Remove(cartItem);
         _db.ShoppingCartItems.Remove(cartItem);
         await _db.SaveChangesAsync();
     }
@@ -168,7 +230,7 @@ public class DefaultShoppingCartService : IShoppingCartService
             return shoppingCart.GetCount();
         }
 
-        await LoadShoppingCartItemsAsync(user, true);
+        await LoadShoppingCartItemsAsync(user);
         return user
             .ShoppingCartItems.Select(x => x.Quantity)
             .Sum();
@@ -183,7 +245,7 @@ public class DefaultShoppingCartService : IShoppingCartService
             return shoppingCart;
         }
 
-        await LoadShoppingCartItemsAsync(user, true);
+        await LoadShoppingCartItemsAsync(user);
         var cart = new ShoppingCart(user, user.ShoppingCartItems);
         _requestCache.Put(cacheKey, cart);
         return cart;
@@ -192,41 +254,43 @@ public class DefaultShoppingCartService : IShoppingCartService
     public virtual Task<ICollection<string>> ValidateShoppingCartAsync(ShoppingCart shoppingCart)
     {
         Guard.NotNull(shoppingCart);
-         var warnings = new List<string>();
-        // if (shoppingCart.GetCount() > _settings.MaxAddToCartNumber)
-        // {
-        //     warnings.Add($"The cart contains more cart items than allowed by limit {_settings.MaxAddToCartNumber}");
-        // }
+        var warnings = new List<string>();
+        if (shoppingCart.GetCount() > _settings.MaxShoppingCartItems)
+        {
+            warnings.Add($"The cart contains more cart items than allowed by limit {_settings.MaxShoppingCartItems}");
+        }
 
         return Task.FromResult<ICollection<string>>(warnings);
     }
 
-    public virtual async Task<ICollection<string>> ValidateShoppingCartItemAsync(ShoppingCartItem shoppingCartItem)
+    public virtual async Task<ICollection<string>> ValidateShoppingCartItemAsync(
+        ShoppingCartItem item)
     {
-        Guard.NotNull(shoppingCartItem);
-        var warnings = new List<string>();
-        var product = shoppingCartItem.Product;
+        Guard.NotNull(item);
+        var errors = new List<string>();
+        var product = item.Product;
         if (product.IsDeleted)
         {
-            warnings.Add($"Cart contains a deleted product {product.Id}:{product.Name}");
+            errors.Add($"Cart contains a deleted product {product.Id}:{product.Name}");
         }
 
-        if (product.IsPublished)
+        if (!product.IsPublished)
         {
-            warnings.Add($"Cart contains a non published product {product.Id}:{product.Name}");
+            errors.Add($"Cart contains a non published product {product.Id}:{product.Name}");
         }
 
-        if (shoppingCartItem.Quantity < product.MinAddToCartNumber)
-        {
-            warnings.Add(
-                $"Product's ({product.Id}:{product.Name}) quantity in cart must be greater than or equal to {product.MinAddToCartNumber}");
-        }
-
-        if (shoppingCartItem.Quantity > product.MaxAddToCartNumber)
-        {
-            warnings.Add(
-                $"Product's ({product.Id}:{product.Name}) quantity in cart must be smaller than {product.MaxAddToCartNumber}");
-        }
+        // These two checks are redundant because we safely fix any logical errors before we call this method.
+        // if (item.Quantity < product.MinAddToCartNumber)
+        // {
+        //     errors.Add(
+        //         $"Product's ({product.Id}:{product.Name}) quantity in cart must be greater than or equal to {product.MinAddToCartNumber}");
+        // }
+        //
+        // if (item.Quantity > product.MaxAddToCartNumber)
+        // {
+        //     errors.Add(
+        //         $"Product's ({product.Id}:{product.Name}) quantity in cart must be smaller than {product.MaxAddToCartNumber}");
+        // }
 
         //TODO: Have to implement stock management first, for the time being we treat products as though they can't be ordered without a combination.
         // if (shoppingCartItem.Quantity > product.StockQuantity)
@@ -236,23 +300,23 @@ public class DefaultShoppingCartService : IShoppingCartService
 
         var combination =
             await _productAttributeMaterializer.FindAttributeCombinationAsync(product.Id,
-                shoppingCartItem.AttributeSelection);
+                item.AttributeSelection);
         if (combination != null)
         {
             if (!combination.IsActive)
             {
-                warnings.Add(
+                errors.Add(
                     $"Cannot add inactive product combination. combination id:{combination.Id}, product id: {product.Id}");
             }
-            else if (shoppingCartItem.Quantity > combination.StockQuantity)
+            else if (item.Quantity > combination.StockQuantity)
             {
-                warnings.Add(
-                    $"Cart item's {shoppingCartItem.Id} quantity cannot be greater than its product's selected combination's stock quantity.");
+                errors.Add(
+                    $"Cart item's {item.Id} quantity cannot be greater than its product's selected combination's stock quantity.");
             }
         }
 
 
-        return warnings;
+        return errors;
     }
 
 

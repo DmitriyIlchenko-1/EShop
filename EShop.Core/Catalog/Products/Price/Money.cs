@@ -40,6 +40,11 @@ public readonly struct Money : IHtmlContent,  IEquatable<Money>, IComparable<Mon
     }
 
 
+    #region Casting operations
+
+    public static implicit operator decimal(Money money) => money.Amount;
+    #endregion
+    
     #region Equality & Order
 
     public override int GetHashCode()
@@ -97,7 +102,7 @@ public readonly struct Money : IHtmlContent,  IEquatable<Money>, IComparable<Mon
     public static Money operator -(Money left, Money right) => left.WithAmount(left.Amount - right.Amount);
     public static Money operator /(Money left, Money right) => right.WithAmount(left.Amount / right.Amount);
     public static explicit operator float(Money money) => Convert.ToSingle(money.RoundedAmount);
-    public static explicit operator decimal(Money money) => money.RoundedAmount;
+     
 
 
 

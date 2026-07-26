@@ -3,6 +3,7 @@ using EShop.Core.Platform.Configuration.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+
 namespace EShop.AzureBlobStorage.Controllers;
 
 [Authorize(Roles="Administrator")]

@@ -6,97 +6,99 @@
     var subtotal = Model.CartSubtotal;
 }
 <div class="checkout__order-summary">
-    <details class="disclosure checkout__order-disclosure mt-2xl" open>
-        <summary class="checkout__order-disclosure-summary disclosure__summary">
+    <advanced-disclosure data-maximize-on-large-screen="true" data-large-screen-width="1024">
+        <details class="disclosure checkout__order-disclosure">
+            <summary class="checkout__order-disclosure-summary disclosure__summary">
                         <span class="js-summary-header checkout__summary-info--closed">
                             <span class="block font-bold h5 mb-0">Total</span>
                             <span class="block text-sm">@itemsInTotal items</span>
                             <span class="block price__current text-regular">@subtotal.SubtotalWithDiscount</span>
                         </span>
-            <span class="js-summary-header checkout__summary-info--open h4 mb-0">
-                Order summary
-                </span>
-        </summary>
-        <div class="disclosure__content">
-            <section class="checkout__cart-items" aria-label="Shopping cart">
-                <table class="w-full">
-                    <thead class="visually-hidden">
-                    <tr>
-                        <th>Product image</th>
-                        <th>Description</th>
-                        <th>Quantity</th>
-                        <th>Subtotal</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var item in Model.Items)
-                    {
-                        <tr class="checkout__cart-item">
-                            <td class="checkout__cart-item-image">
-                                <div class="image-container">
-                                    <a href="#">
-                                        <img src="@item.Image.Url" alt="@item.Image.Alt"/>
-                                    </a>
-                                    <div aria-hidden="true" class="checkout__cart-quantity-badge">
-                                        @item.CurrentQuantity
+                        <span class="js-summary-header checkout__summary-info--open h4 mb-0 lg:hidden">
+                            Order summary
+                        </span>
+                        <span class="visually-hidden">Order summary</span>
+            </summary>
+            <div class="disclosure__content">
+                <section class="checkout__cart-items" aria-label="Shopping cart">
+                    <table class="w-full">
+                        <thead class="visually-hidden">
+                        <tr>
+                            <th>Product image</th>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Subtotal</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr class="checkout__cart-item">
+                                <td class="checkout__cart-item-image">
+                                    <div class="image-container">
+                                        <a href="#">
+                                            <img src="@item.Image.Url" alt="@item.Image.Alt"/>
+                                        </a>
+                                        <div aria-hidden="true" class="checkout__cart-quantity-badge">
+                                            @item.CurrentQuantity
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="checkout__cart-item-details mx-md">
-                                <p class="mb-0">@item.ProductName</p>
-                                <div class="cart-item__variants text-sm">
-                                    <dl class="text-theme-light">
-                                        @foreach (var attr in item.AttributeValues)
-                                        {
-                                            <dt class="visually-hidden">@attr.ProductVariantAttribute.ProductAttribute.Name</dt>
-                                            <dd class="inline m-0">@attr.Name</dd>
-                                        }
-                                    </dl>
-                                </div>
-                            </td>
-                            <td class="checkout__cart-item-quantity">
+                                </td>
+                                <td class="checkout__cart-item-details mx-md">
+                                    <p class="mb-0">@item.ProductName</p>
+                                    <div class="cart-item__variants text-sm">
+                                        <dl class="text-theme-light">
+                                            @foreach (var attr in item.AttributeValues)
+                                            {
+                                                <dt class="visually-hidden">@attr.ProductVariantAttribute.ProductAttribute.Name</dt>
+                                                <dd class="inline m-0">@attr.Name</dd>
+                                            }
+                                        </dl>
+                                    </div>
+                                </td>
+                                <td class="checkout__cart-item-quantity">
                                 <span class="visually-hidden">
                                     @item.CurrentQuantity
                                 </span>
-                            </td>
-                            <td class="checkout__cart-item--total price">
-                                @if (item.Price.UnitSaving.HasSaving)
-                                {
-                                    <dl>
-                                        <dt class="visually-hidden">Sale Price</dt>
-                                        <dd class="price__current inline m-0">@Html.Raw(item.Price.UnitPrice)</dd>
-                                        <dt class="visually-hidden">Regular price</dt>
-                                        <dt class="price__was inline m-0">@Html.Raw(item.Price.SubtotalSaving.SavingPrice)</dt>
-                                    </dl>
-                                }
-                                else
-                                {
-                                    <p class="price__current">@Html.Raw(item.Price.UnitPrice)</p>
-                                }
+                                </td>
+                                <td class="checkout__cart-item--total price">
+                                    @if (item.Price.UnitSaving.HasSaving)
+                                    {
+                                        <dl>
+                                            <dt class="visually-hidden">Sale Price</dt>
+                                            <dd class="price__current inline m-0">@Html.Raw(item.Price.UnitPrice)</dd>
+                                            <dt class="visually-hidden">Regular price</dt>
+                                            <dt class="price__was inline m-0">@Html.Raw(item.Price.SubtotalSaving.SavingPrice)</dt>
+                                        </dl>
+                                    }
+                                    else
+                                    {
+                                        <p class="price__current">@Html.Raw(item.Price.UnitPrice)</p>
+                                    }
 
-                            </td>
-                        
-                        </tr>
-                    }
-                    </tbody>
-                </table>
-            </section>
-            @*TODO: Why checkout__block--small on checkout__total-summary isn't working?? *@
-            <section class="checkout__total-summary checkout__block--small">
-                <h3 class="visually-hidden">Total cost summary</h3>
-                <dl class="price">
-                    <div class="flex justify-between items-center gap-sm font-s">
-                        <dt>Subtotal, @itemsInTotal items</dt>
-                        <dd>@Model.CartSubtotal.SubtotalWithDiscount</dd>
-                    </div>
-                    <div class="flex justify-between items-center price__current gap-sm mt-lg">
-                        <dt>Total</dt>
-                        <dd>@Model.CartSubtotal.SubtotalWithDiscount</dd>
-                    </div>
-                </dl>
-            </section>
-        </div>
-    </details>
+                                </td>
+
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </section>
+                <section class="checkout__total-summary checkout__block--small">
+                    <h3 class="visually-hidden">Total cost summary</h3>
+                    <dl class="price">
+                        <div class="flex justify-between items-center gap-sm font-s">
+                            <dt>Subtotal, @itemsInTotal items</dt>
+                            <dd>@Model.CartSubtotal.SubtotalWithDiscount</dd>
+                        </div>
+                        <div class="flex justify-between items-center price__current gap-sm mt-lg">
+                            <dt>Total</dt>
+                            <dd>@Model.CartSubtotal.SubtotalWithDiscount</dd>
+                        </div>
+                    </dl>
+                </section>
+            </div>
+        </details>
+    </advanced-disclosure>
     <button class="button mt-lg">
         Place order
     </button>

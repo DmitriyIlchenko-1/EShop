@@ -38,6 +38,7 @@ public class ModuleDiscoveryModule : Module
             var systemName = GetSystemName(providerType, moduleDescriptor);
             var friendlyName = GetFriendlyName(providerType, moduleDescriptor);
             var registration = builder.RegisterType(providerType)
+                .Named<IProvider>(systemName)
                 .InstanceScopeFromAttribute()
                 .WithMetadata<ProviderMetadata>(m =>
                 {
@@ -45,11 +46,26 @@ public class ModuleDiscoveryModule : Module
                     m.For(x => x.FriendlyName, friendlyName);
                     m.For(x => x.ModuleDescriptor, moduleDescriptor);
                 });
-            RegisterProviderAs<IPaymentMethod>(providerType, registration);
+            RegisterProviderAs<IPaymentMethod>(providerType, systemName, registration);
         }
     }
 
-    private string GetSystemName(Type providerType, IModuleDescriptor descriptor)
+    private static void RegisterProviderAs<TProvider>(Type implType, string systemName,
+        IRegistrationBuilder<object, ConcreteReflectionActivatorData, SingleRegistrationStyle> builder) where TProvider : IProvider
+    {
+        if (typeof(TProvider).IsAssignableFrom(implType))
+        {
+            try
+            {
+                builder.As<TProvider>().Named<TProvider>(systemName);
+            }
+            catch
+            {
+            }
+        }
+    }
+    
+    private static string GetSystemName(Type providerType, IModuleDescriptor descriptor)
     {
         if (descriptor != null)
         {
@@ -58,7 +74,7 @@ public class ModuleDiscoveryModule : Module
 
         return providerType.FullName;
     }
-    private string GetFriendlyName(Type providerType, IModuleDescriptor descriptor)
+    private static string GetFriendlyName(Type providerType, IModuleDescriptor descriptor)
     {
         if (descriptor != null)
         {
@@ -66,21 +82,5 @@ public class ModuleDiscoveryModule : Module
         }
 
         return providerType.Name;
-    }
-
-
-    private static void RegisterProviderAs<TProvider>(Type implType,
-        IRegistrationBuilder<object, ConcreteReflectionActivatorData, SingleRegistrationStyle> builder) where TProvider : IProvider
-    {
-        if (typeof(TProvider).IsAssignableFrom(implType))
-        {
-            try
-            {
-                builder.As<TProvider>();
-            }
-            catch
-            {
-            }
-        }
     }
 }

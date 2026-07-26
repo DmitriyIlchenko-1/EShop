@@ -22,7 +22,8 @@ public class ShoppingCartController : EShopBaseController
     readonly IWorkContext _workContext;
 
     public ShoppingCartController(ApplicationDbContext db, IShoppingCartService shoppingCartService,
-        IActivityLogger activityLogger, IRequestCache requestCache, ShoppingCartHelper shoppingCartHelper, IWorkContext workContext)
+        IActivityLogger activityLogger, IRequestCache requestCache, ShoppingCartHelper shoppingCartHelper,
+        IWorkContext workContext)
     {
         _db = db;
         _shoppingCartService = shoppingCartService;
@@ -39,7 +40,7 @@ public class ShoppingCartController : EShopBaseController
         var model = await _shoppingCartHelper.PrepareShoppingCartModelAsync(cart);
         return View(model);
     }
-    
+
     [HttpPost("/card/addproduct/{productId:int}", Name = "AddProduct")]
     public async Task<IActionResult> AddProduct(int productId, ProductVariantQuery query)
     {
@@ -69,8 +70,8 @@ public class ShoppingCartController : EShopBaseController
             VariantQuery = query
         };
 
-         ICollection<string> warnings  = await _shoppingCartService.AddProductToCart(addToCartContext);
-         
+        ICollection<string> warnings = await _shoppingCartService.AddProductToCart(addToCartContext);
+
 
         _activityLogger.InsertActivity(KnownActivityLogType.AddToShoppingCart,
             KnownActivityFormats.AddToShoppingCart,
@@ -92,7 +93,7 @@ public class ShoppingCartController : EShopBaseController
     [HttpPost]
     public async Task<IActionResult> UpdateCartItem(UpdateCartItemModel model)
         => await UpdateCartItemInternal(model);
-  
+
     [HttpPost]
     public async Task<IActionResult> RemoveCartItem(UpdateCartItemModel model)
         => await UpdateCartItemInternal(model, true);
@@ -100,7 +101,8 @@ public class ShoppingCartController : EShopBaseController
     private async Task<IActionResult> UpdateCartItemInternal(UpdateCartItemModel model, bool delete = false)
     {
         string message = string.Empty;
-        var cartItem = await _db.ShoppingCartItems.FirstOrDefaultAsync(x => x.Id == model.CartItemId);
+        var cart = await _shoppingCartService.GetUserCartAsync();
+        var cartItem = cart.Items.FirstOrDefault(x => x.Id == model.CartItemId);
         if (cartItem is null)
         {
             return Json(new
@@ -116,11 +118,10 @@ public class ShoppingCartController : EShopBaseController
         }
         else
         {
-            var warnings = await _shoppingCartService.UpdateCartItemAsync(cartItem,  model.NewQuantity);
+            var warnings = await _shoppingCartService.UpdateCartItemAsync(cartItem, model.NewQuantity);
             message = string.Join(". ", warnings.Take(2));
         }
-         
-        var cart = await _shoppingCartService.GetUserCartAsync();
+        
         var cartCount = cart.GetCount();
         var cartModel = await _shoppingCartHelper.PrepareShoppingCartModelAsync(cart);
         return Json(new

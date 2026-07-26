@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>preview</LangVersion>
     </PropertyGroup>
 
 
@@ -14,15 +15,15 @@
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="Autofac" Version="9.0.0" />
-      <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+      <PackageReference Include="Autofac" Version="9.3.1" />
+      <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
       <PackageReference Include="EasyCaching.HybridCache" Version="1.9.2" />
       <PackageReference Include="EasyCaching.InMemory" Version="1.9.2" />
       <PackageReference Include="EasyCaching.Redis" Version="1.9.2" />
       <PackageReference Include="EasyCaching.Serialization.Json" Version="1.9.2" />
       <PackageReference Include="MailKit" Version="4.17.0" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.9" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.10" />
       <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="10.1.0" />
       <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.1" />
       <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="10.0.2" />
@@ -31,7 +32,7 @@
       <PackageReference Include="Riok.Mapperly" Version="4.3.1" />
       <PackageReference Include="SixLabors.ImageSharp.Web" Version="4.0.0" />
       <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
-      <PackageReference Include="System.Linq.Async" Version="6.0.3" />
+      <PackageReference Include="System.Linq.Async" Version="7.0.1" />
       <PackageReference Include="ZiggyCreatures.FusionCache" Version="2.4.0" />
       <PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.4.0" />
     </ItemGroup>

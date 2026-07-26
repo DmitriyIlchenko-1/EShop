@@ -14,9 +14,6 @@ window.theme = {
         hasTouch: window.matchMedia('(any-pointer: coarse)').matches,
         hasHover: window.matchMedia(('(hover:hover)')).matches
     },
-    routes: {
-        addToCart: '/cart/addproduct'
-    }
 };
 
  

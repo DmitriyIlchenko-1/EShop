@@ -13,22 +13,21 @@ class CartItems extends HTMLElement {
     }
 
     init() {
-        this.addEventListener('change', debounce(this.handleChange.bind(this)));
+        this.addEventListener('on:quantity-selector-update', debounce(this.handleChange.bind(this)));
         this.addEventListener('click', this.handleRemove.bind(this));
     }
 
-    handleRemove(e) {
+    async handleRemove(e) {
         const btn = e.target.closest(`[name="remove"]`);
         if (!btn) return;
         const cartItem = btn.closest('.js-cart-item');
-        this.updateQuantity(cartItem.dataset.cartItemId, 0, document.activeElement.name, true)
-
+        await this.updateQuantity(cartItem.dataset.cartItemId, 0, document.activeElement.name, true)
     }
 
     handleChange(e) {
         const cartItem = e.target.closest('.js-cart-item');
         if (cartItem && cartItem.dataset.cartItemId && cartItem.dataset.cartItemId > 0) {
-            this.updateQuantity(cartItem.dataset.cartItemId, e.target.value, document.activeElement.name);
+            this.updateQuantity(cartItem.dataset.cartItemId, e.quantity, document.activeElement.name);
         }
     }
 
@@ -113,6 +112,7 @@ class CartItems extends HTMLElement {
 
     updateNotifications(carItemErrorId, message) {
         const cartItemErrorBox = document.getElementById(carItemErrorId);
+        if (!cartItemErrorBox) return;
         if (!message) {
             cartItemErrorBox.hidden = true;
             cartItemErrorBox.innerHTML = '';

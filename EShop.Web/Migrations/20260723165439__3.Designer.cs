@@ -12,15 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EShop.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260721053234__2")]
-    partial class _2
+    [Migration("20260723165439__3")]
+    partial class _3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.16")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -778,15 +778,15 @@ namespace EShop.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AppliedTimes")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("BadgeId")
                         .HasColumnType("integer");
 
                     b.Property<string>("CouponCode")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<int>("CouponUsageAmount")
-                        .HasColumnType("integer");
 
                     b.Property<int>("CouponUsageType")
                         .HasColumnType("integer");
@@ -798,9 +798,6 @@ namespace EShop.Web.Migrations
                         .HasColumnType("numeric");
 
                     b.Property<int>("DiscountType")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("DiscountUsageAmount")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("EndsOnUtc")
@@ -874,7 +871,7 @@ namespace EShop.Web.Migrations
                     b.ToTable("Catalog_DiscountUsageHistory", (string)null);
                 });
 
-            modelBuilder.Entity("EShop.Core.Checkout.Order.Domain.Order", b =>
+            modelBuilder.Entity("EShop.Core.Checkout.Orders.Domain.Order", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -882,14 +879,91 @@ namespace EShop.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("OrderDiscount")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("OrderGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("OrderSubtotalWithDiscount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("OrderSubtotalWithNoDiscount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("PaidOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PaymentMethodSystemName")
+                        .HasColumnType("text");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ShippingAddressId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ShippingAddressId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Checkout_Order", (string)null);
+                });
+
+            modelBuilder.Entity("EShop.Core.Checkout.Orders.Domain.OrderItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("OrderItemGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RawAttributes")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("SubtotalWithDiscount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("SubtotalWithNoDiscount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Checkout_OrderItem", (string)null);
                 });
 
             modelBuilder.Entity("EShop.Core.Common.Domain.Address", b =>
@@ -1864,7 +1938,7 @@ namespace EShop.Web.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("EShop.Core.Checkout.Order.Domain.Order", "Order")
+                    b.HasOne("EShop.Core.Checkout.Orders.Domain.Order", "Order")
                         .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1875,15 +1949,32 @@ namespace EShop.Web.Migrations
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("EShop.Core.Checkout.Order.Domain.Order", b =>
+            modelBuilder.Entity("EShop.Core.Checkout.Orders.Domain.Order", b =>
                 {
-                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", "User")
+                    b.HasOne("EShop.Core.Common.Domain.Address", "ShippingAddress")
                         .WithMany()
+                        .HasForeignKey("ShippingAddressId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", "User")
+                        .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("ShippingAddress");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EShop.Core.Checkout.Orders.Domain.OrderItem", b =>
+                {
+                    b.HasOne("EShop.Core.Checkout.Orders.Domain.Order", null)
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EShop.Core.Common.Domain.Address", b =>
@@ -2078,6 +2169,11 @@ namespace EShop.Web.Migrations
                     b.Navigation("Replies");
                 });
 
+            modelBuilder.Entity("EShop.Core.Checkout.Orders.Domain.Order", b =>
+                {
+                    b.Navigation("OrderItems");
+                });
+
             modelBuilder.Entity("EShop.Core.Platform.Identity.Domain.Role", b =>
                 {
                     b.Navigation("UserRoles");
@@ -2085,6 +2181,8 @@ namespace EShop.Web.Migrations
 
             modelBuilder.Entity("EShop.Core.Platform.Identity.Domain.User", b =>
                 {
+                    b.Navigation("Orders");
+
                     b.Navigation("ShoppingCartItems");
 
                     b.Navigation("UserRoles");

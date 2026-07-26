@@ -5,22 +5,32 @@
 namespace EShop.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class _12 : Migration
+    public partial class _3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Type",
-                table: "Content_MediaFile");
+                name: "CouponUsageAmount",
+                table: "Catalog_Discount");
+
+            migrationBuilder.RenameColumn(
+                name: "DiscountUsageAmount",
+                table: "Catalog_Discount",
+                newName: "AppliedTimes");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.RenameColumn(
+                name: "AppliedTimes",
+                table: "Catalog_Discount",
+                newName: "DiscountUsageAmount");
+
             migrationBuilder.AddColumn<int>(
-                name: "Type",
-                table: "Content_MediaFile",
+                name: "CouponUsageAmount",
+                table: "Catalog_Discount",
                 type: "integer",
                 nullable: false,
                 defaultValue: 0);
