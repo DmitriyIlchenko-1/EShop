@@ -515,433 +515,6 @@ col-start-3 {
     grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop)) / 2);
 }
 
-@media (min-width: 600px) {
-    .sm\:col-span-2 {
-        grid-column: span 2 / span 2;
-    }
-
-
-    .sm\:col-span-3 {
-        grid-column: span 3 / span 3;
-    }
-
-    .sm\:block {
-        display: block;
-    }
-
-    .sm\:flex {
-        display: flex;
-    }
-
-    sm\:hidden {
-        display: none;
-    }
-
-    .sm\:grid {
-        display: grid;
-    }
-
-    .sm\:w-auto {
-        width: auto;
-    }
-
-    .sm\:auto-cols-2 {
-        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop)) / 2);
-    }
-
-    .sm\:auto-cols-3 {
-        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 2) / 3);
-    }
-
-    .sm\:grid-cols-2 {
-        /*The minimum size of an fr unit is auto. Grid then looks at the min-content size of the item.
-        If the item has a size (you’ve given it a width) or has something in it with a size such as an image,
-        the min-content size might be much bigger than the share of available space you think 1fr will give you.
-        It’s easy to think of 1fr as being "one part of the space in the grid container" when it is really one part of the space left over.
-        If there is space to grow then the tracks grow from that min-content size assigning space.
-        Using minmax is the best thing to do if you want to forcibly have equal width tracks*/
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .sm\:grid-cols-3 {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .sm\:grid-cols-8 {
-        grid-template-columns: repeat(8, minmax(0, 1fr));
-    }
-
-    .sm\:flex-wrap {
-        flex-wrap: wrap;
-    }
-
-    .sm\:gap-x-theme {
-        column-gap: var(--resource-list-column-gap-desktop);
-    }
-
-    .sm\:gap-y-8 {
-        row-gap: calc(8 * var(--space-unit));
-    }
-
-    .sm\:text-end {
-        text-align: end;
-    }
-}
-
-@media (min-width: 769px) {
-    .md\:gap-lg {
-        gap: var(--gap-lg);
-    }
-
-    .md\:col-span-1 {
-        grid-column: span 1 / span 1;
-    }
-
-    .md\:col-span-full {
-        grid-column: 1 / -1;
-    }
-
-    .md\:mb-0 {
-        margin-bottom: 0;
-    }
-
-    .md\:mb-12 {
-        margin-bottom: calc(12 * var(--space-unit));
-    }
-
-    .md\:mb-14 {
-        margin-bottom: calc(14 * var(--space-unit));
-    }
-
-    .md\:mb-6 {
-        margin-bottom: calc(6 * var(--space-unit));
-    }
-
-    .md\:mb-8 {
-        margin-bottom: calc(8 * var(--space-unit));
-    }
-
-    .md\:mr-2 {
-        margin-right: calc(2 * var(--space-unit));
-    }
-
-    .md\:mt-14 {
-        margin-top: calc(14 * var(--space-unit));
-    }
-
-    .md\:mt-16 {
-        margin-top: calc(16 * var(--space-unit));
-    }
-
-    .md\:block {
-        display: block;
-    }
-
-    .md\:inline {
-        display: inline;
-    }
-
-    .md\:flex {
-        display: flex;
-    }
-
-    .md\:inline-flex {
-        display: inline-flex;
-    }
-
-    .md\:grid {
-        display: grid;
-    }
-
-    .md\:hidden {
-        display: none;
-    }
-
-    .md\:h-auto {
-        height: auto;
-    }
-
-    .md\:w-auto {
-        width: auto;
-    }
-
-    .md\:auto-cols-2 {
-        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop)) / 2);
-    }
-
-    .md\:auto-cols-3 {
-        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 2) / 3);
-    }
-
-    .md\:auto-cols-4 {
-        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 3) / 4);
-    }
-
-    .md\:grid-cols-1 {
-        grid-template-columns: repeat(1, minmax(0, 1fr));
-    }
-
-    .md\:grid-cols-2 {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .md\:grid-cols-3 {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .md\:grid-cols-4 {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .md\:flex-row {
-        flex-direction: row;
-    }
-
-    .md\:flex-row-reverse {
-        flex-direction: row-reverse;
-    }
-
-    .md\:flex-wrap {
-        flex-wrap: wrap;
-    }
-
-    .md\:flex-no-wrap {
-        flex-wrap: nowrap;
-    }
-
-    .md\:items-center {
-        align-items: center;
-    }
-
-    .md\:gap-y-16 {
-        row-gap: calc(16 * var(--space-unit));
-    }
-
-    .md\:gap-y-6 {
-        row-gap: calc(6 * var(--space-unit));
-    }
-
-    .md\:gap-y-8 {
-        row-gap: calc(8 * var(--space-unit));
-    }
-
-    .md\:gap-x-6 {
-        column-gap: calc(6 * var(--space-unit));
-    }
-
-    .md\:gap-x-4 {
-        column-gap: calc(4 * var(--space-unit));
-    }
-
-    .md\:self-start {
-        align-self: flex-start;
-    }
-
-    .md\:p-8 {
-        padding: calc(8 * var(--space-unit));
-    }
-
-    .md\:pt-0 {
-        padding-top: 0;
-    }
-}
-
-@media (min-width: 1024px) {
-    .lg\:col-span-1 {
-        grid-column: span 1 / span 1;
-    }
-
-    .lg\:col-span-2 {
-        grid-column: span 2 / span 2;
-    }
-
-    .lg\:col-span-3 {
-        grid-column: span 3 / span 3;
-    }
-
-    .lg\:col-span-4 {
-        grid-column: span 4 / span 4;
-    }
-
-    .lg\:col-start-1 {
-        grid-column-start: 1;
-    }
-
-    .lg\:col-start-2 {
-        grid-column-start: 2;
-    }
-
-    .lg\:row-start-1 {
-        grid-row-start: 1;
-    }
-
-    .lg\:mt-0 {
-        margin-top: 0;
-    }
-
-    .lg\:mt-8 {
-        margin-top: calc(8 * var(--space-unit));
-    }
-
-    .lg\:block {
-        display: block;
-    }
-
-    .lg\:hidden {
-        display: none;
-    }
-
-
-    .lg\:auto-cols-3 {
-        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 2) / 3);
-    }
-
-    .lg\:auto-cols-4 {
-        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 3) / 4);
-    }
-
-    .lg\:auto-cols-5 {
-        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 4) / 5);
-    }
-
-    .lg\:grid-cols-2 {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .lg\:grid-cols-3 {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .lg\:grid-cols-4 {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .lg\:grid-cols-5 {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
-
-    .lg\:overflow-hidden {
-        overflow: hidden;
-    }
-}
-
-@media (min-width: 1280px) {
-    .xl\:col-span-2 {
-        grid-column: span 2 / span 2;
-    }
-
-    .xl\:col-span-3 {
-        grid-column: span 3 / span 3;
-    }
-
-    .xl\:auto-cols-4 {
-        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 3) / 4);
-    }
-
-    .xl\:auto-cols-5 {
-        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 4) / 5);
-    }
-
-    .xl\:auto-cols-6 {
-        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 5) / 6);
-    }
-
-    .xl\:grid-cols-2 {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .xl\:grid-cols-3 {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .xl\:grid-cols-4 {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .xl\:grid-cols-5 {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
-
-    .xl\:grid-cols-6 {
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-    }
-
-    .xl\:grid-cols-8 {
-        grid-template-columns: repeat(8, minmax(0, 1fr));
-    }
-}
-
-
-.text-left {
-    text-align: left;
-}
-
-.text-center {
-    text-align: center;
-}
-
-.text-right {
-    text-align: right;
-}
-
-.text-start {
-    text-align: start;
-}
-
-.text-end {
-    text-align: end;
-}
-
-.align-middle {
-    vertical-align: middle;
-}
-
-.align-bottom {
-    vertical-align: bottom;
-}
-
-.font-bold {
-    font-weight: 700;
-}
-
-.font-normal {
-    font-weight: 400;
-}
-
-.font-semibold {
-    font-weight: 600;
-}
-
-.uppercase {
-    text-transform: uppercase;
-}
-
-.capitalize {
-    text-transform: capitalize;
-}
-
-.overflow-hidden {
-    overflow: hidden;
-}
-
-/*This value expands to flex: 1 1 auto*/
-.flex-auto {
-    flex: auto;
-}
-
-.positioning-middle {
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.no-wrap {
-    text-wrap: nowrap;
-}
-
-.bg-theme-bg {
-    background-color: var(--bg-color);
-}
-
 .gap-3xs {
     gap: var(--gap-3xs);
 }
@@ -1767,4 +1340,436 @@ col-start-3 {
     border-radius: var(--border-radius-lg);
 }
 
+
+
+
+@media (min-width: 600px) {
+    .sm\:col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+
+
+    .sm\:col-span-3 {
+        grid-column: span 3 / span 3;
+    }
+
+    .sm\:block {
+        display: block;
+    }
+
+    .sm\:flex {
+        display: flex;
+    }
+
+    sm\:hidden {
+        display: none;
+    }
+
+    .sm\:grid {
+        display: grid;
+    }
+
+    .sm\:w-auto {
+        width: auto;
+    }
+
+    .sm\:auto-cols-2 {
+        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop)) / 2);
+    }
+
+    .sm\:auto-cols-3 {
+        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 2) / 3);
+    }
+
+    .sm\:grid-cols-2 {
+        /*The minimum size of an fr unit is auto. Grid then looks at the min-content size of the item.
+        If the item has a size (you’ve given it a width) or has something in it with a size such as an image,
+        the min-content size might be much bigger than the share of available space you think 1fr will give you.
+        It’s easy to think of 1fr as being "one part of the space in the grid container" when it is really one part of the space left over.
+        If there is space to grow then the tracks grow from that min-content size assigning space.
+        Using minmax is the best thing to do if you want to forcibly have equal width tracks*/
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sm\:grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .sm\:grid-cols-8 {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+
+    .sm\:flex-wrap {
+        flex-wrap: wrap;
+    }
+
+    .sm\:gap-x-theme {
+        column-gap: var(--resource-list-column-gap-desktop);
+    }
+
+    .sm\:gap-y-8 {
+        row-gap: calc(8 * var(--space-unit));
+    }
+
+    .sm\:text-end {
+        text-align: end;
+    }
+}
+
+@media (min-width: 769px) {
+    .md\:gap-lg {
+        gap: var(--gap-lg);
+    }
+
+    .md\:col-span-1 {
+        grid-column: span 1 / span 1;
+    }
+
+    .md\:col-span-full {
+        grid-column: 1 / -1;
+    }
+
+    .md\:mb-0 {
+        margin-bottom: 0;
+    }
+    .md\:mt-0 {
+        margin-top: 0;
+    }
+
+    .md\:mb-12 {
+        margin-bottom: calc(12 * var(--space-unit));
+    }
+
+    .md\:mb-14 {
+        margin-bottom: calc(14 * var(--space-unit));
+    }
+
+    .md\:mb-6 {
+        margin-bottom: calc(6 * var(--space-unit));
+    }
+
+    .md\:mb-8 {
+        margin-bottom: calc(8 * var(--space-unit));
+    }
+
+    .md\:mr-2 {
+        margin-right: calc(2 * var(--space-unit));
+    }
+
+    .md\:mt-14 {
+        margin-top: calc(14 * var(--space-unit));
+    }
+
+    .md\:mt-16 {
+        margin-top: calc(16 * var(--space-unit));
+    }
+
+    .md\:block {
+        display: block;
+    }
+
+    .md\:inline {
+        display: inline;
+    }
+
+    .md\:flex {
+        display: flex;
+    }
+
+    .md\:inline-flex {
+        display: inline-flex;
+    }
+
+    .md\:grid {
+        display: grid;
+    }
+
+    .md\:hidden {
+        display: none;
+    }
+
+    .md\:h-auto {
+        height: auto;
+    }
+
+    .md\:w-auto {
+        width: auto;
+    }
+
+    .md\:auto-cols-2 {
+        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop)) / 2);
+    }
+
+    .md\:auto-cols-3 {
+        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 2) / 3);
+    }
+
+    .md\:auto-cols-4 {
+        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 3) / 4);
+    }
+
+    .md\:grid-cols-1 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .md\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .md\:grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .md\:grid-cols-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .md\:flex-row {
+        flex-direction: row;
+    }
+
+    .md\:flex-row-reverse {
+        flex-direction: row-reverse;
+    }
+
+    .md\:flex-wrap {
+        flex-wrap: wrap;
+    }
+
+    .md\:flex-no-wrap {
+        flex-wrap: nowrap;
+    }
+
+    .md\:items-center {
+        align-items: center;
+    }
+
+    .md\:gap-y-16 {
+        row-gap: calc(16 * var(--space-unit));
+    }
+
+    .md\:gap-y-6 {
+        row-gap: calc(6 * var(--space-unit));
+    }
+
+    .md\:gap-y-8 {
+        row-gap: calc(8 * var(--space-unit));
+    }
+
+    .md\:gap-x-6 {
+        column-gap: calc(6 * var(--space-unit));
+    }
+
+    .md\:gap-x-4 {
+        column-gap: calc(4 * var(--space-unit));
+    }
+
+    .md\:self-start {
+        align-self: flex-start;
+    }
+
+    .md\:p-8 {
+        padding: calc(8 * var(--space-unit));
+    }
+
+    .md\:pt-0 {
+        padding-top: 0;
+    }
+}
+
+@media (min-width: 1024px) {
+    .lg\:col-span-1 {
+        grid-column: span 1 / span 1;
+    }
+
+    .lg\:col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+
+    .lg\:col-span-3 {
+        grid-column: span 3 / span 3;
+    }
+
+    .lg\:col-span-4 {
+        grid-column: span 4 / span 4;
+    }
+
+    .lg\:col-start-1 {
+        grid-column-start: 1;
+    }
+
+    .lg\:col-start-2 {
+        grid-column-start: 2;
+    }
+
+    .lg\:row-start-1 {
+        grid-row-start: 1;
+    }
+
+    .lg\:mt-0 {
+        margin-top: 0;
+    }
+
+    .lg\:mt-8 {
+        margin-top: calc(8 * var(--space-unit));
+    }
+
+    .lg\:block {
+        display: block;
+    }
+
+    .lg\:hidden {
+        display: none;
+    }
+
+
+    .lg\:auto-cols-3 {
+        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 2) / 3);
+    }
+
+    .lg\:auto-cols-4 {
+        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 3) / 4);
+    }
+
+    .lg\:auto-cols-5 {
+        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 4) / 5);
+    }
+
+    .lg\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .lg\:grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .lg\:grid-cols-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .lg\:grid-cols-5 {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .lg\:overflow-hidden {
+        overflow: hidden;
+    }
+}
+
+@media (min-width: 1280px) {
+    .xl\:col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+
+    .xl\:col-span-3 {
+        grid-column: span 3 / span 3;
+    }
+
+    .xl\:auto-cols-4 {
+        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 3) / 4);
+    }
+
+    .xl\:auto-cols-5 {
+        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 4) / 5);
+    }
+
+    .xl\:auto-cols-6 {
+        grid-auto-columns: calc((100% - var(--resource-list-column-gap-desktop) * 5) / 6);
+    }
+
+    .xl\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .xl\:grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .xl\:grid-cols-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .xl\:grid-cols-5 {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .xl\:grid-cols-6 {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .xl\:grid-cols-8 {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+}
+
+
+.text-left {
+    text-align: left;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-start {
+    text-align: start;
+}
+
+.text-end {
+    text-align: end;
+}
+
+.align-middle {
+    vertical-align: middle;
+}
+
+.align-bottom {
+    vertical-align: bottom;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.font-normal {
+    font-weight: 400;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.uppercase {
+    text-transform: uppercase;
+}
+
+.capitalize {
+    text-transform: capitalize;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+/*This value expands to flex: 1 1 auto*/
+.flex-auto {
+    flex: auto;
+}
+
+.positioning-middle {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.no-wrap {
+    text-wrap: nowrap;
+}
+
+.bg-theme-bg {
+    background-color: var(--bg-color);
+}
 

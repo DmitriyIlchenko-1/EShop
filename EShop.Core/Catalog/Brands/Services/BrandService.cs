@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using EShop.Core.Catalog.Brands.Domain;
 using EShop.Infrastructure.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ public class DefaultBrandService : IBrandService
         _db = db;
     }
 
-    public virtual async Task<ICollection<Brand>> GetBrandsByIdsAsync(int[] brandIds,
+    public virtual async Task<ICollection<ProductBrand>> GetBrandsByProductIdsAsync(int[] brandIds,
         bool includeUnpublished = false, bool track = false)
     {
         Guard.NotNull(brandIds);
@@ -22,11 +23,12 @@ public class DefaultBrandService : IBrandService
             return [];
         }
 
-        var query = _db.Brands.AsQueryable();
+        var query = _db.ProductBrands.AsQueryable();
         if(track)
             query = query.AsNoTracking();
         return await query
-            .Where(x => includeUnpublished || x.IsPublished)
+            .Include(x => x.Brand)
+            .Where(x => includeUnpublished || x.Brand.IsPublished)
             .Where(x => brandIds.Contains(x.Id))
             .ToListAsync();
     }

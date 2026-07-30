@@ -116,8 +116,7 @@ public abstract class EngineStartup<TEngine> : Disposable, IEngineStartup where 
     private void ConfigureModules()
     {
         var coreAssemblies = ResolveCoreAssemblies();
-        var typeScanner = new DefaultTypeScanner(coreAssemblies);
-        Singleton<ITypeScanner>.Instance = typeScanner;
+        Singleton<ITypeScanner>.Instance = new DefaultTypeScanner(coreAssemblies);
         var modules = FindAllModules();
 
         foreach (var module in modules)
@@ -125,7 +124,11 @@ public abstract class EngineStartup<TEngine> : Disposable, IEngineStartup where 
             LoadModule(module as ModuleDescriptor);
         }
 
-        Engine.ApplicationContext.ModuleCollection = new ModuleCollection(modules);
+        var moduleCollection = new ModuleCollection(modules);
+        Engine.ApplicationContext.ModuleCollection = moduleCollection;
+        Singleton<ITypeScanner>.Instance = new DefaultTypeScanner(coreAssemblies, moduleCollection);
+
+        
         void LoadModule(ModuleDescriptor descriptor)
         {
             descriptor.ModuleAssemblyContext = new ModuleAssemblyContext(descriptor);

@@ -32,11 +32,12 @@ public class ProductBatchContext
 
     private LazyMultimap<ProductVariantAttribute> _attributes;
     private LazyMultimap<ProductMedia> _productMedia;
-    private LazyMultimap<ProductVariantAttributeCombination> _attributeCombinations;
+    private LazyMultimap<ProductVariantAttributeCombination> _combinations;
     private LazyMultimap<ProductLink> _relatedProducts;
     private LazyMultimap<ProductLabel> _productLabels;
     private LazyMultimap<Discount> _productDiscounts;
     private LazyMultimap<ProductCategory> _productCategories;
+    private LazyMultimap<ProductBrand> _productBrands;
     private LazyMultimap<ProductSpecificationAttribute> _specifications { get; set; }
 
     public ProductBatchContext(ApplicationDbContext db, IEnumerable<Product> products,
@@ -70,7 +71,13 @@ public class ProductBatchContext
         set => _categoryService = value;
     }
 
+    public LazyMultimap<ProductBrand> ProductBrands
+        => _productBrands ??= new LazyMultimap<ProductBrand>(LoadProductBrands, _productIds);
 
+    private async Task<MultiMap<int, ProductBrand>> LoadProductBrands(int[] ids)
+    {
+        return (await BrandService.GetBrandsByProductIdsAsync(ids)).ToMultiMap(x => x.ProductId, x => x);
+    }
     public LazyMultimap<ProductVariantAttribute> Attributes
         => _attributes ??= new LazyMultimap<ProductVariantAttribute>(LoadVariantAttributes, _productIds);
 
@@ -98,6 +105,8 @@ public class ProductBatchContext
 
     public LazyMultimap<ProductMedia> ProductMedia
         => _productMedia ??= new LazyMultimap<ProductMedia>(LoadProductMedia, _productIds);
+    public LazyMultimap<ProductVariantAttributeCombination> ProductCombinations
+        => _combinations ??= new LazyMultimap<ProductVariantAttributeCombination>(LoadProductCombinations, _productIds);
 
     public LazyMultimap<Discount> ProductDiscounts
         => _productDiscounts ??= new LazyMultimap<Discount>(LoadProductDiscounts, _productIds);
@@ -111,6 +120,17 @@ public class ProductBatchContext
     }
 
 
+    
+    private async Task<MultiMap<int, ProductVariantAttributeCombination>> LoadProductCombinations(int[] ids)
+    {
+        var combinations = await _db
+            .ProductVariantAttributeCombinations
+            .AsNoTracking()
+            .Where(x => ids.Contains(x.ProductId))
+            .OrderBy(x => x.ProductId)
+            .ToListAsync();
+        return combinations.ToMultiMap(x => x.ProductId, x => x);
+    }
     protected virtual async Task<MultiMap<int, ProductMedia>> LoadProductMedia(int[] ids)
     {
         return (await _db
@@ -204,6 +224,6 @@ public class ProductBatchContext
         _specifications?.Clear();
         _relatedProducts?.Clear();
         _attributes?.Clear();
-        _attributeCombinations?.Clear();
+        _combinations?.Clear();
     }
 }

@@ -407,6 +407,32 @@ namespace EShop.Web.Migrations
                     b.ToTable("Catalog_Brand", (string)null);
                 });
 
+            modelBuilder.Entity("EShop.Core.Catalog.Brands.Domain.ProductBrand", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BrandId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BrandId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Catalog_ProductBrand", (string)null);
+                });
+
             modelBuilder.Entity("EShop.Core.Catalog.Categories.Domain.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -894,12 +920,6 @@ namespace EShop.Web.Migrations
                     b.Property<int>("OrderStatus")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("OrderSubtotalWithDiscount")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("OrderSubtotalWithNoDiscount")
-                        .HasColumnType("numeric");
-
                     b.Property<DateTime?>("PaidOnUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -911,6 +931,12 @@ namespace EShop.Web.Migrations
 
                     b.Property<int>("ShippingAddressId")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("SubtotalRounded")
+                        .HasColumnType("numeric");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -947,18 +973,23 @@ namespace EShop.Web.Migrations
                     b.Property<string>("RawAttributes")
                         .HasColumnType("text");
 
-                    b.Property<decimal>("SubtotalWithDiscount")
+                    b.Property<decimal>("Subtotal")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal>("SubtotalWithNoDiscount")
+                    b.Property<decimal>("SubtotalRounded")
                         .HasColumnType("numeric");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal>("UnitPriceRounded")
+                        .HasColumnType("numeric");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Checkout_OrderItem", (string)null);
                 });
@@ -1197,6 +1228,9 @@ namespace EShop.Web.Migrations
 
                     b.Property<byte>("DisplayOrder")
                         .HasColumnType("smallint");
+
+                    b.Property<bool>("MainImage")
+                        .HasColumnType("boolean");
 
                     b.Property<int?>("MediaFileId")
                         .HasColumnType("integer");
@@ -1814,6 +1848,25 @@ namespace EShop.Web.Migrations
                     b.Navigation("MediaFile");
                 });
 
+            modelBuilder.Entity("EShop.Core.Catalog.Brands.Domain.ProductBrand", b =>
+                {
+                    b.HasOne("EShop.Core.Catalog.Brands.Domain.Brand", "Brand")
+                        .WithMany()
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EShop.Core.Catalog.Products.Domain.Product", "Product")
+                        .WithMany("Brands")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Brand");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("EShop.Core.Catalog.Categories.Domain.Category", b =>
                 {
                     b.HasOne("EShop.Core.Content.Media.Domain.MediaFile", "MediaFile")
@@ -1852,12 +1905,10 @@ namespace EShop.Web.Migrations
 
             modelBuilder.Entity("EShop.Core.Catalog.Products.Domain.Product", b =>
                 {
-                    b.HasOne("EShop.Core.Catalog.Brands.Domain.Brand", "Brand")
+                    b.HasOne("EShop.Core.Catalog.Brands.Domain.Brand", null)
                         .WithMany("Products")
                         .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Brand");
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("EShop.Core.Catalog.Products.Domain.ProductLink", b =>
@@ -1972,6 +2023,14 @@ namespace EShop.Web.Migrations
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("EShop.Core.Catalog.Products.Domain.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("EShop.Core.Common.Domain.Address", b =>
@@ -2148,6 +2207,8 @@ namespace EShop.Web.Migrations
 
             modelBuilder.Entity("EShop.Core.Catalog.Products.Domain.Product", b =>
                 {
+                    b.Navigation("Brands");
+
                     b.Navigation("ProductCategories");
 
                     b.Navigation("ProductLinks");

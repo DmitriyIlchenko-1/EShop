@@ -21,7 +21,9 @@
    
 </div>
 <div class="flex flex-col items-center gap-y-sm mt-3xl">
-    <button class="button w-full">Checkout</button>
-    <a class="link">Keep shopping</a>
-    <a  asp-route="Checkout">checkout</a>
+    @*TODO: we don't actually submit here yet because I want to simplify the workflow*@
+    <a  class="button text-center w-full" asp-route="Checkout">Checkout</a>
+    @* <button class="button w-full">Checkout</button> *@
+    <a asp-route="Homepage" class="link">Keep shopping</a>
+
 </div>

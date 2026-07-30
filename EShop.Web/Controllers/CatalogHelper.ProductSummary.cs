@@ -73,13 +73,7 @@ public partial class CatalogHelper
 
         if (mappingSettings.MapBrands)
         {
-            //do not change to use lazyProductCtx. Leave this as it is! 
-            var brandIds = products
-                .Select(p => p.BrandId ?? 0)
-                .Where(x => x != 0)
-                .Distinct()
-                .ToArray();
-            itemCtx.Brands = (await _brandService.GetBrandsByIdsAsync(brandIds)).ToDictionary(x => x.Id, x => x);
+            await lazyProductCtx.ProductBrands.LoadAllAsync();
         }
 
 
@@ -158,9 +152,10 @@ public partial class CatalogHelper
 
         if (settings.MapBrands)
         {
-            if (ctx.Brands.TryGetValue(product.BrandId ?? 0, out var brand) && brand != null)
+            var productBrand = (await ctx.BatchProductContext.ProductBrands.GetOrLoadAsync(product.Id)).FirstOrDefault();
+            if (productBrand != null)
             {
-                item.Brand = await PrepareBrandSummaryModelAsync(brand);
+                item.Brand = await PrepareBrandSummaryModelAsync(productBrand.Brand);
             }
         }
 

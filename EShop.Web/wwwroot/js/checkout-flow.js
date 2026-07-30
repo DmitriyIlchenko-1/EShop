@@ -2,6 +2,45 @@ class CheckoutFlow extends HTMLElement {
 
     constructor() {
         super();
+        this.form = this.querySelector('.js-checkout-form');
+        this.init();
+    }
+    
+    init(){
+        this.form.addEventListener('submit', this.handleSubmit.bind(this));
+    }
+    
+    async handleSubmit(e){
+        e.preventDefault();
+        const fetchUrl =  this.form.action;
+        const formData = new FormData(this.form);
+        const response = await fetch(fetchUrl, {
+            method: "POST",
+            body: formData
+        });
+        if (!response.ok){
+            
+        }
+        const data = await response.json();
+        if (data.success){
+            window.location.replace(data.redirectUrl);
+        }
+        else{
+            
+        }
+    }
+
+    
+}
+
+
+if (!customElements.get('checkout-flow')) {
+    customElements.define('checkout-flow', CheckoutFlow);
+}
+
+class AddressFlow extends HTMLElement {
+    constructor() {
+        super();
         this.getAddressUrl = this.dataset.getAddressUrl;
         this.addEventListener("click", this.handleClick.bind(this));
         this.init(true);
@@ -25,12 +64,12 @@ class CheckoutFlow extends HTMLElement {
 
         //select active panel that arrived from the server.
         //this.activePanel = this.querySelector('.js-panel.is-open');
-        
+
         //this.newOrUpdateAddressSection = this.querySelector('.checkout__new-address');
     }
 
     enableLoading(){
-        
+
     }
 
     initializeActivePanel() {
@@ -87,10 +126,10 @@ class CheckoutFlow extends HTMLElement {
                 fetchData = true;
                 this.cancelBtn.classList.remove('hidden');
                 this.toggleFormButtons(targetName)
-            } 
+            }
             else if (targetName === 'cancel' && (lastActivePanel === this.formPanel)) {
                 this.activePanel = this.selectPanel;
-                
+
                 //We do need to reset form between the add form and update form because otherwise the validation details (successes and errors) 
                 // from one are displayed for the other as well when it opens.
                 CheckoutFlow.resetForm(this.form);
@@ -98,7 +137,7 @@ class CheckoutFlow extends HTMLElement {
             else{
                 return;
             }
-            
+
             this.close(lastActivePanel);
             if (fetchData) await this.fetchEditOrAddAddress(targetName === 'add');
         } else if (targetName === 'remove') {
@@ -152,7 +191,7 @@ class CheckoutFlow extends HTMLElement {
         await this.handleResponse(response, (data) => {
             //reselect the necessary dom elements again after inserting the html
             this.init(false);
-            
+
             if (data.success) {
                 if (this.activePanel === this.formPanel) {
                     CheckoutFlow.resetForm(this.form);
@@ -174,12 +213,12 @@ class CheckoutFlow extends HTMLElement {
         // 
         // console.log(`AFTER CLOSING: this is where is-open is: ${this.querySelector('.is-open').classList}`);
     }
-    
+
     toggleFormButtons(operation){
         if (operation === 'add') {
             this.addSubmitBtn.classList.remove('hidden');
             this.updateSubmitBtn.classList.add('hidden');
-        } 
+        }
         if(operation === 'update') {
             this.addSubmitBtn.classList.add('hidden');
             this.updateSubmitBtn.classList.remove('hidden');
@@ -272,8 +311,6 @@ class CheckoutFlow extends HTMLElement {
     }
 }
 
-
-if (!customElements.get('checkout-flow')) {
-    customElements.define('checkout-flow', CheckoutFlow);
+if (!customElements.get('address-flow')) {
+    customElements.define('address-flow', AddressFlow);
 }
-

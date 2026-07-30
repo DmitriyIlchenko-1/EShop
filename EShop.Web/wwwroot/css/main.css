@@ -41,9 +41,11 @@ fieldset {
     padding: 0;
     border: none;
 }
+
 legend {
     padding: 0;
 }
+
 h1, .h1, .text-block.h1 > * {
     font-family: var(--font-h1--family);
     font-size: var(--font-size--h1);
@@ -164,9 +166,10 @@ p {
     margin: 0 0 1em 0;
 }
 
-dl, dt {
+dl, dt, dd {
     margin: 0;
 }
+
 
 p,
 h1,
@@ -1998,8 +2001,6 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     }
 }
 
- 
-
 
 .checkout__existing-address:has(.checkout__choose-existing-address-panel) > * {
     padding-inline-start: var(--padding-sm);
@@ -2020,7 +2021,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
         interpolate-size: allow-keywords;
     }
 
-    
+
     &::details-content {
         transition: height .5s ease, content-visibility .5s allow-discrete;
         height: 0;
@@ -2036,12 +2037,16 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 .disclosure__summary {
     list-style: none;
     position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: var(--gap-sm);
 
     &::after {
         content: "";
         background: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/PjxzdmcgYmFzZVByb2ZpbGU9InRpbnkiIGhlaWdodD0iMjRweCIgaWQ9IkxheWVyXzEiIHZlcnNpb249IjEuMiIgdmlld0JveD0iMCAwIDI0IDI0IiB3aWR0aD0iMjRweCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+PHBhdGggZD0iTTguNTg2LDUuNTg2Yy0wLjc4MSwwLjc4MS0wLjc4MSwyLjA0NywwLDIuODI4TDEyLjE3MSwxMmwtMy41ODUsMy41ODZjLTAuNzgxLDAuNzgxLTAuNzgxLDIuMDQ3LDAsMi44MjggIEM4Ljk3NiwxOC44MDUsOS40ODgsMTksMTAsMTlzMS4wMjQtMC4xOTUsMS40MTQtMC41ODZMMTcuODI5LDEybC02LjQxNS02LjQxNEMxMC42MzQsNC44MDUsOS4zNjYsNC44MDUsOC41ODYsNS41ODZ6Ii8+PC9zdmc+");
         background-repeat: no-repeat;
         background-size: cover;
+        align-self: center;
         display: block;
         width: 2.5rem;
         height: 2.5rem;
@@ -2061,9 +2066,23 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     display: none;
 }
 
- 
 
-.checkout__container{
+@media screen and (width >= 1024px) {
+    advanced-disclosure[data-maximize-on-large-screen='true'] .checkout__order-disclosure-summary {
+        pointer-events: none;
+    }
+}
+
+@media screen and (width >= 1024px) {
+    advanced-disclosure[data-maximize-on-large-screen='true'] .checkout__order-disclosure-summary::after {
+        display: none;
+    }
+}
+
+
+
+
+.checkout__container {
     display: grid;
     grid-template-columns: 1fr;
     @media screen and (width >= 1024px) {
@@ -2107,7 +2126,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
         flex: 1;
         max-width: var(--checkout-main-flow-inline-size);
         padding-inline: var(--padding-5xl);
-        border-right: 1px solid rgb(var(--color-foreground-rgb) , .1);
+        border-right: 1px solid rgb(var(--color-foreground-rgb), .1);
 
     }
 }
@@ -2118,16 +2137,8 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     align-items: center;
     column-gap: var(--gap-sm);
     padding: var(--padding-sm);
-    @media screen and (width >= 1024px){
-        pointer-events: none;
-    }
 }
-@media screen and (width >= 1024px){
-    .checkout__order-disclosure-summary::after{
-        display: none;
-    }
-}
- 
+
 
 .checkout__summary-info--open,
 .checkout__summary-info--closed {
@@ -2149,7 +2160,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 }
 
 @media screen and (width >= 1024px) {
-    .checkout__summary-info--closed{
+    .checkout__summary-info--closed {
         display: none;
     }
 }
@@ -2159,7 +2170,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     padding-block: var(--padding-md);
 }
 
-.checkout__cart-item:not(:first-child){
+.checkout__cart-item:not(:first-child) {
     margin-block-start: var(--margin-xl);
 }
 
@@ -2206,9 +2217,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     font-weight: 600;
 }
 
-.checkout__cart-item--total {
-    font-size: .8em;
-}
+
 .checkout__payment {
 }
 
@@ -2235,17 +2244,17 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 .checkout__block {
     margin-block: var(--margin-2xl);
 }
-.checkout__block--small{
+
+.checkout__block--small {
     margin-block: var(--margin-md);
 }
-
 
 
 .checkout-address :is(.js-select-panel, .js-form-panel).is-open {
     display: block;
 }
 
-.checkout-address :is(.js-select-panel, .js-form-panel)  {
+.checkout-address :is(.js-select-panel, .js-form-panel) {
     display: none;
 }
 
@@ -2268,7 +2277,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 }
 
 
-.pointer-events-none .checkout__payment-list{
+.pointer-events-none .checkout__payment-list {
     opacity: .3;
 }
 
@@ -2279,10 +2288,6 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     justify-items: center;
     inset: 0;
 }
-
-
-
-
 
 
 .is-loading::after {
@@ -2314,4 +2319,166 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     to {
         transform: rotate(360deg);
     }
+}
+
+
+.account {
+    --account-accent-color: rgb(255, 123, 43);
+}
+
+.account__container {
+    display: grid;
+    @media screen and (width >= 769px) {
+        column-gap: var(--gap-2xl);
+        grid-template-columns: minmax(max-content, 1fr) 2fr;
+    }
+
+}
+
+.account__customer-info {
+    @media screen and (width >= 769px) {
+        position: sticky;
+        /*TODO: can we set the top to exactly where the start of the container is, in our case it's where the section content starts excluding the padding?*/
+        top: var(--header-end-with-padding);
+    }
+}
+
+.account__customer-info-disclosure {
+    border: 1px solid rgb(var(--color-foreground-rgb), .1);
+    border-radius: .8rem;
+}
+
+.account__customer-info-summary {
+    background-color: rgb(var(--color-foreground-rgb), .04);
+    padding-block: 1.3rem;
+    padding-inline: 1.5rem;
+    border-start-end-radius: calc(.8rem - 1px);
+    border-start-start-radius: calc(.8rem - 1px);
+}
+
+@media screen and (width >= 769px) {
+    advanced-disclosure[data-maximize-on-large-screen='true'] .account__customer-info-summary {
+        pointer-events: none;
+    }
+}
+
+@media screen and (width >= 769px) {
+    advanced-disclosure[data-maximize-on-large-screen='true'] .account__customer-info-summary::after {
+        display: none;
+    }
+}
+
+
+.account__nav-item {
+    position: relative;
+}
+
+.account__nav-item {
+    border-top: 1px solid rgb(var(--color-foreground-rgb), .1);
+}
+
+.account__nav-item--active:has(.account__nav-link.active)::before {
+    content: '';
+    position: absolute;
+    width: 2px;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    background-color: var(--account-accent-color);
+}
+
+.account__nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-xs);
+    padding: var(--padding-lg);
+}
+
+.account__nav-link:focus-visible, summary:focus-visible {
+    outline-width: .3rem;
+    outline-offset: -.8rem;
+}
+
+.account__nav-link:is(:hover, :focus-visible) {
+    background-color: rgb(var(--color-foreground-rgb), .04);
+}
+
+.account__order-item {
+    border: 1px solid rgb(var(--color-foreground-rgb), .1);
+    border-radius: .8rem;
+}
+
+.account__order-list > li:not(:first-child) {
+    margin-block-start: var(--margin-2xl);
+}
+
+.account-order-description, .account__order-actions {
+    padding: var(--padding-md);
+}
+
+.account__order-metadata {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 12rem;
+    row-gap: var(--gap-sm);
+}
+
+.account__order-actions {
+    border-radius: 0 0 calc(.8rem - 1px) calc(.8rem - 1px);
+    background-color: rgb(var(--color-foreground-rgb), .04);
+
+}
+
+.account__order-actions {
+    --button-padding-block: 1.3rem;
+}
+
+/*ORDER DETAILS PAGE*/
+
+.order__info-header {
+}
+
+.order__meta-data {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.order__meta-data-item {
+    flex-basis: 50%;
+    flex-grow: 0;
+    flex-shrink: 0;
+    margin-block-end: var(--margin-md);
+    @media screen and (width >= 769px) {
+        flex: auto;
+        flex-grow: 0;
+        flex-shrink: 0;
+    }
+}
+
+.order__meta-data-item {
+    padding-inline: 5rem;
+    margin-left: -5rem;
+}
+
+.order__meta-data-item > .price__current {
+    white-space: normal;
+}
+
+.order__details {
+    border: 1px solid rgb(var(--color-foreground-rgb), .1);
+    border-radius: var(--border-radius-sm);
+    padding: var(--padding-lg);
+}
+
+.order__items {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: var(--gap-3xl);
+    align-items: flex-start;
+
+}
+
+.order__reorder-btn {
+
 }

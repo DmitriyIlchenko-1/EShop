@@ -8,6 +8,7 @@ namespace EShop.Core.Content.Media.Domain;
 public class ProductMedia : BaseEntity
 {
     public byte DisplayOrder { get; set; }
+    public bool MainImage { get; set; }
 
     public MediaFile MediaFile { get; set; }
 

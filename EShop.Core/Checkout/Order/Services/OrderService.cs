@@ -1,3 +1,5 @@
+using EShop.Core.Catalog.Attributes.Domain;
+using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Products;
 using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Catalog.Products.Services;
@@ -14,7 +16,9 @@ using EShop.Core.Platform.Identity.Extensions;
 using EShop.Core.Platform.Modules;
 using EShop.Core.Platform.Modules.Payment;
 using EShop.Infrastructure.Caching;
+using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Core.Checkout.Orders.Services;
 
@@ -35,15 +39,14 @@ public class DefaultOrderService : IOrderService
     private readonly CheckoutSettings _checkoutSettings;
     private readonly IShoppingCartService _shoppingCartService;
     private readonly IPaymentService _paymentService;
-    private readonly IDiscountService _discountService;
     private readonly ApplicationDbContext _db;
+    private readonly IProductAttributeMaterializer _attributeMaterializer;
 
 
     public DefaultOrderService(IProductPriceService productPriceService, IProductService productService,
         IRequestCache requestCache, IWorkContext workContext, CheckoutSettings checkoutSettings,
-        IShoppingCartService shoppingCartService, IPaymentProviderManager paymentProviderManager,
-        IProviderManager providerManager, PaymentSettings paymentSettings, IPaymentService paymentService,
-        ApplicationDbContext db, IDiscountService discountService)
+        IShoppingCartService shoppingCartService, IPaymentService paymentService,
+        ApplicationDbContext db, IProductAttributeMaterializer attributeMaterializer)
     {
         _productPriceService = productPriceService;
         _productService = productService;
@@ -53,7 +56,7 @@ public class DefaultOrderService : IOrderService
         _shoppingCartService = shoppingCartService;
         _paymentService = paymentService;
         _db = db;
-        _discountService = discountService;
+        _attributeMaterializer = attributeMaterializer;
     }
 
 
@@ -92,7 +95,7 @@ public class DefaultOrderService : IOrderService
         {
             placeOrderResult.Errors.Add(e.Message);
         }
-        
+
         return placeOrderResult;
     }
 
@@ -106,8 +109,8 @@ public class DefaultOrderService : IOrderService
             OrderGuid = paymentRequest.OrderGuid,
             UserId = user.Id,
             PaymentMethodSystemName = paymentRequest.PaymentMethodSystemName,
-            OrderSubtotalWithNoDiscount = ctx.CartSubtotal.SubtotalWithDiscount,
-            OrderSubtotalWithDiscount = ctx.CartSubtotal.SubtotalWithDiscount,
+            Subtotal = ctx.CartSubtotal.SubtotalWithDiscount.Amount,
+            SubtotalRounded = ctx.CartSubtotal.SubtotalWithDiscount.RoundedAmount,
             OrderDiscount = ctx.CartSubtotal.DiscountAmount,
             PaymentStatus = paymentResult.PaymentStatus,
             OrderStatus = OrderStatus.Pending,
@@ -136,9 +139,10 @@ public class DefaultOrderService : IOrderService
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
                 RawAttributes = item.RawAttributes,
-                SubtotalWithDiscount = lineSubtotal.Subtotal.FinalPrice,
-                SubtotalWithNoDiscount = lineSubtotal.Subtotal.PriceSaving.SavingPrice,
-                UnitPrice = lineSubtotal.UnitPrice.FinalPrice
+                Subtotal = lineSubtotal.Subtotal.FinalPrice,
+                SubtotalRounded = lineSubtotal.Subtotal.FinalPrice.RoundedAmount,
+                UnitPrice = lineSubtotal.UnitPrice.FinalPrice,
+                UnitPriceRounded = lineSubtotal.UnitPrice.FinalPrice.RoundedAmount,
             };
 
             order.OrderItems.Add(orderItem);
@@ -147,7 +151,6 @@ public class DefaultOrderService : IOrderService
             await _db.SaveChangesAsync();
 
             await _productService.AdjustProductInventoryAsync(product, -item.Quantity, item.RawAttributes);
-            await _shoppingCartService.ResetCartAsync(ctx.Cart);
 
             var historyRecords = new List<DiscountUsageHistory>();
             foreach (var discount in ctx
@@ -156,17 +159,21 @@ public class DefaultOrderService : IOrderService
             {
                 historyRecords.Add(new DiscountUsageHistory()
                 {
-                    Order = order,
-                    Discount = discount,
+                    OrderId = order.Id,
+                    DiscountId = discount.Id,
                     CreatedOnUtc = DateTime.UtcNow
                 });
-
-                if (historyRecords.Any())
-                {
-                    _db.DiscountUsageHistories.AddRange(historyRecords);
-                }
             }
+
+            if (historyRecords.Any())
+            {
+                _db.DiscountUsageHistories.AddRange(historyRecords);
+            }
+            
+            await _db.SaveChangesAsync();
         }
+
+        await _shoppingCartService.ResetCartAsync(ctx.Cart);
     }
 
     protected virtual async Task<ProcessPaymentResult> ProcessPaymentAsync(ProcessPaymentRequest processPayment)
@@ -177,10 +184,6 @@ public class DefaultOrderService : IOrderService
     protected virtual void PrepareUserDetailsAsync(OrderPlacementContext context)
     {
         context.User = _workContext.CurrentUser;
-        if (!_checkoutSettings.AllowGuestsToOrder && context.User.IsGuest())
-        {
-            throw new InvalidOperationException("Orders cannot be placed by guests");
-        }
     }
 
     protected virtual void PrepareAndValidateShippingDetailsAsync(OrderPlacementContext context)
@@ -195,6 +198,7 @@ public class DefaultOrderService : IOrderService
             throw new InvalidOperationException("Shipping address must be specified to place order");
         }
 
+        //TODO: assing shipping address chosen through the <select> in the checkout.chtml view. 
         var shippingAddress = context.User.ShippingAddress;
         context.ShippingAddress = shippingAddress.Clone();
         context.ShippingStatus = ShippingStatus.NotShipped;
@@ -204,6 +208,9 @@ public class DefaultOrderService : IOrderService
     {
         var cart = await _shoppingCartService.GetUserCartAsync();
         context.Cart = cart;
+        var productSelectionMap = cart.Items.ToMultiMap(x => x.ProductId, x=> x.AttributeSelection);
+        await _attributeMaterializer.PrefetchProductVariantAttributeCombinationsAsync(productSelectionMap);
+            
         if (!cart.Items.Any())
         {
             throw new InvalidOperationException("No items have been added to the cart to place the order");
@@ -217,7 +224,8 @@ public class DefaultOrderService : IOrderService
 
         foreach (var item in cart.Items)
         {
-            warnings = await _shoppingCartService.ValidateShoppingCartItemAsync(item);
+            var combination =  _attributeMaterializer.TryGetPrefetchedCombination(item.ProductId, item.AttributeSelection, out var prefetchedCombination) ? prefetchedCombination : null;
+            warnings = await _shoppingCartService.ValidateShoppingCartItemAsync(item, combination);
             if (warnings.Any())
             {
                 throw new InvalidOperationException(string.Join(";", warnings));

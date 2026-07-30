@@ -1,14 +1,15 @@
 @using EShop.Web.Models.Checkout
 @model CheckoutPaymentMethodModel
 
+ 
 @if (Model.PaymentMethodModels.Count > 0)
 {
     <div class="checkout__payment-list mt-sm">
         @foreach (var paymentMethod in Model.PaymentMethodModels)
         {
             <div class="checkout__payment-info radio">
-                <input class="" id="payment-method-@(paymentMethod.SystemName)" value="@(paymentMethod.SystemName)" type="radio" name="payment-prName"/>
-                <label for="payment-method-@(paymentMethod.SystemName)">@paymentMethod.Name</label>
+                <input class="" id="payment-method-@(paymentMethod.SystemName)" value="@(paymentMethod.SystemName)" type="radio"  name="@nameof(CheckoutModel.PaymentMethodSystemName)"/>
+                <label  for="payment-method-@(paymentMethod.SystemName)">@paymentMethod.Name</label>
             </div>
         }
     </div>

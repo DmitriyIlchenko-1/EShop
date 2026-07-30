@@ -864,11 +864,11 @@ class AdvancedDisclosure extends HTMLElement {
         this.summary = this.querySelector('summary');
         this.maximizeOnLargeScreen = this.dataset.maximizeOnLargeScreen;
         const largeScreenWidth = Number.parseInt(this.dataset.largeScreenWidth);
-        if (largeScreenWidth <= 0 && this.maximizeOnLargeScreen){
+        if (!largeScreenWidth && this.maximizeOnLargeScreen){
             this.largeScreenWidth = theme.mediaQueries.md;
         }
         else{
-            this.largeScreenWidth = largeScreenWidth;
+            this.largeScreenWidth = `(min-width:${largeScreenWidth}px)`;
         }
         if (this.maximizeOnLargeScreen){
             this.reset();
@@ -884,7 +884,7 @@ class AdvancedDisclosure extends HTMLElement {
     
     
     reset(){
-       const isLargeScreen = window.matchMedia(`(min-width:${this.largeScreenWidth}px)`).matches;
+       const isLargeScreen = window.matchMedia(this.largeScreenWidth).matches;
        this.disclosure.open = isLargeScreen;
        if (isLargeScreen){
            this.summary.setAttribute('tabindex', '-1');

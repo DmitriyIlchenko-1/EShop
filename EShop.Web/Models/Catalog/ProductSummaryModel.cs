@@ -36,11 +36,6 @@ public class ProductSummaryItemContext
     public ProductBatchContext BatchProductContext { get; set; }
     public ProductVariantQuery ProductVariantQuery { get; set; }
 
-
-    // Keys: Brand ids.
-    public Dictionary<int, Brand> Brands { get; set; } = new();
-
-
     public CatalogHelper.ProductSummaryMappingSettings MappingSettings { get; set; }
 }
 

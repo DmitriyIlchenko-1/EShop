@@ -5,6 +5,7 @@ using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Catalog.Products.Services;
 using EShop.Core.Checkout.Orders.Domain;
 using EShop.Core.Checkout.Orders.Services;
+using EShop.Core.Content.Media.Domain;
 using EShop.Core.Content.Media.Services;
 using EShop.Core.Data;
 using EShop.Core.Data.Cart.Domain;
@@ -64,42 +65,54 @@ public class ShoppingCartHelper
         var products = cart
             .Items.Select(x => x.Product)
             .ToList();
+        var productsIds = products
+            .Select(x => x.Id)
+            .Distinct()
+            .ToArray();
+        
+        // Preload attributes for all products in one go
         var batchContext = _productService.CreateProductBatchContext(products);
         await batchContext.Attributes.LoadAllAsync();
+      
+        // Preload medias for all products in one go
+        var medias = await _db
+            .ProductMedias.AsNoTracking()
+            .Include(x => x.MediaFile)
+            .Where(x => productsIds.Contains(x.ProductId) && x.MainImage)
+            .ToListAsync();
+        var productMediaMap = medias.ToDictionary(x => x.ProductId, x => x);
+       
+        
         var cartSubtotal = await _orderService.GetShoppingCartSubtotal(cart, batchContext);
         model.CartSubtotal = cartSubtotal;
 
-        Dictionary<int, Brand> brands = null;
+        
+        // Preload brands in one go
         if (settings.MapBrands)
         {
-            var brandIds =
-                products
-                    .Select(p => p.BrandId ?? 0)
-                    .Where(x => x != 0)
-                    .Distinct()
-                    .ToArray();
-
-            brands = (await _brandService.GetBrandsByIdsAsync(brandIds)).ToDictionary(x => x.Id, x => x);
+            await batchContext.ProductBrands.LoadAllAsync();
         }
 
         var context = new ShoppingCartModelContext()
         {
+            Settings = settings,
             ShoppingCartSubtotal = cartSubtotal,
             Products = products,
-            Brands = brands,
-            BatchContext = batchContext
+            BatchContext = batchContext,
+            ProductMediaMap = productMediaMap,
         };
-        model.Items = await PrepareShoppingCartItemsAsync(cart.Items, context, settings);
+        model.Items = await PrepareShoppingCartItemsAsync(cart.Items, context);
         return model;
     }
 
 
     protected virtual async Task<ICollection<ShoppingCartItemModel>> PrepareShoppingCartItemsAsync(
-        IEnumerable<ShoppingCartItem> items, ShoppingCartModelContext ctx, ShoppingCartModelMappingSettings settings)
+        IEnumerable<ShoppingCartItem> items, ShoppingCartModelContext ctx)
     {
         if (!items.Any())
             return [];
 
+        var settings = ctx.Settings;
         List<ShoppingCartItemModel> modelList = new List<ShoppingCartItemModel>();
         foreach (var item in items)
         {
@@ -113,14 +126,16 @@ public class ShoppingCartHelper
                 ProductUrl = _urlHelper.RouteUrl("Product", new { SeName = seName }),
 
                 CurrentQuantity = item.Quantity,
-                MaxAddToCartQuantity = product.MaxAddToCartNumber  
+                MaxAddToCartQuantity = product.MaxAddToCartNumber
             };
 
+            
             if (settings.MapBrands)
             {
-                if (ctx.Brands.TryGetValue(product.BrandId ?? 0, out var brand) && brand != null)
+                var productBrand = (await ctx.BatchContext.ProductBrands.GetOrLoadAsync(product.Id)).FirstOrDefault();
+                if (productBrand != null)
                 {
-                    model.Brand = await _catalogHelper.PrepareBrandSummaryModelAsync(brand);
+                    model.Brand = await _catalogHelper.PrepareBrandSummaryModelAsync(productBrand.Brand);
                 }
             }
 
@@ -144,7 +159,7 @@ public class ShoppingCartHelper
             }
 
             await MapAttributesAsync(model, item, ctx);
-            await MapImageAsync(model);
+            await MapImageAsync(model, ctx);
 
             modelList.Add(model);
         }
@@ -152,14 +167,11 @@ public class ShoppingCartHelper
         return modelList;
     }
 
-    protected virtual async Task MapImageAsync(ShoppingCartItemModel model)
+    protected virtual async Task MapImageAsync(ShoppingCartItemModel model, ShoppingCartModelContext ctx)
     {
         //TODO: Do something to query a small copy of big files rather than simple let the browser query the widest image and resize it.
         Guard.NotNull(model);
-        var mediaFile = await _db
-            .ProductMedias.Include(x => x.MediaFile)
-            .FirstOrDefaultAsync(x => x.ProductId == model.ProductId);
-        if (mediaFile != null)
+        if (ctx.ProductMediaMap.TryGetValue(model.ProductId, out var mediaFile))
         {
             model.Image = (await _catalogHelper.PrepareProductImageModelAsync([mediaFile])).First();
         }
@@ -190,6 +202,8 @@ public class ShoppingCartHelper
     }
 }
 
+ 
+
 public class ShoppingCartModelMappingSettings
 {
     public bool MapBrands { get; set; }
@@ -203,8 +217,9 @@ public enum CartSummaryLocation
 
 public class ShoppingCartModelContext
 {
+    public ShoppingCartModelMappingSettings Settings { get; set; }
     public ShoppingCartSubtotal ShoppingCartSubtotal { get; set; }
-    public ICollection<Product> Products { get; set; }
-    public IDictionary<int, Brand> Brands { get; set; }
+    public ICollection<Product> Products { get; set; } 
+    public IDictionary<int, ProductMedia> ProductMediaMap { get; set; }
     public ProductBatchContext BatchContext { get; set; }
 }

@@ -2,17 +2,32 @@ using System.Diagnostics;
 using System.Reflection;
 using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Extensions;
+using EShop.Infrastructure.Modules;
+using EShop.Infrastructure.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using EnumerableExtensions = EShop.Infrastructure.Extensions.EnumerableExtensions;
+
 namespace EShop.Infrastructure.Types;
 
 public class DefaultTypeScanner : ITypeScanner
 {
     public DefaultTypeScanner(IEnumerable<Assembly> assemblies)
     {
-        ArgumentNullException.ThrowIfNull(assemblies);
+        Guard.NotNull(assemblies);
         var coreAssemblies = new HashSet<Assembly>(assemblies);
+        Assemblies = EnumerableExtensions.AsReadOnly(coreAssemblies);
+    }
+
+    public DefaultTypeScanner(IEnumerable<Assembly> assemblies, IModuleCollection moduleCollection)
+    {
+        Guard.NotNull(assemblies);
+        Guard.NotNull(moduleCollection);
+
+        var coreAssemblies = new HashSet<Assembly>(assemblies);
+        coreAssemblies.UnionWith(moduleCollection
+            .Modules.Where(x => x.ModuleAssemblyContext?.Assembly != null)
+            .Select(x => x.ModuleAssemblyContext.Assembly));
         Assemblies = EnumerableExtensions.AsReadOnly(coreAssemblies);
     }
 

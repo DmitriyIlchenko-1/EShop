@@ -14,6 +14,7 @@ using EShop.Web.Common.Controllers;
 using EShop.Web.Models.Checkout;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace EShop.Web.Controllers;
@@ -173,8 +174,7 @@ public class CheckoutController : EShopBaseController
             await _db.SaveChangesAsync();
         }
 
-        var model = new CheckoutShippingAddressModel();
-        await _checkoutHelper.PrepareShippingAddressModelAsync(model, cart, true);
+        var model = await _checkoutHelper.PrepareCheckoutModelAsync(cart);
         return Json(new
         {
             renderSections = new
@@ -186,7 +186,7 @@ public class CheckoutController : EShopBaseController
     }
 
     [HttpPost]
-    public virtual async Task<IActionResult> SaveOrder()
+    public virtual async Task<IActionResult> SaveOrder(CheckoutModel model)
     {
         var user = _workContext.CurrentUser;
         var cart = await _shoppingCartService.GetUserCartAsync(user);
@@ -203,18 +203,32 @@ public class CheckoutController : EShopBaseController
         var paymentRequest = new ProcessPaymentRequest()
         {
             OrderGuid = Guid.NewGuid(),
+            PaymentMethodSystemName = model.PaymentMethodSystemName
         };
         var result = await _orderService.PlaceOrderAsync(paymentRequest);
         if (result.Succeeded)
         {
+            var redirectUrl = Url.Action(nameof(Completed), new { orderId = result.Order.Id });
             return Json(new
             {
                 success = true,
+                redirectUrl
             });
         }
 
         throw new NotImplementedException();
 
+    }
+
+    public virtual async Task<IActionResult> Completed(int orderId)
+    {
+        var order = await _db.Orders.AsNoTracking().FirstOrDefaultAsync(x => x.Id == orderId);
+        if (order == null || order.IsDeleted || order.UserId != _workContext.CurrentUser.Id)
+        {
+            return RedirectToRoute("Homepage");
+        }
+
+        return View((object)orderId.ToString());
     }
 
     protected virtual Task<ValidationFlowResult> ValidateCheckoutFlow(User user, ShoppingCart shoppingCart)
@@ -234,13 +248,12 @@ public class CheckoutController : EShopBaseController
 
     private async Task<IActionResult> GetResultAfterSuccessUpdate(ShoppingCart cart)
     {
-        var model = new CheckoutShippingAddressModel();  
-        await _checkoutHelper.PrepareShippingAddressModelAsync(model, cart, true);
+        var model = await _checkoutHelper.PrepareCheckoutModelAsync(cart);
         return Json(new
         {
             renderSections = new
             {
-                selectAddress = await RenderPartialViewToStringAsync("_Checkout.SelectAddress", model),
+                selectAddress = await RenderPartialViewToStringAsync("_Checkout.Address", model),
                 payment = await RenderComponentToStringAsync("CheckoutPaymentMethodList")
             },
             success = true

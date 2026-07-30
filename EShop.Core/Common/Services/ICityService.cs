@@ -10,14 +10,14 @@ namespace EShop.Core.Common.Services;
 public interface ICityService
 {
     Task<ICollection<City>> GetAllAsync(bool showHidden = false);
+    Task<City> GetByIdAsync(int cityId, bool showHidden = false);
 }
-
 
 public class CityService : ICityService
 {
     private readonly ApplicationDbContext _db;
     private const string CitiesAllCacheKey = "cities:all:{0}"; //showHidden
-    private readonly   ICacheManager _cacheManager;
+    private readonly ICacheManager _cacheManager;
 
     public CityService(ApplicationDbContext db, ICacheManager cacheManager)
     {
@@ -26,6 +26,17 @@ public class CityService : ICityService
     }
 
     public async Task<ICollection<City>> GetAllAsync(bool showHidden = false)
+    {
+        return await PrefetchCitiesAsync(showHidden);
+    }
+
+    public async Task<City> GetByIdAsync(int cityId, bool showHidden = false)
+    {
+        var cities = await PrefetchCitiesAsync(showHidden);
+        return cities.FirstOrDefault(x => x.Id == cityId);
+    }
+
+    protected virtual async Task<City[]> PrefetchCitiesAsync(bool showHidden = false)
     {
         var cacheKey = string.Format(CultureInfo.InvariantCulture, CitiesAllCacheKey, showHidden);
         return await _cacheManager.GetOrCreateAsync(cacheKey,
@@ -40,7 +51,8 @@ public class CityService : ICityService
                 return await query
                     .OrderBy(x => x.DisplayOrder)
                     .ThenBy(x => x.Name)
-                    .ToListAsync();
-            }, new CacheEntryOptions(TimeSpan.FromHours(999)));
+                    .ToArrayAsync();
+            },
+            new CacheEntryOptions(TimeSpan.FromHours(999)));
     }
 }

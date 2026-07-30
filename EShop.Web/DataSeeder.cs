@@ -274,6 +274,7 @@ public class DataSeeder
                     IsActive = true,
                     EmailConfirmed = true,
                     SecurityStamp = "",
+                    ShippingAddressId = 4,
                     Addresses = new List<Address>()
                     {
                         new Address
@@ -2446,7 +2447,13 @@ public class DataSeeder
                     Width = (decimal)new Random().NextDouble() * 5,
                     Length = (decimal)new Random().NextDouble() * 5,
                     StockQuantity = new Random().Next(0, 50),
-                    BrandId = brand.Id,
+                    Brands = new List<ProductBrand>()
+                    {
+                        new ProductBrand
+                        {
+                            BrandId = brand.Id
+                        }
+                    },
                     CreatedOnUtc = DateTime.UtcNow,
                     ModifiedOnUtc = DateTime.UtcNow,
                     IsShippingEnabled = true, // Enable shipping
@@ -2481,7 +2488,7 @@ public class DataSeeder
 
             for (int i = 0; i < products.Count; i++)
             {
-                _dbContext.ProductMedias.AddRange(imageModels
+                var productMedias = imageModels
                     .Select(x =>
                     {
                         return new ProductMedia
@@ -2490,9 +2497,10 @@ public class DataSeeder
                             MediaFile = x,
                         };
                     })
-                    .OrderBy(x => Guid
-                        .NewGuid()
-                        .ToString()));
+                    .OrderBy(x => Guid.NewGuid().ToString())
+                    .ToArray();
+                productMedias.First().MainImage = true;
+                _dbContext.ProductMedias.AddRange(productMedias);
             }
 
 

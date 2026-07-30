@@ -1,0 +1,39 @@
+@using EShop.Web.Models.Account
+@model OrderListModel
+
+@{
+    Layout = "_AccountLayout";
+}
+
+
+    <div class="account__order-info">
+        <h1 class="h3">Orders</h1>
+        @if (!Model.Orders.Any())
+        {
+            <p>Here you'll see your orders once you start making purchases</p>
+        }
+        <ul class="account__order-list list-unstyled">
+            @foreach (var item in Model.Orders)
+            {
+                <li>
+                    <div class="account__order-item">
+                        <div class="account-order-description">
+                            <h3 class="h5">Order @item.Id</h3>
+                            <dl class="account__order-metadata">
+                                <dt class="text-theme-light">Order status</dt>
+                                <dd>@item.OrderStatus</dd>
+                                <dt class="text-theme-light">Order date</dt>
+                                <dd>@item.OrderDate</dd>
+                                <dt class="text-theme-light">Order total</dt>
+                                <dd>@Html.Raw(item.Subtotal)</dd>
+                            </dl>
+                        </div>
+                        <div class="account__order-actions mt-lg flex flex-wrap gap-md">
+                            <a asp-action="OrderDetails" asp-route-id="@item.Id" class="button">Order details</a>
+                            <a class="button-secondary">Re-order</a>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>

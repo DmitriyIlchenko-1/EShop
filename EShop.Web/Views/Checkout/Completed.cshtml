@@ -1,3 +1,6 @@
+@using EShop.Infrastructure.Extensions
+@model string
+
 <div class="section section--content-middle spacing-style gap-style color-scheme-1"
      style="--padding-block-start: max(20px, calc(var(--spacing-scale) * 48px));
         --padding-block-end: max(20px, calc(var(--spacing-scale) * 48px));">
@@ -16,13 +19,13 @@
         >
             <h1 class="h3">Order has been placed</h1>
         </div>
-        <p class="mt-md">Thanks for your order. Your order's number is 10</p>
+        <p class="mt-md">Thanks for your order. Your order's number is @Model</p>
         <div class="flex justify-center flex-wrap gap-md">
-            <a class="size-style button"
+            <a class="size-style button" asp-controller="Account" asp-action="OrderDetails" asp-route-id="@Model.ToInt32()"
                style="--size-style-width: fit-content; --size-style-width-mobile: fit-content;">
                 Order details
             </a>
-            <a class="size-style button-secondary"
+            <a class="size-style button-secondary" asp-route="Homepage"
                style="--size-style-width: fit-content; --size-style-width-mobile: fit-content;">
                 Home page
             </a>

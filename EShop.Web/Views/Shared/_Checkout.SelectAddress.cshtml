@@ -14,7 +14,7 @@
                         asp-items="@(Model.ExistingAddresses.Select(x => new SelectListItem(x.AddressString, x.Id.ToString(), x.Selected)))">
                 </select>
             </div>
-            <button aria-label="Add a new address" name="add" class="checkout__addnew-btn">
+            <button aria-label="Add a new address" name="add" class="checkout__addnew-btn" type="button">
                 <svg aria-hidden="true" focusable="false" class="icon"
                      xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                      viewBox="0 0 1024 1024">

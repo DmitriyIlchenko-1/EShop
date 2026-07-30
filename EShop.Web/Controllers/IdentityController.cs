@@ -578,6 +578,8 @@ public class IdentityController : EShopBaseController
         return View();
     }
 
+    
+
     #region Helpers
 
     private void MapRegisterModelToUser(RegistrationBaseModel model, User user)

@@ -89,7 +89,8 @@ public class CoreStartup : BaseStartup
         services.AddScoped<IAddressService, DefaultAddressService>();
         services.AddScoped<ICityService, CityService>();
         services.AddScoped<IPaymentService, PaymentService>();
-         
+        
+     
         /*
          * Caching 
          */

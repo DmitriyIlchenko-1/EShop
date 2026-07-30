@@ -25,8 +25,10 @@ public interface IProductAttributeMaterializer
     Task<ProductVariantAttributeCombination> FindAttributeCombinationAsync(int productId,
         ProductVariantAttributeSelection selection);
 
-    // Task<int> PrefetchProductVariantAttributeCombinationsAsync(
-    //     IDictionary<int, ProductVariantAttributeSelection> selections);
+    Task<int> PrefetchProductVariantAttributeCombinationsAsync(
+        IDictionary<int, IEnumerable<ProductVariantAttributeSelection>> selections);
+    bool TryGetPrefetchedCombination(int productId, ProductVariantAttributeSelection selection,
+        out ProductVariantAttributeCombination combination);
 
     /// <summary>
     ///  This method accepts variant attributes related to a product.
@@ -47,7 +49,6 @@ public interface IProductAttributeMaterializer
         IEnumerable<ProductVariantAttributeValue> selectedVariantAttributeValues,
         ProductVariantAttributeValue currentVariantValue);
 
-    // bool TryGetPrefetchedCombination(int productId, ProductVariantAttributeSelection selection,
-    //     out ProductVariantAttributeCombination combination);
+     
     
 }

@@ -1,0 +1,148 @@
+@model EShop.Web.Models.Account.OrderDetailModel
+<div class="section section--content-middle color-scheme-1 spacing-style"
+     style=" --padding-block-start: max(20px, calc(var(--spacing-scale) * 68px)); --padding-block-end:max(20px, calc(var(--spacing-scale) * 68px))">
+    <div class="customer order">
+        <div class="order__info-container">
+            <h1 class="order__info-header h3">
+                Order details @Model.Id
+            </h1>
+            <dl class="order__meta-data">
+                <div class="order__meta-data-item">
+                    <dt class="text-theme-light">Order data</dt>
+                    <dd>@Model.OrderDate.ToString("D")</dd>
+                </div>
+                <div class="order__meta-data-item">
+                    <dt class="text-theme-light">Order #</dt>
+                    <dd>@Model.Id</dd>
+                </div>
+                <div class="order__meta-data-item">
+                    <dt class="text-theme-light">Order status</dt>
+                    <dd>@Model.OrderStatus</dd>
+                </div>
+                <div class="order__meta-data-item price">
+                    <dt class="text-theme-light">Order total</dt>
+                    <dd class="price__current text-regular">@Model.Subtotal</dd>
+                </div>
+            </dl>
+        </div>
+        <div class="order__details mt-2xl">
+            <section aria-label="Order billing, shipping details">
+                <dl class="grid md:grid-cols-2 gap-y-md">
+                    <div class="order__shipping-address-info ">
+                        <dt class="h5">Shipping address</dt>
+                        @{
+                            var shippingAddress = Model.AddressModel;
+                        }
+                        <dd>
+                            <dl>
+                                <dt class="visually-hidden">First and last name</dt>
+                                <dd>@string.Join(" ", shippingAddress.FirstName, shippingAddress.LastName)</dd>
+                                <dt class="visually-hidden">Address 1</dt>
+                                <dd>@shippingAddress.AddressLine1</dd>
+                                @if (shippingAddress.AddressLine2 != null)
+                                {
+                                    <dt class="visually-hidden">Address 2</dt>
+                                    <dd>@shippingAddress.AddressLine2</dd>
+                                }
+                                <dt class="visually-hidden">Phone</dt>
+                                <dd>@shippingAddress.PhoneNumber</dd>
+                                <dt class="visually-hidden">City name</dt>
+                                <dd>@shippingAddress.CityName</dd>
+                                <dt class="visually-hidden">Zip code</dt>
+                                <dd>@shippingAddress.ZipCode</dd>
+                            </dl>
+                        </dd>
+                    </div>
+                    <div>
+                        <div class="order__shipping-method">
+                            <dt class="h5">Shipping method</dt>
+                            <dd>@(Model.ShippingMethodName ?? "Not implemented yet")</dd>
+                        </div>
+                        <div class="order__payment-method mt-lg">
+                            <dt class="h5">Payment method</dt>
+                            <dd>@Model.PaymentMethodName</dd>
+                        </div>
+                    </div>
+                </dl>
+            </section>
+        </div>
+        <section class="mt-2xl" aria-label="Ordered items information">
+            <div class="cart">
+                <div class="cart-items">
+                    <table class="w-full">
+                        <thead class="visually-hidden">
+                        <tr>
+                            <th colspan="2">Product</th>
+                            <th>Quantity</th>
+                            <th>Subtotal</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var item in Model.OrderItems)
+                        {
+                            <tr class="cart-item">
+                                <td class="cart-item__image">
+                                    <a href="@item.ProductUrl">
+                                        <img src="@item.Image.Url" alt="@item.Image.Alt"/>
+                                    </a>
+                                </td>
+                                <td class="cart-item__details">
+                                    <a class="text-theme-light text-sm mb-xs" asp-route="Brand" asp-route-SeName="@item.Brand.SeName">@item.Brand.Name</a>
+                                    <a class="font-bold block" href="@item.ProductUrl">@item.ProductName</a>
+                                    <div class="cart-item__info">
+                                        <p class="price">
+                                            <span class="visually-hidden">
+                                                Unit price
+                                            </span>
+                                            <span class="price__current">
+                                                @item.UnitPrice
+                                            </span>
+                                        </p>
+                                        <div class="cart-item__variants text-sm">
+                                            <dl class="mt-sm">
+                                                @foreach (var attr in item.AttributeValues)
+                                                {
+                                                    <div>
+                                                        <dt class="inline font-semibold">@attr.ProductVariantAttribute.ProductAttribute.Name:</dt>
+                                                        <dd class="inline m-0">@attr.Name</dd>
+                                                    </div>
+                                                }
+                                            </dl>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="cart-item__quantity font-semibold">
+                                    Quantity: @item.Quantity
+                                </td>
+                                <td class="cart-item__total price">
+                                    <div class="text-theme-light text-sm mb-xs md:hidden"
+                                         aria-hidden="true">Subtotal
+                                    </div>
+                                    <span class="price__current">
+                                        @item.Subtotal
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cart__summary">
+                    <h2 class="h4">Order summary</h2>
+                    <div class="my-lg flex justify-between items-center flex-wrap">
+                        <div class="font-semibold text-body-large" aria-hidden="true">Subtotal:</div>
+                        <p class="price">
+                            <span class="price__current">
+                                @Model.Subtotal
+                            </span>
+                        </p>
+                    </div>
+                    <div class="flex flex-col items-center gap-y-sm mt-3xl">
+                        <button class="button w-full">Re-order</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

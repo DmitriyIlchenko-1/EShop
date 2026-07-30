@@ -4,5 +4,5 @@ namespace EShop.Core.Data.Settings;
 
 public class PaymentSettings : ISettings
 {
-    public List<string> ActivePaymentMethodSystemNames { get; set; } = [];
+    public List<string> ActivePaymentMethodSystemNames { get; set; } = ["EShop.OfflinePayment"];
 }

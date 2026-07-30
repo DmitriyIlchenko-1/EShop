@@ -6,6 +6,7 @@ namespace EShop.Infrastructure.Modules;
 
 public interface IModuleCollection
 {
+    IEnumerable<IModuleDescriptor> Modules { get; }
     IModuleDescriptor GetModuleByAssembly(Assembly assembly);
 }
 
@@ -31,6 +32,8 @@ public class ModuleCollection : IModuleCollection
         _nameMap = nameMap.ToFrozenDictionary();
         _assemblyMap = assemblyMap.ToFrozenDictionary();
     }
+
+    public IEnumerable<IModuleDescriptor> Modules => _nameMap.Values;
 
     public IModuleDescriptor GetModuleByAssembly(Assembly assembly)
     {

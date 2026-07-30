@@ -22,7 +22,7 @@ public interface IShoppingCartService
     Task<int> GetUserCartItemCountAsync(User user = null);
     Task<ShoppingCart> GetUserCartAsync(User? user = null);
     Task<ICollection<string>> ValidateShoppingCartAsync(ShoppingCart shoppingCart);
-    Task<ICollection<string>> ValidateShoppingCartItemAsync(ShoppingCartItem shoppingCartItem);
+    Task<ICollection<string>> ValidateShoppingCartItemAsync(ShoppingCartItem shoppingCartItem, ProductVariantAttributeCombination combination);
 }
 
 public class DefaultShoppingCartService : IShoppingCartService
@@ -124,7 +124,9 @@ public class DefaultShoppingCartService : IShoppingCartService
         }
 
 
-        errors = await ValidateShoppingCartItemAsync(item);
+        var combination =
+            await _attributeMaterializer.FindAttributeCombinationAsync(item.ProductId, item.AttributeSelection);
+        errors = await ValidateShoppingCartItemAsync(item, combination);
         if (errors.Any())
         {
             return errors;
@@ -191,8 +193,9 @@ public class DefaultShoppingCartService : IShoppingCartService
             }
         }
 
-
-        errors = await ValidateShoppingCartItemAsync(cartItem);
+        var combination =
+            await _attributeMaterializer.FindAttributeCombinationAsync(cartItem.ProductId, cartItem.AttributeSelection);
+        errors = await ValidateShoppingCartItemAsync(cartItem, combination);
         if (errors.Any())
         {
             return errors;
@@ -205,8 +208,8 @@ public class DefaultShoppingCartService : IShoppingCartService
     public async Task ResetCartAsync(ShoppingCart cart)
     {
         Guard.NotNull(cart);
-        var user = cart.User;
-        user.ShoppingCartItems.Clear();
+        _db.ShoppingCartItems.RemoveRange(cart.Items);
+        cart.Items.Clear();
         await _db.SaveChangesAsync();
         _requestCache.RemoveByPattern(ShoppingCartKeyPattern);
     }
@@ -264,7 +267,7 @@ public class DefaultShoppingCartService : IShoppingCartService
     }
 
     public virtual async Task<ICollection<string>> ValidateShoppingCartItemAsync(
-        ShoppingCartItem item)
+        ShoppingCartItem item, ProductVariantAttributeCombination combination)
     {
         Guard.NotNull(item);
         var errors = new List<string>();
@@ -298,9 +301,7 @@ public class DefaultShoppingCartService : IShoppingCartService
         //     warnings.Add($"Product's ({product.Id}:{product.Name}) stock quantity cannot be smaller than the cart item's quantity");
         // }
 
-        var combination =
-            await _productAttributeMaterializer.FindAttributeCombinationAsync(product.Id,
-                item.AttributeSelection);
+        
         if (combination != null)
         {
             if (!combination.IsActive)

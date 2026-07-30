@@ -42,6 +42,7 @@ public class DefaultProviderManager : IProviderManager
 public interface IPaymentProviderManager
 {
     IEnumerable<Provider<IPaymentMethod>> GetActivePaymentMethods();
+    Provider<IPaymentMethod> GetActivePaymentMethod(string systemName);
 }
 
 public class PaymentProviderManager : IPaymentProviderManager
@@ -58,4 +59,7 @@ public class PaymentProviderManager : IPaymentProviderManager
         var allPaymentMethods = _providerManager.GetProviders<IPaymentMethod>();
         return allPaymentMethods;
     }
+
+    public Provider<IPaymentMethod> GetActivePaymentMethod(string systemName)
+        => _providerManager.GetProvider<IPaymentMethod>(systemName);
 }

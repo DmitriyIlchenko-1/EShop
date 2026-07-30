@@ -29,6 +29,7 @@ public class WebStartup : BaseStartup
         services.AddScoped<CatalogHelper>();
         services.AddScoped<CheckoutHelper>();
         services.AddScoped<ShoppingCartHelper>();
+        services.AddScoped<AccountHelper>();
     }
 
     public override void ConfigureMvc(IMvcBuilder mvcBuilder, IServiceCollection services)

@@ -20,6 +20,7 @@ using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Data.DbHandlers;
 using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Modules;
+using EShop.Infrastructure.Utilities;
 using EShop.Web.Common.Infrastructure;
 using EShop.Web.Common.Infrustructure;
 using EShop.Web.Common.Middleware;
@@ -78,6 +79,5 @@ var roleManager = scope.Resolve<RoleManager<Role>>();
 var settingFactory = scope.Resolve<ISettingFactory>();
 var dataSeeder = new DataSeeder(dbContext, userManager, roleManager, settingFactory);
 await dataSeeder.SeedDataAsync();
-
 
 app.Run();

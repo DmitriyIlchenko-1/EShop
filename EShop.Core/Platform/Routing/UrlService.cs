@@ -29,7 +29,7 @@ public class UrlService : IUrlService
         _prefetchedUrlSlugCollections = new Dictionary<string, UrlRecordCollection>();
     }
 
-    public virtual async Task PrefetchUrlRecordsAsync(string entityName, int[] entityIds, bool tracked = false)
+    public virtual async Task PrefetchUrlRecordsAsync(string entityName, IEnumerable<int> entityIds, bool tracked = false)
     {
         var collection = await GetUrlRecordCollectionAsync(entityName, entityIds, tracked);
         if (_prefetchedUrlSlugCollections.TryGetValue(entityName, out var existingCollection))
@@ -42,20 +42,21 @@ public class UrlService : IUrlService
         }
     }
 
-    public virtual async Task<UrlRecordCollection> GetUrlRecordCollectionAsync(string entityName, int[] entityIds,
+    public virtual async Task<UrlRecordCollection> GetUrlRecordCollectionAsync(string entityName, IEnumerable<int> entityIds,
         bool tracked = false)
     {
         Guard.NotEmpty(entityName);
         var query = _context
             .UrlRecords.ApplyTracking(tracked)
             .Where(x => x.EntityName == entityName && x.IsActive);
-
-        if (entityIds != null && entityIds.Length != 0)
+       
+        var entityIdsArray = entityIds as int[] ?? entityIds.ToArray();
+        if (entityIdsArray != null && entityIdsArray.Length != 0)
         {
-            query = query.Where(x => entityIds.Contains(x.Id));
+            query = query.Where(x => entityIdsArray.Contains(x.Id));
         }
 
-        return new UrlRecordCollection(entityName, entityIds, await query.ToListAsync());
+        return new UrlRecordCollection(entityName, entityIdsArray, await query.ToListAsync());
     }
     
     public virtual async Task<string> GetActiveSlugAsync(int entityId, string entityName)

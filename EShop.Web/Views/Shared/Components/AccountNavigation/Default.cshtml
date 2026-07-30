@@ -1,0 +1,67 @@
+@model EShop.Web.Models.Account.UserInfoModel
+
+
+<aside>
+    <div class="account__customer-info">
+        <advanced-disclosure data-maximize-on-large-screen="true">
+            <details class="disclosure account__customer-info-disclosure">
+                <summary class="account__customer-info-summary disclosure__summary">
+                <span class="disclosure__summary-content">
+                    <span class="font-semibold">@Model.FullnameOrUsername</span>
+                    <span class="block text-sm text-theme-light">
+                        @Model.UserSince
+                    </span>
+                </span>
+                </summary>
+                <div class="disclosure__content">
+                    <nav aria-label="Customer pages">
+                        <ul class="account__nav list-unstyled">
+                            <li class="account__nav-item account__nav-item--active">
+                                <a class="account__nav-link account__nav-item--active" asp-action="OrderList" asp-controller="Account">
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24"
+                                         height="24"
+                                         viewBox="0 0 24 24">
+                                        <path fill="#000000"
+                                              d="M15.71 12.71a6 6 0 1 0-7.42 0a10 10 0 0 0-6.22 8.18a1 1 0 0 0 2 .22a8 8 0 0 1 15.9 0a1 1 0 0 0 1 .89h.11a1 1 0 0 0 .88-1.1a10 10 0 0 0-6.25-8.19ZM12 12a4 4 0 1 1 4-4a4 4 0 0 1-4 4Z"/>
+                                    </svg>
+                                    Customer info
+                                </a>
+                            </li>
+                            <li class="account__nav-item">
+                                <a class="account__nav-link" asp-action="OrderList" asp-controller="Account">
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24"
+                                         height="24"
+                                         viewBox="0 0 24 24" fill="#000000">
+                                        <g fill="none" stroke="#000000" stroke-linecap="round"
+                                           stroke-linejoin="round" stroke-width="1.5">
+                                            <rect width="15" height="18.5" x="4.5" y="2.75" rx="3.5"/>
+                                            <path d="M8.5 6.755h7m-7 4h7m-7 4H12"/>
+                                        </g>
+                                    </svg>
+                                    Orders
+                                </a>
+                            </li>
+                            <li class="account__nav-item">
+                                <a class="account__nav-link" asp-action="OrderList" asp-controller="Account">
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24"
+                                         height="24"
+                                         viewBox="0 0 16 16">
+                                        <path fill="#000000"
+                                              d="M13.35 16H2.65C1.74 16 1 15.26 1 14.35v-7.7C1 5.74 1.74 5 2.65 5h10.7c.91 0 1.65.74 1.65 1.65v7.69c0 .91-.74 1.65-1.65 1.65ZM2.65 6c-.36 0-.65.29-.65.65v7.69c0 .36.29.65.65.65h10.7c.36 0 .65-.29.65-.65V6.65c0-.36-.29-.65-.65-.65H2.65Z"/>
+                                        <path fill="#000000"
+                                              d="M12.54 6H3.46V4.54C3.46 2.04 5.5 0 8 0s4.54 2.04 4.54 4.54V6ZM4.46 5h7.08v-.46C11.54 2.59 9.95 1 8 1S4.46 2.59 4.46 4.54V5Z"/>
+                                        <circle cx="12" cy="10.5" r="1" fill="#000000"/>
+                                        <circle cx="8" cy="10.5" r="1" fill="#000000"/>
+                                        <circle cx="4" cy="10.5" r="1" fill="#000000"/>
+                                    </svg>
+                                    Change password
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                </div>
+            </details>
+        </advanced-disclosure>
+    </div>
+</aside>

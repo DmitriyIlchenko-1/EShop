@@ -20,12 +20,6 @@ internal class ProductMap : IEntityTypeConfiguration<Product>
         builder.HasQueryFilter(x => !x.IsDeleted);
 
         builder
-            .HasOne(x => x.Brand)
-            .WithMany(x => x.Products)
-            .HasForeignKey(x => x.BrandId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        builder
             .HasMany<MediaFile>(x => x.MediaFiles)
             .WithMany()
             .UsingEntity<ProductMedia>();
@@ -178,9 +172,9 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IMerg
     }
 
 
-    public Brand Brand { get; set; }
+    public ICollection<ProductBrand> Brands { get; set; }
 
-    public int? BrandId { get; set; }
+   
 
 
     public ICollection<ProductReview> ProductReviews { get; set; }

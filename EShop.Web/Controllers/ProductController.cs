@@ -36,7 +36,8 @@ public class ProductController : EShopBaseController
             .Products
             .AsNoTracking()
             .AsSplitQuery()
-            .Include(x => x.Brand)
+            .Include(x => x.Brands)
+            .ThenInclude(x => x.Brand)
             .Include(x => x.MediaFiles)
             .FirstOrDefaultAsync(x => x.Id == productId);
 
@@ -45,7 +46,7 @@ public class ProductController : EShopBaseController
             return NotFound();
         }
 
-        var model = await _catalogHelper.MapProductDetailsPageModelAsync(product, query);
+        var model = await _catalogHelper.MapProductDetailsPageModelAsync(product, query, product.Brands.FirstOrDefault());
         _recentlyViewedProductsService.AddProductToRecentlyViewedList(product.Id);
 
         _activityLogger.InsertActivity(KnownActivityLogType.ViewProduct,

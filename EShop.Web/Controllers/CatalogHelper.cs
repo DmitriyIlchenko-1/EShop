@@ -80,7 +80,7 @@ public partial class CatalogHelper
 
 
     public async Task<ProductDetailModel> MapProductDetailsPageModelAsync(Product product,
-        ProductVariantQuery? variantQuery, int selectedQuantity = 1)
+        ProductVariantQuery? variantQuery, ProductBrand productBrand, int selectedQuantity = 1)
     {
         ArgumentNullException.ThrowIfNull(product);
         var context = CreateModelContext(product, variantQuery);
@@ -104,7 +104,11 @@ public partial class CatalogHelper
 
         #region Brand
 
-        model.Brand = await PrepareBrandSummaryModelAsync(product.Brand);
+        if (productBrand != null)
+        {
+            model.Brand = await PrepareBrandSummaryModelAsync(productBrand.Brand);
+        }
+       
 
         #endregion
 

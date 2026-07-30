@@ -1,0 +1,15 @@
+@{
+    Layout = "_Layout";
+}
+
+<section class="section section--content-middle color-scheme-1 spacing-style"
+         style=" --padding-block-start: max(20px, calc(var(--spacing-scale) * 68px)); --padding-block-end:max(20px, calc(var(--spacing-scale) * 68px))">
+    <div class="customer account">
+        <div class="account__container">
+            @await Component.InvokeAsync("AccountNavigation")
+            <div class="account__main-content mt-xl md:mt-0">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+</section>
