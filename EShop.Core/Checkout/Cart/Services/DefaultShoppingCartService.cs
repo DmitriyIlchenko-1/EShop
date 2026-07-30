@@ -16,7 +16,7 @@ namespace EShop.Core.Data.Cart.Services;
 public interface IShoppingCartService
 {
     Task<ICollection<string>> AddProductToCart(AddToCartContext ctx);
-    Task<ICollection<string>> UpdateCartItemAsync(ShoppingCartItem cartItem, int newQuantity);
+    Task<ICollection<string>> UpdateCartItemAsync(ShoppingCartItem item, int newQuantity);
     Task ResetCartAsync(ShoppingCart cart);
     Task RemoveCartItemAsync(ShoppingCartItem cartItem);
     Task<int> GetUserCartItemCountAsync(User user = null);
@@ -95,8 +95,13 @@ public class DefaultShoppingCartService : IShoppingCartService
                 Product = product,
             };
         }
-
-
+        
+        var combination =
+            await _attributeMaterializer.FindAttributeCombinationAsync(item.ProductId, item.AttributeSelection);
+        var maxAddToCartNumber = 
+            (combination.StockQuantity != 0 && combination.StockQuantity > product.MaxAddToCartNumber) 
+            ? product.MaxAddToCartNumber 
+            : combination.StockQuantity;
         if (!userCart.Items.Contains(item) && quantity < product.MinAddToCartNumber)
         {
             item.Quantity = product.MinAddToCartNumber;
@@ -107,9 +112,9 @@ public class DefaultShoppingCartService : IShoppingCartService
         else
         {
             int canAddLeft = 0;
-            if (item.Quantity < product.MaxAddToCartNumber)
+            if (item.Quantity < maxAddToCartNumber)
             {
-                canAddLeft = product.MaxAddToCartNumber - item.Quantity;
+                canAddLeft = maxAddToCartNumber - item.Quantity;
             }
 
             int correctedQuantity = canAddLeft > quantity ? quantity : canAddLeft;
@@ -117,15 +122,13 @@ public class DefaultShoppingCartService : IShoppingCartService
             {
                 var limitStr = canAddLeft == 0 ? "None" : correctedQuantity.ToString();
                 warnings.Add(
-                    $"{limitStr} has been added to your cart because of the limit: {product.MaxAddToCartNumber}");
+                    $"{limitStr} has been added to your cart because of the limit: {maxAddToCartNumber}");
             }
 
             item.Quantity += correctedQuantity;
         }
 
-
-        var combination =
-            await _attributeMaterializer.FindAttributeCombinationAsync(item.ProductId, item.AttributeSelection);
+        
         errors = await ValidateShoppingCartItemAsync(item, combination);
         if (errors.Any())
         {
@@ -145,9 +148,9 @@ public class DefaultShoppingCartService : IShoppingCartService
     }
 
 
-    public async Task<ICollection<string>> UpdateCartItemAsync(ShoppingCartItem cartItem, int newQuantity)
+    public async Task<ICollection<string>> UpdateCartItemAsync(ShoppingCartItem item, int newQuantity)
     {
-        Guard.NotNull(cartItem);
+        Guard.NotNull(item);
         var userCart = await GetUserCartAsync();
         var warnings = new List<string>();
         var errors = await ValidateShoppingCartAsync(userCart);
@@ -161,41 +164,45 @@ public class DefaultShoppingCartService : IShoppingCartService
             return errors;
         }
 
-        var product = cartItem.Product;
+        var product = item.Product;
         if (product == null)
         {
             throw new InvalidOperationException(
-                $"Cannot update cart info for non-existing product {cartItem.ProductId}.");
+                $"Cannot update cart info for non-existing product {item.ProductId}.");
         }
 
-
+        var combination =
+            await _attributeMaterializer.FindAttributeCombinationAsync(item.ProductId, item.AttributeSelection);
+        var maxAddToCartNumber = 
+            (combination.StockQuantity != 0 && combination.StockQuantity > product.MaxAddToCartNumber) 
+                ? product.MaxAddToCartNumber 
+                : combination.StockQuantity;
         if (newQuantity < product.MinAddToCartNumber)
         {
-            cartItem.Quantity = product.MinAddToCartNumber;
+            item.Quantity = product.MinAddToCartNumber;
             warnings.Add(
                 $"{product.MinAddToCartNumber} has been added to your cart because of the min. limit of {product.MinAddToCartNumber}");
         }
         else
         {
-            if (product.MaxAddToCartNumber >= newQuantity)
+            if (maxAddToCartNumber >= newQuantity)
             {
-                cartItem.Quantity = newQuantity;
+                item.Quantity = newQuantity;
             }
-            else if (product.MaxAddToCartNumber < newQuantity)
+            else if (maxAddToCartNumber < newQuantity)
             {
-                if (cartItem.Quantity <= product.MaxAddToCartNumber &&
-                    product.MaxAddToCartNumber <= newQuantity)
+                if (item.Quantity <= maxAddToCartNumber &&
+                    maxAddToCartNumber <= newQuantity)
                 {
-                    warnings.Add($"{product.MaxAddToCartNumber} has been added to your cart because of the limit.");
+                    warnings.Add($"{maxAddToCartNumber} has been added to your cart because of the limit.");
                 }
 
-                cartItem.Quantity = product.MaxAddToCartNumber;
+                item.Quantity = maxAddToCartNumber;
             }
         }
 
-        var combination =
-            await _attributeMaterializer.FindAttributeCombinationAsync(cartItem.ProductId, cartItem.AttributeSelection);
-        errors = await ValidateShoppingCartItemAsync(cartItem, combination);
+        
+        errors = await ValidateShoppingCartItemAsync(item, combination);
         if (errors.Any())
         {
             return errors;
@@ -308,11 +315,6 @@ public class DefaultShoppingCartService : IShoppingCartService
             {
                 errors.Add(
                     $"Cannot add inactive product combination. combination id:{combination.Id}, product id: {product.Id}");
-            }
-            else if (item.Quantity > combination.StockQuantity)
-            {
-                errors.Add(
-                    $"Cart item's {item.Id} quantity cannot be greater than its product's selected combination's stock quantity.");
             }
         }
 

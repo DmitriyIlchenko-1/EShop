@@ -2427,8 +2427,8 @@ public class DataSeeder
                     Name = productName,
                     Description = description,
                     ShortDescription = shortDescription,
-                    MinAddToCartNumber = 3,
-                    MaxAddToCartNumber = Random.Shared.Next(5, 15),
+                    MaxAddToCartNumber = 350,
+                    MinAddToCartNumber = Random.Shared.Next(1, 15),
                     Sku = $"SKU-{i.ToString().PadLeft(3, '0')}", // Create a SKU
                     IsAvailable = true,
                     IsPublished = true,

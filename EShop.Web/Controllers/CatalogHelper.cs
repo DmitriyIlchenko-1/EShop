@@ -91,6 +91,7 @@ public partial class CatalogHelper
             Name = product.Name,
             ShortDescription = product.ShortDescription,
             MaxAddToCartNumber = product.MaxAddToCartNumber,
+            MinAddToCartNumber = product.MinAddToCartNumber,
             MetaTitle = product.MetaTitle,
             MetaDescriptions = product.MetaDescription,
             IsAvailable = product.IsAvailable,
@@ -365,7 +366,7 @@ public partial class CatalogHelper
             .Select(x => x.Id)
             .ToArray();
 
-        model.SelectedCombination =
+        var selectedCombination = model.SelectedCombination =
             await _productAttributeMaterializer.FindAttributeCombinationAsync(product.Id, selection);
 
         if ((model.SelectedCombination == null || (!model.SelectedCombination.IsActive ||
@@ -378,6 +379,13 @@ public partial class CatalogHelper
         {
             model.IsAvailable = true;
         }
+        
+        model.MaxAddToCartNumber =
+            (selectedCombination.StockQuantity != 0 &&
+             selectedCombination.StockQuantity > product.MaxAddToCartNumber)
+                ? product.MaxAddToCartNumber
+                : selectedCombination.StockQuantity;
+        model.MinAddToCartNumber = product.MinAddToCartNumber;
 
         product.MergeDataWithCombination(model.SelectedCombination);
 
@@ -414,6 +422,7 @@ public partial class CatalogHelper
                     value.ProductVariantAttributeValue);
                 if (availabilityInfo != null)
                 {
+                    
                     value.IsUnavailable = true;
                     if (availabilityInfo.IsOutOfStock && availabilityInfo.IsActive)
                     {

@@ -66,7 +66,7 @@
                     </button>
                     <label class="visually-hidden" for="@($"quantity-{item.Id}")">Enter quantity</label>
                     @* <input id="@($"quantity-{item.Id}")" name="quantity" value="@item.CurrentQuantity" min="0" max="@item.MaxAddToCartQuantity" type="number"/> *@
-                    <input id="@($"quantity-{item.Id}")" name="quantity" value="@item.CurrentQuantity" min="-999"  type="number"/>
+                    <input id="@($"quantity-{item.Id}")" name="quantity" value="@item.CurrentQuantity" min="0" max="@item.MaxAddToCartQuantity"  type="number"/>
 
                     <button tabindex="-1" aria-hidden="true" class="button button-unstyled quantity-plus" name="minus">
 

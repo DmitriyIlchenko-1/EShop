@@ -308,11 +308,6 @@ button {
     font-size: var(--font-body--size);
 }
 
-.button[aria-disabled="true"], .button-secondary[aria-disabled="true"],
-.button:disabled, .button-secondary:disabled {
-    opacity: .5;
-    cursor: not-allowed;
-}
 
 .field__button {
     position: absolute;
@@ -1969,6 +1964,13 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     text-align: center;
     color: var(--color-input-text);
 }
+
+.quantity-selector input[type="number"]:disabled,
+.button:disabled, .button-secondary:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
 
 .alert {
     background-color: var(--alert-bg-color);

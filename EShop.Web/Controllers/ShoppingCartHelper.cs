@@ -12,6 +12,7 @@ using EShop.Core.Data.Cart.Domain;
 using EShop.Core.Data.Settings;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Routing;
+using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
 using EShop.Web.Models.Checkout;
 using Microsoft.AspNetCore.Mvc;
@@ -73,6 +74,8 @@ public class ShoppingCartHelper
         // Preload attributes for all products in one go
         var batchContext = _productService.CreateProductBatchContext(products);
         await batchContext.Attributes.LoadAllAsync();
+        var productSelectionMap = cart.Items.ToMultiMap(x => x.ProductId, x => x.AttributeSelection);
+        await _attributeMaterializer.PrefetchProductVariantAttributeCombinationsAsync(productSelectionMap);
       
         // Preload medias for all products in one go
         var medias = await _db
@@ -126,9 +129,18 @@ public class ShoppingCartHelper
                 ProductUrl = _urlHelper.RouteUrl("Product", new { SeName = seName }),
 
                 CurrentQuantity = item.Quantity,
-                MaxAddToCartQuantity = product.MaxAddToCartNumber
+                MaxAddToCartQuantity = product.MaxAddToCartNumber,
+                MinAddToCartQuantity = product.MinAddToCartNumber,
             };
 
+            if ( _attributeMaterializer.TryGetPrefetchedCombination(product.Id, item.AttributeSelection, out var selectedCombination))
+            {
+                model.MaxAddToCartQuantity =
+                    (selectedCombination.StockQuantity != 0 &&
+                     selectedCombination.StockQuantity > product.MaxAddToCartNumber)
+                        ? product.MaxAddToCartNumber
+                        : selectedCombination.StockQuantity;
+            }
             
             if (settings.MapBrands)
             {

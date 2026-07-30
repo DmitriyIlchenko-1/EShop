@@ -4,12 +4,15 @@
 @{
     var product = Model;
     var addToCartDisabled = !Model.IsAvailable || Model.StockQuantity == 0;
+    Console.WriteLine();
 }
 <product-form>
-    <form method="post" class="js-product-form" asp-route-productId="@product.Id" asp-action="@nameof(ShoppingCartController.AddProduct)" asp-controller="ShoppingCart">
+    <form method="post" class="js-product-form" asp-route-productId="@product.Id"
+          asp-action="@nameof(ShoppingCartController.AddProduct)" asp-controller="ShoppingCart">
         <div class="product-info__add-to-cart">
             <quantity-selector id="quantity-selector" class="quantity-selector">
-                <button tabindex="-1" aria-hidden="true" class="button button-unstyled quantity-minus">
+                <button tabindex="-1" aria-hidden="true" class="button button-unstyled quantity-minus"
+                        disabled="@addToCartDisabled">
 
                     <svg aria-hidden="true" focusable="false" class="icon-plus" width="15" height="15"
                          viewBox="0 0 24 24" fill="none"
@@ -29,8 +32,11 @@
 
                 </button>
                 <label class="visually-hidden" for="quantity">Enter quantity</label>
-                <input id="quantity" name="quantity" min="-999" type="number"/>
-                <button tabindex="-1" aria-hidden="true" class="button button-unstyled quantity-plus">
+
+                <input id="quantity" name="quantity" min="@Model.MinAddToCartNumber"
+                       max="@Model.MaxAddToCartNumber" type="number" disabled="@addToCartDisabled"/>
+                <button tabindex="-1" aria-hidden="true" class="button button-unstyled quantity-plus"
+                        disabled="@addToCartDisabled">
 
                     <svg aria-hidden="true" focusable="false" class="icon-minus" width="15" height="15"
                          viewBox="0 0 24 24" fill="none"
@@ -50,7 +56,9 @@
 
                 </button>
             </quantity-selector>
-            <button @(@addToCartDisabled ? "disabled" : "") name="add" class="button product-info__add-btn">Add to cart</button>
+            <button @(@addToCartDisabled ? "disabled" : "") name="add" class="button product-info__add-btn">Add to
+                cart
+            </button>
         </div>
     </form>
 </product-form>

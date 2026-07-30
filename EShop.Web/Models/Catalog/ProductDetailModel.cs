@@ -18,7 +18,8 @@ public class ProductDetailModel : BaseModel
     public string Name { get; set; }
     public string Description { get; set; }
     public string ShortDescription { get; set; }
-    public int? MaxAddToCartNumber { get; set; }
+    public int MaxAddToCartNumber { get; set; }
+    public int MinAddToCartNumber { get; set; }
     public string Sku { get; set; }
     public string Gtin { get; set; }
     public string Weight { get; set; }

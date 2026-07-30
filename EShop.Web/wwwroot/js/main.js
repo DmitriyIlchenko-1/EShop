@@ -571,7 +571,7 @@ class QuantitySelector extends HTMLElement {
 
     init() {
         const {min, max, step} = this.getCurrentValues();
-        //TODO: TEMP DURING TESTING UNCOMMENT AFTERWARD this.updateConstraints(min, max, step);
+        this.updateConstraints(min, max, step);
     }
 
 
@@ -681,8 +681,8 @@ class QuantitySelector extends HTMLElement {
 
     getCurrentValues() {
         return {
-            min: parseInt(this.quantityInput.min) || 1,
-            max: parseInt(this.quantityInput.max) || null,
+            min: parseInt(this.quantityInput.min) || 0,
+            max: this.quantityInput.max == 0 ? 0 : parseInt(this.quantityInput.max) || null,
             step: parseInt(this.quantityInput.step) || 1,
             value: parseInt(this.quantityInput.value) || 0
         }

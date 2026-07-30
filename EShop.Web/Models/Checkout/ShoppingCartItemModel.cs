@@ -12,6 +12,7 @@ public class ShoppingCartItemModel : BaseModel
     public string ProductUrl { get; set; }
     public ImageModel Image { get; set; }
     public int MaxAddToCartQuantity { get; set; }
+    public int MinAddToCartQuantity { get; set; }
     public int CurrentQuantity { get; set; }
     public BrandSummaryModel Brand { get; set; }
     public CartItemPriceModel Price { get; set; } = new();
