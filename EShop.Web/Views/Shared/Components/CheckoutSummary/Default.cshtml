@@ -1,9 +1,12 @@
+@using EShop.Infrastructure.Extensions
+@using EShop.Web.Controllers
 @using EShop.Web.Models.Checkout
 @model ShoppingCartModel
 
 @{
     var itemsInTotal = Model.Items.Count;
     var subtotal = Model.CartSubtotal;
+    
 }
 <div class="checkout__order-summary">
     <advanced-disclosure data-maximize-on-large-screen="true" data-large-screen-width="1024">
@@ -99,7 +102,7 @@
             </div>
         </details>
     </advanced-disclosure>
-    <button class="button mt-lg" name="place-order">
-        Place order
+    <button class="button w-full" name="place-order">
+        @(Context.Request.RouteValues.GetValueOrDefaultAs<string>("action") == nameof(CheckoutController.Confirm) ? "Place order" : "Next")
     </button>
 </div>

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EShop.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -298,8 +298,7 @@ namespace EShop.Web.Migrations
                     IsCouponRequired = table.Column<bool>(type: "boolean", nullable: false),
                     CouponCode = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     CouponUsageType = table.Column<int>(type: "integer", nullable: false),
-                    CouponUsageAmount = table.Column<int>(type: "integer", nullable: false),
-                    DiscountUsageAmount = table.Column<int>(type: "integer", nullable: false),
+                    AppliedTimes = table.Column<int>(type: "integer", nullable: false),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -357,32 +356,6 @@ namespace EShop.Web.Migrations
                         principalTable: "Catalog_SpecificationAttribute",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Common_Address",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FirstName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    LastName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    PhoneNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    AddressLine1 = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    AddressLine2 = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    ZipCode = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CityId = table.Column<int>(type: "integer", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Common_Address", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Common_Address_Common_City_CityId",
-                        column: x => x.CityId,
-                        principalTable: "Common_City",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -512,65 +485,6 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Platform_User",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserGuid = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    IsSystemAccount = table.Column<bool>(type: "boolean", nullable: false),
-                    SystemName = table.Column<string>(type: "text", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
-                    FirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    LastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    BirthDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    Gender = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ExtensionData = table.Column<string>(type: "text", nullable: true),
-                    ClientIdentity = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
-                    LastIpAddress = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    LastUserAgent = table.Column<string>(type: "text", nullable: true),
-                    LastUserDeviceType = table.Column<string>(type: "text", nullable: true),
-                    LastVisitedPage = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true),
-                    DiscountCouponCode = table.Column<string>(type: "text", nullable: true),
-                    Username = table.Column<string>(type: "text", nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "text", nullable: true),
-                    Email = table.Column<string>(type: "text", nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "text", nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    Password = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false),
-                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LatestUpdateOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    LastActivityDateUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastLoginDateUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    BillingAddressId = table.Column<int>(type: "integer", nullable: true),
-                    ShippingAddressId = table.Column<int>(type: "integer", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Platform_User", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Platform_User_Common_Address_BillingAddressId",
-                        column: x => x.BillingAddressId,
-                        principalTable: "Common_Address",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Platform_User_Common_Address_ShippingAddressId",
-                        column: x => x.ShippingAddressId,
-                        principalTable: "Common_Address",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Catalog_Product",
                 columns: table => new
                 {
@@ -624,7 +538,7 @@ namespace EShop.Web.Migrations
                         column: x => x.BrandId,
                         principalTable: "Catalog_Brand",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -652,94 +566,6 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Checkout_Order",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    OrderGuid = table.Column<Guid>(type: "uuid", nullable: false),
-                    ShippingAddressId = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    PaymentMethodSystemName = table.Column<string>(type: "text", nullable: true),
-                    OrderSubtotalWithDiscount = table.Column<decimal>(type: "numeric", nullable: false),
-                    OrderSubtotalWithNoDiscount = table.Column<decimal>(type: "numeric", nullable: false),
-                    OrderDiscount = table.Column<decimal>(type: "numeric", nullable: false),
-                    PaidOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    OrderStatus = table.Column<int>(type: "integer", nullable: false),
-                    PaymentStatus = table.Column<int>(type: "integer", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Checkout_Order", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Checkout_Order_Common_Address_ShippingAddressId",
-                        column: x => x.ShippingAddressId,
-                        principalTable: "Common_Address",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Checkout_Order_Platform_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Platform_User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Common_UserAddress",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    AddressType = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    AddressId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Common_UserAddress", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Common_UserAddress_Common_Address_AddressId",
-                        column: x => x.AddressId,
-                        principalTable: "Common_Address",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Common_UserAddress_Platform_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Platform_User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Platform_UserRole",
-                columns: table => new
-                {
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    RoleId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Platform_UserRole", x => new { x.UserId, x.RoleId });
-                    table.ForeignKey(
-                        name: "FK_Platform_UserRole_Platform_Role_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "Platform_Role",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Platform_UserRole_Platform_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Platform_User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Catalog_ProductAttribute_Mapping",
                 columns: table => new
                 {
@@ -763,6 +589,33 @@ namespace EShop.Web.Migrations
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Catalog_ProductAttribute_Mapping_Catalog_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_ProductBrand",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    BrandId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_ProductBrand", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductBrand_Catalog_Brand_BrandId",
+                        column: x => x.BrandId,
+                        principalTable: "Catalog_Brand",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductBrand_Catalog_Product_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Catalog_Product",
                         principalColumn: "Id",
@@ -819,40 +672,6 @@ namespace EShop.Web.Migrations
                         name: "FK_Catalog_ProductLink_Catalog_Product_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Catalog_Product",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Catalog_ProductReview",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    CommentText = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true),
-                    Rating = table.Column<int>(type: "integer", nullable: false),
-                    ReviewerName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    ReviewStatus = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    ProductId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Catalog_ProductReview", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductReview_Catalog_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Catalog_Product",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductReview_Platform_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Platform_User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -957,6 +776,7 @@ namespace EShop.Web.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     DisplayOrder = table.Column<byte>(type: "smallint", nullable: false),
+                    MainImage = table.Column<bool>(type: "boolean", nullable: false),
                     MediaFileId = table.Column<int>(type: "integer", nullable: true),
                     MediaId = table.Column<int>(type: "integer", nullable: false),
                     ProductId = table.Column<int>(type: "integer", nullable: false)
@@ -974,6 +794,277 @@ namespace EShop.Web.Migrations
                         name: "FK_Content_ProductMedia_Content_MediaFile_MediaFileId",
                         column: x => x.MediaFileId,
                         principalTable: "Content_MediaFile",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Discount_ProductDiscount_Mapping",
+                columns: table => new
+                {
+                    DiscountId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Discount_ProductDiscount_Mapping", x => new { x.DiscountId, x.ProductId });
+                    table.ForeignKey(
+                        name: "FK_Discount_ProductDiscount_Mapping_Catalog_Discount_DiscountId",
+                        column: x => x.DiscountId,
+                        principalTable: "Catalog_Discount",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Discount_ProductDiscount_Mapping_Catalog_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_ProductVariantAttributeValue",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Alias = table.Column<string>(type: "text", nullable: true),
+                    Color = table.Column<string>(type: "text", nullable: true),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    IsPreSelected = table.Column<bool>(type: "boolean", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    IsEssential = table.Column<bool>(type: "boolean", nullable: false),
+                    PriceAdjustment = table.Column<decimal>(type: "numeric", nullable: false),
+                    ProductVariantAttributeId = table.Column<int>(type: "integer", nullable: false),
+                    WeightAdjustment = table.Column<decimal>(type: "numeric", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_ProductVariantAttributeValue", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductVariantAttributeValue_Catalog_ProductAttribu~",
+                        column: x => x.ProductVariantAttributeId,
+                        principalTable: "Catalog_ProductAttribute_Mapping",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_DiscountUsageHistory",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DiscountId = table.Column<int>(type: "integer", nullable: false),
+                    OrderId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_DiscountUsageHistory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_DiscountUsageHistory_Catalog_Discount_DiscountId",
+                        column: x => x.DiscountId,
+                        principalTable: "Catalog_Discount",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_ProductReview",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CommentText = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true),
+                    Rating = table.Column<int>(type: "integer", nullable: false),
+                    ReviewerName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    ReviewStatus = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_ProductReview", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_ProductReview_Catalog_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog_Reply",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ReplierName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ReplyText = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    ReplyStatus = table.Column<int>(type: "integer", nullable: false),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    ProductReviewId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Catalog_Reply", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Catalog_Reply_Catalog_ProductReview_ProductReviewId",
+                        column: x => x.ProductReviewId,
+                        principalTable: "Catalog_ProductReview",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Checkout_Order",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    OrderGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    ShippingAddressId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    PaymentMethodSystemName = table.Column<string>(type: "text", nullable: true),
+                    Subtotal = table.Column<decimal>(type: "numeric", nullable: false),
+                    SubtotalRounded = table.Column<decimal>(type: "numeric", nullable: false),
+                    OrderDiscount = table.Column<decimal>(type: "numeric", nullable: false),
+                    PaidOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    OrderStatus = table.Column<int>(type: "integer", nullable: false),
+                    PaymentStatus = table.Column<int>(type: "integer", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Checkout_Order", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Checkout_OrderItem",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    OrderItemGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrderId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    Subtotal = table.Column<decimal>(type: "numeric", nullable: false),
+                    SubtotalRounded = table.Column<decimal>(type: "numeric", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    UnitPriceRounded = table.Column<decimal>(type: "numeric", nullable: false),
+                    RawAttributes = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Checkout_OrderItem", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Checkout_OrderItem_Catalog_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Catalog_Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Checkout_OrderItem_Checkout_Order_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Checkout_Order",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Common_Address",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FirstName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    LastName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    PhoneNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    AddressLine1 = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    AddressLine2 = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    ZipCode = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CityId = table.Column<int>(type: "integer", nullable: true),
+                    UserId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Common_Address", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Common_Address_Common_City_CityId",
+                        column: x => x.CityId,
+                        principalTable: "Common_City",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Platform_User",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    IsSystemAccount = table.Column<bool>(type: "boolean", nullable: false),
+                    SystemName = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    FirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    LastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    BirthDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    Gender = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ExtensionData = table.Column<string>(type: "text", nullable: true),
+                    ClientIdentity = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
+                    LastIpAddress = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    LastUserAgent = table.Column<string>(type: "text", nullable: true),
+                    LastUserDeviceType = table.Column<string>(type: "text", nullable: true),
+                    LastVisitedPage = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true),
+                    DiscountCouponCode = table.Column<string>(type: "text", nullable: true),
+                    Username = table.Column<string>(type: "text", nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "text", nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false),
+                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LatestUpdateOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    LastActivityDateUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastLoginDateUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    BillingAddressId = table.Column<int>(type: "integer", nullable: true),
+                    ShippingAddressId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Platform_User", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Platform_User_Common_Address_BillingAddressId",
+                        column: x => x.BillingAddressId,
+                        principalTable: "Common_Address",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Platform_User_Common_Address_ShippingAddressId",
+                        column: x => x.ShippingAddressId,
+                        principalTable: "Common_Address",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -1008,140 +1099,27 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Discount_ProductDiscount_Mapping",
+                name: "Platform_UserRole",
                 columns: table => new
                 {
-                    DiscountId = table.Column<int>(type: "integer", nullable: false),
-                    ProductId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Discount_ProductDiscount_Mapping", x => new { x.DiscountId, x.ProductId });
-                    table.ForeignKey(
-                        name: "FK_Discount_ProductDiscount_Mapping_Catalog_Discount_DiscountId",
-                        column: x => x.DiscountId,
-                        principalTable: "Catalog_Discount",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Discount_ProductDiscount_Mapping_Catalog_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Catalog_Product",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Catalog_DiscountUsageHistory",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    DiscountId = table.Column<int>(type: "integer", nullable: false),
-                    OrderId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Catalog_DiscountUsageHistory", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Catalog_DiscountUsageHistory_Catalog_Discount_DiscountId",
-                        column: x => x.DiscountId,
-                        principalTable: "Catalog_Discount",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Catalog_DiscountUsageHistory_Checkout_Order_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Checkout_Order",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Checkout_OrderItem",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    OrderItemGuid = table.Column<Guid>(type: "uuid", nullable: false),
-                    OrderId = table.Column<int>(type: "integer", nullable: false),
-                    ProductId = table.Column<int>(type: "integer", nullable: false),
-                    Quantity = table.Column<int>(type: "integer", nullable: false),
-                    SubtotalWithDiscount = table.Column<decimal>(type: "numeric", nullable: false),
-                    SubtotalWithNoDiscount = table.Column<decimal>(type: "numeric", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "numeric", nullable: false),
-                    RawAttributes = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Checkout_OrderItem", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Checkout_OrderItem_Checkout_Order_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Checkout_Order",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Catalog_ProductVariantAttributeValue",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Alias = table.Column<string>(type: "text", nullable: true),
-                    Color = table.Column<string>(type: "text", nullable: true),
-                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
-                    IsPreSelected = table.Column<bool>(type: "boolean", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    Quantity = table.Column<int>(type: "integer", nullable: false),
-                    IsEssential = table.Column<bool>(type: "boolean", nullable: false),
-                    PriceAdjustment = table.Column<decimal>(type: "numeric", nullable: false),
-                    ProductVariantAttributeId = table.Column<int>(type: "integer", nullable: false),
-                    WeightAdjustment = table.Column<decimal>(type: "numeric", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Catalog_ProductVariantAttributeValue", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Catalog_ProductVariantAttributeValue_Catalog_ProductAttribu~",
-                        column: x => x.ProductVariantAttributeId,
-                        principalTable: "Catalog_ProductAttribute_Mapping",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Catalog_Reply",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ReplierName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    ReplyText = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    ReplyStatus = table.Column<int>(type: "integer", nullable: false),
-                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
-                    ProductReviewId = table.Column<int>(type: "integer", nullable: false)
+                    RoleId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Catalog_Reply", x => x.Id);
+                    table.PrimaryKey("PK_Platform_UserRole", x => new { x.UserId, x.RoleId });
                     table.ForeignKey(
-                        name: "FK_Catalog_Reply_Catalog_ProductReview_ProductReviewId",
-                        column: x => x.ProductReviewId,
-                        principalTable: "Catalog_ProductReview",
+                        name: "FK_Platform_UserRole_Platform_Role_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Platform_Role",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Catalog_Reply_Platform_User_UserId",
+                        name: "FK_Platform_UserRole_Platform_User_UserId",
                         column: x => x.UserId,
                         principalTable: "Platform_User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -1198,6 +1176,16 @@ namespace EShop.Web.Migrations
                 name: "IX_Catalog_ProductAttributeOptionsSet_ProductAttributeId",
                 table: "Catalog_ProductAttributeOptionsSet",
                 column: "ProductAttributeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Catalog_ProductBrand_BrandId",
+                table: "Catalog_ProductBrand",
+                column: "BrandId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Catalog_ProductBrand_ProductId",
+                table: "Catalog_ProductBrand",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Catalog_ProductCategory_CategoryId",
@@ -1285,24 +1273,24 @@ namespace EShop.Web.Migrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Checkout_OrderItem_ProductId",
+                table: "Checkout_OrderItem",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Common_Address_CityId",
                 table: "Common_Address",
                 column: "CityId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Common_Address_UserId",
+                table: "Common_Address",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Common_ProductLabel_ProductId",
                 table: "Common_ProductLabel",
                 column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Common_UserAddress_AddressId",
-                table: "Common_UserAddress",
-                column: "AddressId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Common_UserAddress_UserId",
-                table: "Common_UserAddress",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Content_ProductMedia_MediaFileId",
@@ -1347,27 +1335,84 @@ namespace EShop.Web.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Platform_User_BillingAddressId",
                 table: "Platform_User",
-                column: "BillingAddressId");
+                column: "BillingAddressId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Platform_User_ShippingAddressId",
                 table: "Platform_User",
-                column: "ShippingAddressId");
+                column: "ShippingAddressId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Platform_UserRole_RoleId",
                 table: "Platform_UserRole",
                 column: "RoleId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Catalog_DiscountUsageHistory_Checkout_Order_OrderId",
+                table: "Catalog_DiscountUsageHistory",
+                column: "OrderId",
+                principalTable: "Checkout_Order",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Catalog_ProductReview_Platform_User_UserId",
+                table: "Catalog_ProductReview",
+                column: "UserId",
+                principalTable: "Platform_User",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Catalog_Reply_Platform_User_UserId",
+                table: "Catalog_Reply",
+                column: "UserId",
+                principalTable: "Platform_User",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Checkout_Order_Common_Address_ShippingAddressId",
+                table: "Checkout_Order",
+                column: "ShippingAddressId",
+                principalTable: "Common_Address",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Checkout_Order_Platform_User_UserId",
+                table: "Checkout_Order",
+                column: "UserId",
+                principalTable: "Platform_User",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Common_Address_Platform_User_UserId",
+                table: "Common_Address",
+                column: "UserId",
+                principalTable: "Platform_User",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Common_Address_Platform_User_UserId",
+                table: "Common_Address");
+
             migrationBuilder.DropTable(
                 name: "Catalog_DiscountUsageHistory");
 
             migrationBuilder.DropTable(
                 name: "Catalog_ProductAttributeOption");
+
+            migrationBuilder.DropTable(
+                name: "Catalog_ProductBrand");
 
             migrationBuilder.DropTable(
                 name: "Catalog_ProductCategory");
@@ -1392,9 +1437,6 @@ namespace EShop.Web.Migrations
 
             migrationBuilder.DropTable(
                 name: "Common_ProductLabel");
-
-            migrationBuilder.DropTable(
-                name: "Common_UserAddress");
 
             migrationBuilder.DropTable(
                 name: "Content_ProductMedia");
@@ -1481,19 +1523,19 @@ namespace EShop.Web.Migrations
                 name: "Catalog_Product");
 
             migrationBuilder.DropTable(
-                name: "Platform_User");
-
-            migrationBuilder.DropTable(
                 name: "Catalog_DiscountBadge");
 
             migrationBuilder.DropTable(
                 name: "Catalog_Brand");
 
             migrationBuilder.DropTable(
-                name: "Common_Address");
+                name: "Content_MediaFile");
 
             migrationBuilder.DropTable(
-                name: "Content_MediaFile");
+                name: "Platform_User");
+
+            migrationBuilder.DropTable(
+                name: "Common_Address");
 
             migrationBuilder.DropTable(
                 name: "Common_City");

@@ -32,6 +32,10 @@ public class CityService : ICityService
 
     public async Task<City> GetByIdAsync(int cityId, bool showHidden = false)
     {
+        if (cityId < 1)
+        {
+            return null;
+        }
         var cities = await PrefetchCitiesAsync(showHidden);
         return cities.FirstOrDefault(x => x.Id == cityId);
     }

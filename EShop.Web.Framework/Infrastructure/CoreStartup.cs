@@ -99,8 +99,10 @@ public class CoreStartup : BaseStartup
 
         services.AddDbContextPool<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql(configuration["DbConnections:DefaultDbConnection"],
-                x => x.MigrationsAssembly("EShop.Web")).EnableSensitiveDataLogging();
+            options
+                .UseNpgsql(configuration["DbConnections:DefaultDbConnection"],
+                    x => x.MigrationsAssembly("EShop.Web"))
+                .EnableSensitiveDataLogging();
         });
 
 

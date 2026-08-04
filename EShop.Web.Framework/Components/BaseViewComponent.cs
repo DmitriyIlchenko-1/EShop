@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 
@@ -8,4 +9,7 @@ public abstract class BaseViewComponent : ViewComponent
     private readonly static ContentViewComponentResult _emptyResult = new ContentViewComponentResult(string.Empty);
 
     protected ContentViewComponentResult NoContent() => _emptyResult;
+    
+    protected HtmlContentViewComponentResult HtmlContent(string content)
+    => new HtmlContentViewComponentResult(new HtmlString(content));
 }

@@ -7,6 +7,7 @@ namespace EShop.Core.Platform.Modules.Payment;
 public interface IPaymentMethod : IProvider
 {
     Task<ProcessPaymentResult> ProcessPaymentAsync(ProcessPaymentRequest request);
+    public bool SkipPaymentInfo { get; }
 }
 
 

@@ -8,4 +8,6 @@ public abstract class BaseOfflinePaymentProvider : IPaymentMethod
 {
     public Task<ProcessPaymentResult> ProcessPaymentAsync(ProcessPaymentRequest request)
         => Task.FromResult(new ProcessPaymentResult(PaymentStatus.Pending));
+
+    public virtual bool SkipPaymentInfo => true;
 }

@@ -1028,6 +1028,9 @@ namespace EShop.Web.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("ZipCode")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -1035,6 +1038,8 @@ namespace EShop.Web.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CityId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Common_Address", (string)null);
                 });
@@ -1144,32 +1149,6 @@ namespace EShop.Web.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("Common_ProductLabel", (string)null);
-                });
-
-            modelBuilder.Entity("EShop.Core.Common.Domain.UserAddress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AddressId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("AddressType")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AddressId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Common_UserAddress", (string)null);
                 });
 
             modelBuilder.Entity("EShop.Core.Content.Media.Domain.MediaFile", b =>
@@ -1570,9 +1549,11 @@ namespace EShop.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BillingAddressId");
+                    b.HasIndex("BillingAddressId")
+                        .IsUnique();
 
-                    b.HasIndex("ShippingAddressId");
+                    b.HasIndex("ShippingAddressId")
+                        .IsUnique();
 
                     b.ToTable("Platform_User", (string)null);
                 });
@@ -2040,6 +2021,11 @@ namespace EShop.Web.Migrations
                         .HasForeignKey("CityId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", null)
+                        .WithMany("Addresses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("City");
                 });
 
@@ -2060,25 +2046,6 @@ namespace EShop.Web.Migrations
                     b.Navigation("Label");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("EShop.Core.Common.Domain.UserAddress", b =>
-                {
-                    b.HasOne("EShop.Core.Common.Domain.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Address");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EShop.Core.Content.Media.Domain.ProductMedia", b =>
@@ -2137,13 +2104,13 @@ namespace EShop.Web.Migrations
             modelBuilder.Entity("EShop.Core.Platform.Identity.Domain.User", b =>
                 {
                     b.HasOne("EShop.Core.Common.Domain.Address", "BillingAddress")
-                        .WithMany()
-                        .HasForeignKey("BillingAddressId")
+                        .WithOne()
+                        .HasForeignKey("EShop.Core.Platform.Identity.Domain.User", "BillingAddressId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("EShop.Core.Common.Domain.Address", "ShippingAddress")
-                        .WithMany()
-                        .HasForeignKey("ShippingAddressId")
+                        .WithOne()
+                        .HasForeignKey("EShop.Core.Platform.Identity.Domain.User", "ShippingAddressId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("BillingAddress");
@@ -2239,6 +2206,8 @@ namespace EShop.Web.Migrations
 
             modelBuilder.Entity("EShop.Core.Platform.Identity.Domain.User", b =>
                 {
+                    b.Navigation("Addresses");
+
                     b.Navigation("Orders");
 
                     b.Navigation("ShoppingCartItems");

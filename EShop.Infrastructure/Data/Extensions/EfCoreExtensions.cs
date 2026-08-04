@@ -211,7 +211,7 @@ public static class EfCoreExtensions
 
     public static ValueTask<TEntity> FindByIdAsync<TEntity, TIncluded>(
         this IIncludableQueryable<TEntity, TIncluded> query, int id, CancellationToken cancellationToken = default,
-        bool track = false) where TEntity : BaseEntity
+        bool track = true) where TEntity : BaseEntity
     {
         Guard.NotNull(query);
         if (id == 0)

@@ -15,7 +15,7 @@
 
 }
 
-.customer form > button {
+:is(.login, .register) form > button {
     font-size: 1.5rem;
     letter-spacing: .1rem;
     min-width: calc(12rem + var(--btn-primary-border-width) * 2);

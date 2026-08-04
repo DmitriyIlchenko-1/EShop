@@ -1,33 +1,33 @@
-@using EShop.Web.Models.Checkout
-@model CheckoutPaymentMethodModel
-
- 
-@if (Model.PaymentMethodModels.Count > 0)
-{
-    <div class="checkout__payment-list mt-sm">
-        @foreach (var paymentMethod in Model.PaymentMethodModels)
-        {
-            <div class="checkout__payment-info radio">
-                <input class="" id="payment-method-@(paymentMethod.SystemName)" value="@(paymentMethod.SystemName)" type="radio"  name="@nameof(CheckoutModel.PaymentMethodSystemName)"/>
-                <label  for="payment-method-@(paymentMethod.SystemName)">@paymentMethod.Name</label>
-            </div>
-        }
-    </div>
-}
-else
-{
-    <div class="checkout__payment-list checkout__payment-list--empty mt-sm">
-       @if (Model.IsAjaxRequested)
-       {
-           <p class="m-0">
-              No payment options are available.
-           </p>
-       }
-       else
-       {
-           <p class="m-0">
-               Enter shipping address to see available payment options.
-           </p>
-       }
-    </div>
-}
+@* @using EShop.Web.Models.Checkout *@
+@* @model CheckoutPaymentMethodModel *@
+@* *@
+@*   *@
+@* @if (Model.PaymentMethodModels.Count > 0) *@
+@* { *@
+@*     <div class="checkout__payment-list mt-sm"> *@
+@*         @foreach (var paymentMethod in Model.PaymentMethodModels) *@
+@*         { *@
+@*             <div class="checkout__payment-info radio"> *@
+@*                 <input class="" id="payment-method-@(paymentMethod.SystemName)" value="@(paymentMethod.SystemName)" type="radio"  name="@nameof(CheckoutModel.PaymentMethodSystemName)"/> *@
+@*                 <label  for="payment-method-@(paymentMethod.SystemName)">@paymentMethod.Name</label> *@
+@*             </div> *@
+@*         } *@
+@*     </div> *@
+@* } *@
+@* else *@
+@* { *@
+@*     <div class="checkout__payment-list checkout__payment-list--empty mt-sm"> *@
+@*        @if (Model.IsAjaxRequested) *@
+@*        { *@
+@*            <p class="m-0"> *@
+@*               No payment options are available. *@
+@*            </p> *@
+@*        } *@
+@*        else *@
+@*        { *@
+@*            <p class="m-0"> *@
+@*                Enter shipping address to see available payment options. *@
+@*            </p> *@
+@*        } *@
+@*     </div> *@
+@* } *@

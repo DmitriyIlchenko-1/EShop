@@ -4,9 +4,9 @@
 
 @{
     
-    @*TODO: selectedAddress do can be null when user has no addresses. var selectedAddress = Model.CheckoutShippingAddressModel *@
-    @*     .ExistingAddresses.FirstOrDefault(x => x.Selected); *@
-    @* <input type="hidden" value="@selectedAddress.Id" asp-for="AddressId"/> *@
+    var selectedAddress = Model.CheckoutShippingAddressModel
+         .ExistingAddresses.FirstOrDefault(x => x.Selected);
+     <input type="hidden" value="@(selectedAddress?.Id ?? 0)" asp-for="AddressId"/>
 }
 <div id="checkout-selectAddress-load" data-existing-address-count="@Model.CheckoutShippingAddressModel.ExistingAddresses.Count">
     <partial name="_Checkout.SelectAddress" model="Model.CheckoutShippingAddressModel"/>
@@ -14,16 +14,14 @@
 
 <div class="js-form-panel">
     @{
-        <form method="post"
-              class="js-checkout-address-form">
+        <div class="js-checkout-address-form">
             <div id="checkout-addUpdateAddressForm-load">
                 @{
                     var dataDictNewAddress = new ViewDataDictionary(ViewData);
-                    dataDictNewAddress.TemplateInfo.HtmlFieldPrefix = nameof(Model.CheckoutShippingAddressModel.NewAddress);
+                    dataDictNewAddress.TemplateInfo.HtmlFieldPrefix = nameof(Model.CheckoutShippingAddressModel) + "." + nameof(Model.CheckoutShippingAddressModel.NewAddress);
                     @await Html.PartialAsync("_Checkout.CreateOrUpdateAddress", Model.CheckoutShippingAddressModel.NewAddress, dataDictNewAddress)
                 }
-
             </div>
-        </form>
+        </div>
     }
 </div>

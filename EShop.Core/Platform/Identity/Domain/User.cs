@@ -18,9 +18,12 @@ internal class UserMap : IEntityTypeConfiguration<User>
         builder.HasQueryFilter(x => !x.IsDeleted);
 
         builder
-            .HasMany(x => x.Addresses)
-            .WithMany()
-            .UsingEntity<UserAddress>();
+            .HasOne(c => c.BillingAddress)
+            .WithOne();
+
+        builder
+            .HasOne(c => c.ShippingAddress)
+            .WithOne();
     }
 }
 
@@ -141,5 +144,18 @@ public class User : BaseEntity
     {
         get => _orders ?? LazyLoader.Load(this, ref _orders) ?? (_orders ??= new HashSet<Order>());
         set => _orders = value;
+    }
+
+    public void RemoveAddress(Address address)
+    {
+        if (Addresses.Contains(address))
+        {
+            if (ShippingAddress == address)
+            {
+                ShippingAddress = null;
+            }
+
+            Addresses.Remove(address);
+        }
     }
 }

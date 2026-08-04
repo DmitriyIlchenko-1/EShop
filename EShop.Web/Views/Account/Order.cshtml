@@ -36,7 +36,7 @@
                         <dd>
                             <dl>
                                 <dt class="visually-hidden">First and last name</dt>
-                                <dd>@string.Join(" ", shippingAddress.FirstName, shippingAddress.LastName)</dd>
+                                <dd>@shippingAddress.Fullname</dd>
                                 <dt class="visually-hidden">Address 1</dt>
                                 <dd>@shippingAddress.AddressLine1</dd>
                                 @if (shippingAddress.AddressLine2 != null)

@@ -29,7 +29,7 @@ body, .color-scheme1, .color-scheme-2 {
 
 body, .paragraph > * {
     font-size: calc(var(--font-body--size) * 0.1rem);
-    line-height: var(--line-height--body-loose); /*Consider 1.6–1.8 for paragraphs with dense content or low-contrast color schemes.*/
+    line-height: var(--body-line-height); /*Consider 1.6–1.8 for paragraphs with dense content or low-contrast color schemes.*/
     font-family: var(--font-body-family);
     font-style: var(--font-body-style);
     font-weight: var(--font-body-weight);
@@ -212,6 +212,12 @@ p {
     margin-block: 0 1em;
 }
 
+.icon {
+    --size: var(--icon-size-sm);
+    height: var(--size);
+    width: var(--size);
+    pointer-events: none;
+}
 
 /*|| Buttons*/
 
@@ -308,6 +314,29 @@ button {
     font-size: var(--font-body--size);
 }
 
+.icon-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    background: var(--icon-bg-color), var(--color-background);
+    color: var(--icon-color, var(--color-foreground));
+}
+
+.icon-button--round {
+    border-radius: var(--border-radius-sm);
+}
+
+.icon-button:hover {
+    cursor: pointer;
+}
+
+.icon {
+    pointer-events: none;
+    aspect-ratio: 1;
+    width: var(--icon-size-sm);
+}
 
 .field__button {
     position: absolute;
@@ -505,7 +534,6 @@ a, .link {
 /*Move what's below somewhere else when done*/
 .radio {
     position: relative;
-    width: fit-content;
     line-height: 1.4;
 }
 
@@ -521,6 +549,7 @@ a, .link {
 .radio > input[type="radio"] + label {
     display: inline-block;
     padding: .75em .5em .75em 2em;
+    cursor: pointer;
 }
 
 .radio > input[type="radio"],
@@ -533,6 +562,7 @@ a, .link {
     top: .825em;
     left: .2em;
     border-radius: var(--border-radius-50);
+    cursor: pointer;
 
 }
 
@@ -572,6 +602,23 @@ a, .link {
 
 .radio > input[type="radio"][disabled] + label {
     opacity: .5;
+}
+
+.radio--tile > input[type="radio"] + label {
+    border: 1px solid rgb(var(--color-foreground-rgb), .3);
+    padding-left: 2.6em;
+    padding-right: 2em;
+}
+
+.radio--tile > input[type="radio"],
+.radio--tile > input[type="radio"] + label::before,
+.radio--tile > input[type="radio"] + label::after {
+    left: .8em;
+}
+
+.radio--tile > input[type="radio"]:checked + label {
+    background-color: rgb(var(--color-foreground-rgb), .03);
+    border-color: var(--color-foreground);
 }
 
 
@@ -1134,19 +1181,23 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
    as match space as its content in case a word that would
     otherwise overflow break onto a new line + do something with anywhere overflow becuase main-nav has break-word that bring inconsistency in here*/
 .badge {
-    display: none;
-    position: absolute;
+    /*position: absolute;
     z-index: var(--layer-heightened);
     left: 8px;
-    top: 8px;
-    width: auto;
-    max-width: calc(100% - 16px);
+    top: 8px;*/
+    /*max-width: calc(100% - 16px);*/
+    overflow-wrap: anywhere;
     color: var(--badge-color, currentColor);
-    background-color: var(--badge-bg-color, var(--color-white));
+    background-color: var(--badge-bg-color, var(--color-background));
     border-radius: var(--border-radius-lg);
     padding-inline: .6em;
     padding-block: .4em;
     box-shadow: 1px 2px 4px -1px #80808985;
+}
+
+.badge--info {
+    --badge-color: var(--badge-info-color);
+    --badge-bg-color: var(--badge-info-bg-color)
 }
 
 .badge__message {
@@ -1986,9 +2037,13 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     --alert-text-color: var(--error-text-color);
 }
 
-.checkout__new-address .field-validation-error {
-    margin-block-start: .5rem;
+#add-new-address-panel{
+    display: none;
 }
+.checkout__address-control-container .field-validation-error {
+    margin-block-start: var(--margin-xs);
+}
+ 
 
 .checkout__new-address .button-secondary[name='add'] {
     padding-block: 0;
@@ -2025,7 +2080,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 
 
     &::details-content {
-        transition: height .5s ease, content-visibility .5s allow-discrete;
+        transition: height .2s ease-in-out, content-visibility .2s allow-discrete;
         height: 0;
         overflow: clip;
     }
@@ -2055,7 +2110,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
         right: 0;
         top: 50%;
         transform: rotate(90deg);
-        transition: transform .5s ease;
+        transition: transform .2s ease;
 
     }
 
@@ -2082,42 +2137,31 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 }
 
 
-
-
 .checkout__container {
+    --checkout-summary-inline-size: 48rem;
+    --checkout-main-flow-inline-size: 58rem;
+    --checkout-grid-template-columns: minmax(min-content, calc(50% + calc(calc(var(--checkout-main-flow-inline-size) - var(--checkout-summary-inline-size)) / 2))) 1fr;
+
     display: grid;
     grid-template-columns: 1fr;
     @media screen and (width >= 1024px) {
-        grid-column: 1/-1;
-        grid-template-columns: minmax(min-content, calc(50% + calc(calc(58rem - 48rem) / 2))) 1fr;
+        grid-template-columns: var(--checkout-grid-template-columns);
     }
-}
-
-.checkout__left {
-    @media screen and (width >= 1024px) {
-        display: flex;
-        justify-content: flex-end;
-    }
-}
-
-.checkout__right {
-    background-color: rgb(var(--color-foreground-rgb), .04);
 }
 
 .checkout__order-summary {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(2, auto);
-
-
+    padding-inline: var(--padding-md);
+    padding-block: var(--padding-sm);
+    background-color: rgb(var(--color-foreground-rgb), .05);
+    border-radius: var(--border-radius-md);
+    @media screen and (width < 1024px){
+        margin-block-start: var(--margin-xl);
+    }
     @media screen and (width >= 1024px) {
+        padding-inline: var(--padding-xl);
+        padding-block: var(--padding-lg);
         position: sticky;
         top: var(--header-end);
-        flex: 1;
-        max-width: var(--checkout-summary-inline-size);
-        padding: var(--padding-4xl);
-
-
     }
 }
 
@@ -2125,11 +2169,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 .checkout__main-flow {
     @media screen and (width >= 1024px) {
         position: relative;
-        flex: 1;
-        max-width: var(--checkout-main-flow-inline-size);
         padding-inline: var(--padding-5xl);
-        border-right: 1px solid rgb(var(--color-foreground-rgb), .1);
-
     }
 }
 
@@ -2138,7 +2178,10 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     grid-template-columns: 1fr auto;
     align-items: center;
     column-gap: var(--gap-sm);
-    padding: var(--padding-sm);
+    @media screen and (width < 1024px) {
+        padding: var(--padding-xs);
+    }
+
 }
 
 
@@ -2167,6 +2210,11 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     }
 }
 
+.checkout__order-summary-btn {
+    margin-block-start: var(--margin-3xl);
+}
+
+ 
 
 .checkout__cart-items {
     padding-block: var(--padding-md);
@@ -2174,6 +2222,17 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 
 .checkout__cart-item:not(:first-child) {
     margin-block-start: var(--margin-xl);
+}
+
+.checkout__order-data-summary-container{
+    
+   @media screen and (width < 1024px) {
+       max-width: 50rem;
+       margin-inline: auto;
+   }
+    border: 1px solid rgb(var(--color-foreground-rgb), .3);
+    border-radius: var(--border-radius-sm);
+    padding: var(--padding-lg);
 }
 
 .checkout__cart-item {
@@ -2248,7 +2307,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 }
 
 .checkout__block--small {
-    margin-block: var(--margin-md);
+    padding-block: var(--padding-md);
 }
 
 
@@ -2405,17 +2464,14 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     background-color: rgb(var(--color-foreground-rgb), .04);
 }
 
-.account__order-item {
-    border: 1px solid rgb(var(--color-foreground-rgb), .1);
-    border-radius: .8rem;
-}
 
 .account__order-list > li:not(:first-child) {
     margin-block-start: var(--margin-2xl);
 }
 
-.account-order-description, .account__order-actions {
-    padding: var(--padding-md);
+.account__order-item {
+    border: 1px solid rgb(var(--color-foreground-rgb), .1);
+    border-radius: var(--radius-md);
 }
 
 .account__order-metadata {
@@ -2424,15 +2480,30 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     column-gap: 12rem;
     row-gap: var(--gap-sm);
 }
-
-.account__order-actions {
-    border-radius: 0 0 calc(.8rem - 1px) calc(.8rem - 1px);
-    background-color: rgb(var(--color-foreground-rgb), .04);
-
+.account-order-description, .account__order-actions {
+    padding: var(--padding-md);
 }
 
-.account__order-actions {
-    --button-padding-block: 1.3rem;
+.account__remove-button, .account__edit-button {
+    transition: background-color .1s ease-in, box-shadow .1s ease-in;
+}
+
+.account__remove-button:is(:hover, :focus-visible) {
+    background-color: var(--icon-button-danger-action-bg-color);
+}
+
+.account__remove-button:is(:hover, :focus-visible) .icon {
+    fill: var(--icon-button-danger-action-color);
+}
+
+.account__edit-button:is(:hover, :focus-visible) {
+    background-color: rgb(var(--color-foreground-rgb), .1);
+    box-shadow: inset 0 0 0 1px rgb(var(--color-foreground-rgb), .1);;
+}
+
+.account__action-btn-container {
+    display: flex;
+    gap: var(--gap-md);
 }
 
 /*ORDER DETAILS PAGE*/
@@ -2481,6 +2552,5 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 
 }
 
-.order__reorder-btn {
 
-}
+ 

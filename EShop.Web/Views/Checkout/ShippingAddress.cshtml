@@ -1,0 +1,59 @@
+@using EShop.Web.Common.TagHelpers
+@using EShop.Web.Controllers
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model EShop.Web.Models.Checkout.CheckoutShippingAddressModel
+@{
+    
+}
+<div class="section section--content-middle color-scheme-1 spacing-style"
+     style=" --padding-block-start: max(20px, calc(var(--spacing-scale) * 68px)); --padding-block-end:max(20px, calc(var(--spacing-scale) * 68px))">
+    <div class="customer checkout">
+        <h1 class="h2">Shipping address</h1>
+        <div class="text-end px-md mb-3xl">
+            <button aria-controls="#add-new-address-panel" aria-expanded="false" class="js-add-new-address-panel-toggle button-secondary">Add new address</button>
+        </div>
+        <shipping-address-flow>
+            <form asp-action="ShippingAddress" method="post">
+                <ul class="list-unstyled grid gap-xl sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach (var item in Model.ExistingAddresses)
+                    {
+                        <li>
+                            <div class="p-lg radius-sm border h-full">
+                                <button name="save-address" data-url="@Url.Action(nameof(CheckoutController.SelectShippingAddress), new {shippingAddressId = item.Id})" class="button w-full text-sm">Choose this shipping address</button>
+                                <div class="mt-lg">
+                                    <p class="h5">@item.Fullname</p>
+                                    <dl>
+                                        <dt>Phone number</dt>
+                                        <dd>@item.PhoneNumber</dd>
+                                        <dt class="visually-hidden">Full name</dt>
+                                        <dt class="visually-hidden">Address 1</dt>
+                                        <dd>@item.AddressLine1</dd>
+                                        <div eh-if="@(item.AddressLine2 != null)">
+                                            <dt class="visually-hidden">Address 2</dt>
+                                            <dd>@item.AddressLine2</dd>
+                                        </div>
+                                        <dt class="visually-hidden">City</dt>
+                                        <dd>@item.CityName</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+                <div id="add-new-address-panel" class="mt-3xl">
+                    @{
+                        var dataDictNewAddress = new ViewDataDictionary(ViewData);
+                        dataDictNewAddress.TemplateInfo.HtmlFieldPrefix = nameof(Model.NewAddress);
+                        @await Html.PartialAsync("_Checkout.CreateOrUpdateAddress", Model.NewAddress, dataDictNewAddress)
+                    }
+                  
+                </div>
+            </form>
+        </shipping-address-flow>
+    </div>
+</div>
+
+<partial name="_Checkout.AddressScript" model="Model.NewAddress"/>
+ 
+ 
+

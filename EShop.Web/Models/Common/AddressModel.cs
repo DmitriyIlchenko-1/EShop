@@ -1,5 +1,7 @@
 using EShop.Core.Common.Domain;
+using EShop.Infrastructure.Domain;
 using EShop.Web.Common.Models;
+using EShop.Web.Models.Account;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
@@ -8,10 +10,7 @@ namespace EShop.Web.Models.Checkout;
 
 public class AddressModel : BaseModel
 {
-    [JsonIgnore]
-    public string AddressString { get; set; }
-    [JsonIgnore]
-    public bool Selected { get; set; }
+    public string Fullname => string.Join(" ", FirstName, LastName);
     public string FirstName { get; set; }
     
     public string LastName { get; set; }
@@ -22,15 +21,17 @@ public class AddressModel : BaseModel
    
     public string AddressLine2 { get; set; }
     public string ZipCode { get; set; }
-    
     public int CityId { get; set; }
-    
+    public string CityName { get; set; }
     [JsonIgnore]
-    public bool NeedsCreating { get; set; }
+    public string AddressString { get; set; }
+    [JsonIgnore]
+    public bool Selected { get; set; }
+
+   
 
     public ICollection<SelectListItem> AvailableCities { get; set; } = [];
-
-
+    
     public Address ToEntity()
     {
         return new Address()

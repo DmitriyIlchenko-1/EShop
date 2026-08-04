@@ -2,6 +2,7 @@ using EShop.Core.Common.Domain;
 using EShop.Core.Common.Services;
 using EShop.Core.Data;
 using EShop.Core.Data.Cart.Domain;
+using EShop.Core.Data.Cart.Services;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Modules;
@@ -18,21 +19,23 @@ public partial class CheckoutHelper
 {
     private readonly IWorkContext _workContext;
     private readonly ApplicationDbContext _dbContext;
-    private readonly IRequestCache _requestCache;
+    private readonly ISession _session;
     private readonly IAddressService _addressService;
     private readonly ICityService _cityService;
+    private readonly IShoppingCartService _shoppingCartService;
     private readonly IPaymentProviderManager _paymentProviderManager;
     private const string UserAddressesCacheKey = "user:addresses:{0}";
 
-    public CheckoutHelper(IWorkContext workContext, IAddressService addressService, IRequestCache requestCache,
-        ApplicationDbContext dbContext, ICityService cityService, IPaymentProviderManager paymentProviderManager)
+    public CheckoutHelper(IWorkContext workContext, IAddressService addressService, IHttpContextAccessor contextAccessor,
+        ApplicationDbContext dbContext, ICityService cityService, IPaymentProviderManager paymentProviderManager, IShoppingCartService shoppingCartService)
     {
         _workContext = workContext;
         _addressService = addressService;
-        _requestCache = requestCache;
+        _session = contextAccessor.HttpContext?.Session;
         _dbContext = dbContext;
         _cityService = cityService;
         _paymentProviderManager = paymentProviderManager;
+        _shoppingCartService = shoppingCartService;
     }
 
     public virtual async Task<CheckoutModel> PrepareCheckoutModelAsync(ShoppingCart cart)
@@ -40,33 +43,33 @@ public partial class CheckoutHelper
         Guard.NotNull(cart);
         var model = new CheckoutModel();
         //TODO: when we first go to checkout and we do have an existing address, we don't (do we???) want to populate NewAddress with the user's fields cuz there's no need for it. We can do this when we click the add btn to display the form to add a new address. Another thing is do we need to refetch the data (populateWithUserData:true) for the new address every time we click the add btn? 
-        await PrepareShippingAddressModelAsync(model.CheckoutShippingAddressModel, cart, false);
+        model.CheckoutShippingAddressModel = await PrepareShippingAddressModelAsync(cart, false);
         return model;
     }
 
-    public virtual async Task PrepareShippingAddressModelAsync(CheckoutShippingAddressModel model, ShoppingCart cart,
+    public virtual async Task<CheckoutShippingAddressModel> PrepareShippingAddressModelAsync(ShoppingCart cart,
         bool prepopulateWithUserData = false)
     {
-        Guard.NotNull(model);
         Guard.NotNull(cart);
         var user = _workContext.CurrentUser;
-        model.ExistingAddresses ??= new List<AddressModel>();
+        var model = new CheckoutShippingAddressModel();
         foreach (var address in user.Addresses.OrderBy(x => x.Id))
         {
             var addressModel = new AddressModel();
-            await PrepareAddressModelAsync(addressModel, address, user);
+            await PrepareAddressModelAsync(addressModel, address);
             model.ExistingAddresses.Add(addressModel);
         }
-
-        model.NewAddress ??= new AddressModel();
-        await PrepareAddressModelAsync(model.NewAddress, null, user, true);
+        
+        await PrepareAddressModelAsync(model.NewAddress, null, true);
+        return model;
     }
 
 
-    public virtual async Task PrepareAddressModelAsync(AddressModel model, Address address, User user,
+    public virtual async Task PrepareAddressModelAsync(AddressModel model, Address address, 
         bool prepopulateWithUserData = false, bool disableAddressBaseMapping = false)
     {
         Guard.NotNull(model);
+        var user = _workContext.CurrentUser;
         if (address != null && !disableAddressBaseMapping)
         {
             model.Id = address.Id;
@@ -84,21 +87,9 @@ public partial class CheckoutHelper
         {
             if (!disableAddressBaseMapping)
             {
-                if (user == null)
-                {
-                    throw new ArgumentNullException(nameof(user),
-                        "User cannot be null to populate address with user data");
-                }
-
                 model.FirstName = user.FirstName;
                 model.LastName = user.LastName;
                 model.PhoneNumber = user.PhoneNumber;
-
-                if (!(user.Addresses.Count > 0))
-                {
-                    model.NeedsCreating = true;
-                }
-               
             }
 
             var cities = await _cityService.GetAllAsync();
@@ -123,7 +114,6 @@ public partial class CheckoutHelper
     public virtual CheckoutPaymentMethodModel PreparePaymentModelAsync()
     {
         var model = new CheckoutPaymentMethodModel();
-        var user = _workContext.CurrentUser;
         foreach (var provider in _paymentProviderManager.GetActivePaymentMethods())
         {
             var metadata = provider.Metadata;
@@ -137,11 +127,29 @@ public partial class CheckoutHelper
 
         if (model.PaymentMethodModels.FirstOrDefault(x => x.Selected) == null)
         {
-            var first = model.PaymentMethodModels.FirstOrDefault(x => x.Selected);
+            var first = model.PaymentMethodModels.FirstOrDefault();
             if (first != null)
             {
                 first.Selected = true;
             }
+        }
+
+        return model;
+    }
+
+    public virtual async Task<CheckoutDataSummaryModel> PrepareCheckoutDataSummaryModelAsync()
+    {
+        var user = _workContext.CurrentUser;
+        var model = new CheckoutDataSummaryModel();
+        var shippingAddress = user.ShippingAddress;
+        await PrepareAddressModelAsync(model.ShippingAddress, shippingAddress);
+
+        if (_session != null)
+        {
+            var paymentMethodName = _session.GetString("PaymentMethod");
+            var paymentMethod = _paymentProviderManager.GetActivePaymentMethod(paymentMethodName)
+                ?.Metadata.FriendlyName ?? string.Empty;
+            model.PaymentMethodName = paymentMethod;
         }
 
         return model;

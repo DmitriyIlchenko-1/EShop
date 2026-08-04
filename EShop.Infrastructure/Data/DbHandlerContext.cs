@@ -34,7 +34,7 @@ public abstract class DbHandlerContext : DbContext
         var entry = e.Entry;
         if (entry.Entity is BaseEntity entity)
         {
-            if (e.NewState == EfState.Unchanged || entry.State == EfState.Modified)
+            if (e.NewState == EfState.Unchanged || e.NewState == EfState.Modified)
             {
                 InjectLazyLoader(entity, entry.Context);
             }

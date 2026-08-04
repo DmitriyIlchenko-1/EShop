@@ -1,34 +1,34 @@
-@using EShop.Web.Controllers
-@using Microsoft.AspNetCore.Mvc.TagHelpers
-@model EShop.Web.Models.Checkout.CheckoutShippingAddressModel
-@{
-    var removeAddressUrl = Url.Action(nameof(CheckoutController.RemoveAddress), "Checkout");
-}
-<div class="js-select-panel checkout__existing-address">
-    <div class="checkout__choose-existing-address-panel">
-        <label for="existing-addresses" class="block font-bold h4 mb-0 pb-md">Saved
-            addresses</label>
-        <div class="checkout__choose-existing-address-select  items-center gap-sm">
-            <div class="field-select-simple">
-                <select id="existing-addresses" class="w-full" name="City" 
-                        asp-items="@(Model.ExistingAddresses.Select(x => new SelectListItem(x.AddressString, x.Id.ToString(), x.Selected)))">
-                </select>
-            </div>
-            <button aria-label="Add a new address" name="add" class="checkout__addnew-btn" type="button">
-                <svg aria-hidden="true" focusable="false" class="icon"
-                     xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                     viewBox="0 0 1024 1024">
-                    <path fill="#000000"
-                          d="M512 0C229.232 0 0 229.232 0 512c0 282.784 229.232 512 512 512c282.784 0 512-229.216 512-512C1024 229.232 794.784 0 512 0zm0 961.008c-247.024 0-448-201.984-448-449.01c0-247.024 200.976-448 448-448s448 200.977 448 448s-200.976 449.01-448 449.01zM736 480H544V288c0-17.664-14.336-32-32-32s-32 14.336-32 32v192H288c-17.664 0-32 14.336-32 32s14.336 32 32 32h192v192c0 17.664 14.336 32 32 32s32-14.336 32-32V544h192c17.664 0 32-14.336 32-32s-14.336-32-32-32z"/>
-                </svg>
-            </button>
-            <div class="checkout__address-actions">
-                <button name="update" class="button">Edit</button>
-                <button name="remove" data-remove-address-url="@removeAddressUrl"
-                        class="button button--danger">Remove
-                </button>
-            </div>
-        </div>
-    </div>
-
-</div>
+@* @using EShop.Web.Controllers *@
+@* @using Microsoft.AspNetCore.Mvc.TagHelpers *@
+@* @model EShop.Web.Models.Checkout.CheckoutShippingAddressModel *@
+@* @{ *@
+@*     var removeAddressUrl = Url.Action(nameof(CheckoutController.RemoveAddress), "Checkout"); *@
+@* } *@
+@* <div class="js-select-panel checkout__existing-address"> *@
+@*     <div class="checkout__choose-existing-address-panel"> *@
+@*         <label for="existing-addresses" class="block font-bold h4 mb-0 pb-md">Saved *@
+@*             addresses</label> *@
+@*         <div class="checkout__choose-existing-address-select  items-center gap-sm"> *@
+@*             <div class="field-select-simple"> *@
+@*                 <select id="existing-addresses" class="w-full" name="City"  *@
+@*                         asp-items="@(Model.ExistingAddresses.Select(x => new SelectListItem(x.AddressString, x.Id.ToString(), x.Selected)))"> *@
+@*                 </select> *@
+@*             </div> *@
+@*             <button aria-label="Add a new address" name="add" class="checkout__addnew-btn" type="button"> *@
+@*                 <svg aria-hidden="true" focusable="false" class="icon" *@
+@*                      xmlns="http://www.w3.org/2000/svg" width="20" height="20" *@
+@*                      viewBox="0 0 1024 1024"> *@
+@*                     <path fill="#000000" *@
+@*                           d="M512 0C229.232 0 0 229.232 0 512c0 282.784 229.232 512 512 512c282.784 0 512-229.216 512-512C1024 229.232 794.784 0 512 0zm0 961.008c-247.024 0-448-201.984-448-449.01c0-247.024 200.976-448 448-448s448 200.977 448 448s-200.976 449.01-448 449.01zM736 480H544V288c0-17.664-14.336-32-32-32s-32 14.336-32 32v192H288c-17.664 0-32 14.336-32 32s14.336 32 32 32h192v192c0 17.664 14.336 32 32 32s32-14.336 32-32V544h192c17.664 0 32-14.336 32-32s-14.336-32-32-32z"/> *@
+@*                 </svg> *@
+@*             </button> *@
+@*             <div class="checkout__address-actions"> *@
+@*                 <button name="update" class="button" type="button">Edit</button> *@
+@*                 <button name="remove" data-remove-address-url="@removeAddressUrl" *@
+@*                         class="button button--danger" type="button">Remove *@
+@*                 </button> *@
+@*             </div> *@
+@*         </div> *@
+@*     </div> *@
+@* *@
+@* </div> *@

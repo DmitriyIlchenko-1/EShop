@@ -1,0 +1,61 @@
+@model EShop.Web.Models.Account.AddressListModel
+@{
+    Layout = "_AccountLayout";
+}
+
+<div class="account__address-info">
+    <h1 class="h3">Addresses</h1>
+    <ul class="grid gap-y-lg gap-x-lg lg:grid-cols-2 list-unstyled">
+        @foreach (var item in Model.Addresses)
+        {
+            <li>
+                <div class="card flex flex-col h-full">
+                    <h3 class="h5 card__heading m-0">@item.Fullname</h3>
+                    <div class="card__body flex-grow">
+                        <dl>
+                            <dt class="inline-block mr-2xs">Phone number:</dt>
+                            <dd class="inline-block">@item.PhoneNumber</dd>
+                            <dt class="visually-hidden">Address 1</dt>
+                            <dd>@item.AddressLine1</dd>
+                            <dt eh-if="@(item.AddressLine2 != null)" class="visually-hidden">Address 2</dt>
+                            <dd eh-if="@(item.AddressLine2 != null)">@item.AddressLine2</dd>
+                            <dt class="visually-hidden">Zin code</dt>
+                            <dd>@item.ZipCode</dd>
+                            <dt class="visually-hidden">City</dt>
+                            <dd>@item.CityName</dd>
+                        </dl>
+                    </div>
+                    <div class="card__bottom flex items-center gap-md justify-between">
+                        <div class="account__action-btn-container">
+                            <form asp-action="DeleteAddress" method="post">
+                                <input type="hidden" value="@item.Id" name="Id"/>
+                                <button class="account__remove-button icon-button icon-button--round"
+                                        aria-label="Remove address">
+                                    <svg class="icon" aria-hidden="true" focusable="false"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         width="24" height="24" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd"
+                                              d="M9 2H7a.5.5 0 0 0-.5.5V3h3v-.5A.5.5 0 0 0 9 2m2 1v-.5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2V3H2.251a.75.75 0 0 0 0 1.5h.312l.317 7.625A3 3 0 0 0 5.878 15h4.245a3 3 0 0 0 2.997-2.875l.318-7.625h.312a.75.75 0 0 0 0-1.5zm.936 1.5H4.064l.315 7.562A1.5 1.5 0 0 0 5.878 13.5h4.245a1.5 1.5 0 0 0 1.498-1.438zm-6.186 2v5a.75.75 0 0 0 1.5 0v-5a.75.75 0 0 0-1.5 0m3.75-.75a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5a.75.75 0 0 1 .75-.75"
+                                              clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                            </form>
+                            <a class="account__edit-button icon-button icon-button--round"
+                               aria-label="Edit address" asp-action="UpdateAddress" asp-route-id="@item.Id">
+                                <svg class="icon" aria-hidden="true" focusable="false"
+                                     xmlns="http://www.w3.org/2000/svg" width="200" height="200"
+                                     viewBox="0 0 1025 1023">
+                                    <path fill="#000000"
+                                          d="M896.428 1023h-768q-53 0-90.5-37.5T.428 895V127q0-53 37.5-90t90.5-37h576l-128 127h-384q-27 0-45.5 19t-18.5 45v640q0 27 19 45.5t45 18.5h640q27 0 45.5-18.5t18.5-45.5V447l128-128v576q0 53-37.5 90.5t-90.5 37.5zm-576-464l144 144l-208 64zm208 96l-160-159l479-480q17-16 40.5-16t40.5 16l79 80q16 16 16.5 39.5t-16.5 40.5z"/>
+                                </svg>
+                            </a>
+                        </div>
+                        @* <div eh-if="item.IsDefault" class="badge badge--info"> *@
+                        @*     <p class="badge__message m-0">You default shipping address</p> *@
+                        @* </div> *@
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+</div>

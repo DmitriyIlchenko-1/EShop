@@ -7,7 +7,7 @@ public class CheckoutShippingAddressModel  : BaseModel
 {
     public ICollection<AddressModel> ExistingAddresses { get; set; } = [];
     public AddressModel NewAddress { get; set; } = new();
-     
+    public bool HasAddresses => ExistingAddresses.Any();
 }
 
 

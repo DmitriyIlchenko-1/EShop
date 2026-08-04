@@ -2,6 +2,7 @@
 <html lang="en-US" class="js">
 <head>
     <meta charset="utf-8"/>
+    @await Component.InvokeAsync("Antiforgery")
     <title>@ViewBag.Title</title>
     <link href="~/css/main.css" rel="stylesheet" type="text/css"/>
     <link href="~/css/hero.css" rel="stylesheet" type="text/css"/>
@@ -29,6 +30,9 @@
     <script type="module" src="~/js/media-gallery.js"></script>
     <script type="module" src="~/js/cart-items.js"></script>
     <script type="module" src="~/js/checkout-flow.js"></script>
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/jquery-validate/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
    
 
 
@@ -343,7 +347,12 @@
             --color-danger-primary-button-border: rgb(0, 0, 0);
             --color-danger-primary-button-hover-border: rgb(0, 0, 0);
 
+            --icon-button-danger-action-bg-color: rgb(209, 7, 7);
+            --icon-button-danger-action-color: rgb(235, 234, 234);
 
+
+            --badge-info-bg-color: rgb(0, 90, 225);
+            --badge-info-color: rgb(255, 255, 255);
 
             --product-card-price-color: rgb(0, 0, 0);
             --product-label-text--refurbished: #ffffff;

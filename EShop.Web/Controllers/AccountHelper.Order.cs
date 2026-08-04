@@ -15,12 +15,13 @@ using EShop.Core.Platform.Routing;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
 using EShop.Web.Models.Account;
+using EShop.Web.Models.Checkout;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Web.Controllers;
 
-public class AccountHelper
+public partial class AccountHelper
 {
     private readonly IWorkContext _workContext;
     private readonly ApplicationDbContext _db;
@@ -77,12 +78,13 @@ public class AccountHelper
             OrderStatus = order.OrderStatus.ToString(),
             Subtotal = order.SubtotalRounded,
             PaymentMethodName = order.PaymentMethodSystemName,
-            AddressModel = new AddressSummaryModel()
+            AddressModel = new AddressModel()
             {
                 Id = order.ShippingAddress.Id,
                 AddressLine1 = order.ShippingAddress.AddressLine1,
                 AddressLine2 = order.ShippingAddress.AddressLine2,
-                CityName = (await _cityService.GetByIdAsync(order.ShippingAddressId, true)).Name,
+                CityName = order.ShippingAddress.CityId.HasValue ? (await _cityService.GetByIdAsync(order.ShippingAddress.CityId.Value, true)).Name 
+                    : string.Empty,
                 FirstName = order.ShippingAddress.FirstName,
                 LastName = order.ShippingAddress.LastName,
                 PhoneNumber = order.ShippingAddress.PhoneNumber,

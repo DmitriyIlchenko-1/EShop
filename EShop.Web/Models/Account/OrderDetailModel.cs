@@ -1,12 +1,13 @@
 using EShop.Core.Catalog.Products.Price;
 using EShop.Core.Checkout.Orders.Domain;
 using EShop.Web.Common.Models;
+using EShop.Web.Models.Checkout;
 
 namespace EShop.Web.Models.Account;
 
 public class OrderDetailModel : BaseModel
 {
-    public AddressSummaryModel AddressModel { get; set; }
+    public AddressModel AddressModel { get; set; }
     public DateTime OrderDate { get; set; }
     public string OrderStatus { get; set; }
     public decimal Subtotal { get; set; }

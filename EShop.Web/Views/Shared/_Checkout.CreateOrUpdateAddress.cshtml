@@ -4,82 +4,74 @@
 @model AddressModel
 @{
     var legendText = ViewBag.LegendText ?? "Add new address";
-    var addNewUrl = Url.Action(nameof(CheckoutController.SaveAddressCheckout), "Checkout");
-    var updateUrl = Url.Action(nameof(CheckoutController.UpdateShippingAddress), "Checkout");
 }
- 
-    <div class="checkout__new-address">
-        <input asp-for="Id" type="hidden"/>
-        <div asp-validation-summary="ModelOnly"></div>
-        <fieldset class="field-group flex-grow grid grid-cols-2 lg:grid-cols-4 gap-lg">
-            <legend class="field-group__label mb-md">@legendText</legend>
-            <div class="col-span-2">
-                <div class="field field--text">
-                    <input asp-for="FirstName" placeholder="@Html.DisplayNameFor(x => x.FirstName)"/>
-                    <label asp-for="FirstName" class="required">@Html.DisplayNameFor(x => x.FirstName)</label>
-                </div>
-                <span class="block text-xs" asp-validation-for="FirstName"></span>
-            </div>
-            <div class="col-span-2">
-                <div class="field field--text">
-                    <input asp-for="LastName" placeholder="@Html.DisplayNameFor(x => x.LastName)"/>
-                    <label asp-for="LastName" class="required">@Html.DisplayNameFor(x => x.LastName)</label>
-                </div>
-                <span class="block text-xs" asp-validation-for="LastName"></span>
-            </div>
-            <div class="col-span-full">
-                <div class="field field--text">
-                    <input asp-for="AddressLine1" placeholder="@Html.DisplayNameFor(x => x.AddressLine1)"/>
-                    <label asp-for="AddressLine1" class="required">@Html.DisplayNameFor(x => x.AddressLine1)</label>
-                </div>
-                <span class="block text-xs" asp-validation-for="AddressLine1"></span>
-            </div>
-            <div class="col-span-full">
-                <div class="field field--text">
-                    <input asp-for="AddressLine2" placeholder="@Html.DisplayNameFor(x => x.AddressLine2)"/>
-                    <label asp-for="AddressLine2">@Html.DisplayNameFor(x => x.AddressLine2)</label>
-                </div>
-                <span class="block text-xs" asp-validation-for="AddressLine2"></span>
-            </div>
-            <div class="col-span-2">
-                <div class="field field--text">
-                    <input asp-for="ZipCode" placeholder="@Html.DisplayNameFor(x => x.ZipCode)"/>
-                    <label asp-for="ZipCode" class="required">@Html.DisplayNameFor(x => x.ZipCode)</label>
-                </div>
-                <span class="block text-xs" asp-validation-for="ZipCode"></span>
-            </div>
-            <div class="col-span-2">
-                <div class="field field--text">
-                    <input asp-for="PhoneNumber" placeholder="@Html.DisplayNameFor(x => x.PhoneNumber)"/>
-                    <label asp-for="PhoneNumber">@Html.DisplayNameFor(x => x.PhoneNumber)</label>
-                </div>
-                <span class="block text-xs" asp-validation-for="PhoneNumber"></span>
-            </div>
-            <div class="col-span-full">
-                <div class="field field--text">
-                    <select asp-for="CityId" asp-items="Model.AvailableCities"></select>
-                    <svg class="icon icon-chevron-down" xmlns="http://www.w3.org/2000/svg" width="20"
-                         height="20" viewBox="0 0 21 21">
-                        <path fill="none" stroke="#000000" stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="m14.5 8.5l-4 4l-4-4"/>
-                    </svg>
-                    <label asp-for="CityId" class="heighten-label">@Html.DisplayNameFor(x => x.CityId)</label>
-                    <svg class="icon icon-chevron-down" xmlns="http://www.w3.org/2000/svg" width="20"
-                         height="20" viewBox="0 0 21 21">
-                        <path fill="none" stroke="#000000" stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="m14.5 8.5l-4 4l-4-4"/>
-                    </svg>
-                </div>
-                <span class="block text-xs" asp-validation-for="CityId"></span>
-            </div>
-        </fieldset>
-        <button data-add-new-url="@addNewUrl" name="addSubmit" class="button mt-lg mr-md" type="submit">Save</button>
-        <button   data-update-url="@updateUrl" name="updateSubmit" class="button mt-lg mr-md" type="submit">Update</button>
-        <button  
-            type="button" name="cancel" class="button mt-lg">Cancel</button>
+
+<fieldset class="checkout__address-control-container field-group flex-grow grid grid-cols-2 lg:grid-cols-4 gap-lg">
+    <legend class="field-group__label mb-md">@legendText</legend>
+    <input asp-for="Id" type="hidden"/>
+    <div class="col-span-2">
+        <div class="field field--text">
+            <input asp-for="FirstName" placeholder="@Html.DisplayNameFor(x => x.FirstName)"/>
+            <label asp-for="FirstName" class="required">@Html.DisplayNameFor(x => x.FirstName)</label>
+        </div>
+        <span class="block text-xs" asp-validation-for="FirstName"></span>
     </div>
+    <div class="col-span-2">
+        <div class="field field--text">
+            <input asp-for="LastName" placeholder="@Html.DisplayNameFor(x => x.LastName)"/>
+            <label asp-for="LastName" class="required">@Html.DisplayNameFor(x => x.LastName)</label>
+        </div>
+        <span class="block text-xs" asp-validation-for="LastName"></span>
+    </div>
+    <div class="col-span-full">
+        <div class="field field--text">
+            <input asp-for="AddressLine1" placeholder="@Html.DisplayNameFor(x => x.AddressLine1)"/>
+            <label asp-for="AddressLine1" class="required">@Html.DisplayNameFor(x => x.AddressLine1)</label>
+        </div>
+        <span class="block text-xs" asp-validation-for="AddressLine1"></span>
+    </div>
+    <div class="col-span-full">
+        <div class="field field--text">
+            <input asp-for="AddressLine2" placeholder="@Html.DisplayNameFor(x => x.AddressLine2)"/>
+            <label asp-for="AddressLine2">@Html.DisplayNameFor(x => x.AddressLine2)</label>
+        </div>
+        <span class="block text-xs" asp-validation-for="AddressLine2"></span>
+    </div>
+    <div class="col-span-2">
+        <div class="field field--text">
+            <input asp-for="ZipCode" placeholder="@Html.DisplayNameFor(x => x.ZipCode)"/>
+            <label asp-for="ZipCode" class="required">@Html.DisplayNameFor(x => x.ZipCode)</label>
+        </div>
+        <span class="block text-xs" asp-validation-for="ZipCode"></span>
+    </div>
+    <div class="col-span-2">
+        <div class="field field--text">
+            <input asp-for="PhoneNumber" placeholder="@Html.DisplayNameFor(x => x.PhoneNumber)"/>
+            <label asp-for="PhoneNumber">@Html.DisplayNameFor(x => x.PhoneNumber)</label>
+        </div>
+        <span class="block text-xs" asp-validation-for="PhoneNumber"></span>
+    </div>
+    <div class="col-span-full">
+        <div class="field field--text">
+            <select asp-for="CityId" asp-items="Model.AvailableCities"></select>
+            <svg class="icon icon-chevron-down" xmlns="http://www.w3.org/2000/svg" width="20"
+                 height="20" viewBox="0 0 21 21">
+                <path fill="none" stroke="#000000" stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m14.5 8.5l-4 4l-4-4"/>
+            </svg>
+            <label asp-for="CityId" class="heighten-label">@Html.DisplayNameFor(x => x.CityId)</label>
+            <svg class="icon icon-chevron-down" xmlns="http://www.w3.org/2000/svg" width="20"
+                 height="20" viewBox="0 0 21 21">
+                <path fill="none" stroke="#000000" stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m14.5 8.5l-4 4l-4-4"/>
+            </svg>
+        </div>
+        <span class="block text-xs" asp-validation-for="CityId"></span>
+    </div>
+</fieldset>
+<button class="button mt-lg" type="submit">Save</button>
  
  
 

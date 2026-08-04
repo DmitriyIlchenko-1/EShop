@@ -1,0 +1,17 @@
+@model EShop.Web.Models.Checkout.AddressModel
+ 
+<script>
+    $(function (){
+        $('.js-add-new-address-panel-toggle').on('click', e => {
+            e.currentTarget.setAttribute('aria-expanded', 'true');
+            const newAddressPanel = $('#add-new-address-panel');
+            newAddressPanel.slideDown(200, ()=> newAddressPanel.find('.checkout__address-control-container :input:enabled:visible:first').focus());
+            return false;
+        })
+    })
+    
+    @if (!ViewData.ModelState.IsValid)
+    {
+       <text>$.scrollTo($(".js-address-control-container"), {offset: -40});</text>
+    }
+</script>

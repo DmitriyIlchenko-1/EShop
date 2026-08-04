@@ -17,5 +17,7 @@ public class CheckoutModelValidator : AbstractValidator<CheckoutModel>
     public CheckoutModelValidator()
     {
         RuleFor(x => x.PaymentMethodSystemName).NotEmpty();
+        RuleFor(x => x.AddressId).GreaterThan(0);
+        RuleFor(x => x.CheckoutShippingAddressModel).SetValidator(new CheckoutShippingAddressModelValidator());
     }
 }

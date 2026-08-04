@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EShop.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260723111945_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260803154519_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -410,6 +410,32 @@ namespace EShop.Web.Migrations
                     b.ToTable("Catalog_Brand", (string)null);
                 });
 
+            modelBuilder.Entity("EShop.Core.Catalog.Brands.Domain.ProductBrand", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BrandId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BrandId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Catalog_ProductBrand", (string)null);
+                });
+
             modelBuilder.Entity("EShop.Core.Catalog.Categories.Domain.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -778,15 +804,15 @@ namespace EShop.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AppliedTimes")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("BadgeId")
                         .HasColumnType("integer");
 
                     b.Property<string>("CouponCode")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<int>("CouponUsageAmount")
-                        .HasColumnType("integer");
 
                     b.Property<int>("CouponUsageType")
                         .HasColumnType("integer");
@@ -798,9 +824,6 @@ namespace EShop.Web.Migrations
                         .HasColumnType("numeric");
 
                     b.Property<int>("DiscountType")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("DiscountUsageAmount")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("EndsOnUtc")
@@ -900,12 +923,6 @@ namespace EShop.Web.Migrations
                     b.Property<int>("OrderStatus")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("OrderSubtotalWithDiscount")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("OrderSubtotalWithNoDiscount")
-                        .HasColumnType("numeric");
-
                     b.Property<DateTime?>("PaidOnUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -917,6 +934,12 @@ namespace EShop.Web.Migrations
 
                     b.Property<int>("ShippingAddressId")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("SubtotalRounded")
+                        .HasColumnType("numeric");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -953,18 +976,23 @@ namespace EShop.Web.Migrations
                     b.Property<string>("RawAttributes")
                         .HasColumnType("text");
 
-                    b.Property<decimal>("SubtotalWithDiscount")
+                    b.Property<decimal>("Subtotal")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal>("SubtotalWithNoDiscount")
+                    b.Property<decimal>("SubtotalRounded")
                         .HasColumnType("numeric");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal>("UnitPriceRounded")
+                        .HasColumnType("numeric");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Checkout_OrderItem", (string)null);
                 });
@@ -1003,6 +1031,9 @@ namespace EShop.Web.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("ZipCode")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -1010,6 +1041,8 @@ namespace EShop.Web.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CityId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Common_Address", (string)null);
                 });
@@ -1121,32 +1154,6 @@ namespace EShop.Web.Migrations
                     b.ToTable("Common_ProductLabel", (string)null);
                 });
 
-            modelBuilder.Entity("EShop.Core.Common.Domain.UserAddress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AddressId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("AddressType")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AddressId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Common_UserAddress", (string)null);
-                });
-
             modelBuilder.Entity("EShop.Core.Content.Media.Domain.MediaFile", b =>
                 {
                     b.Property<int>("Id")
@@ -1203,6 +1210,9 @@ namespace EShop.Web.Migrations
 
                     b.Property<byte>("DisplayOrder")
                         .HasColumnType("smallint");
+
+                    b.Property<bool>("MainImage")
+                        .HasColumnType("boolean");
 
                     b.Property<int?>("MediaFileId")
                         .HasColumnType("integer");
@@ -1542,9 +1552,11 @@ namespace EShop.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BillingAddressId");
+                    b.HasIndex("BillingAddressId")
+                        .IsUnique();
 
-                    b.HasIndex("ShippingAddressId");
+                    b.HasIndex("ShippingAddressId")
+                        .IsUnique();
 
                     b.ToTable("Platform_User", (string)null);
                 });
@@ -1820,6 +1832,25 @@ namespace EShop.Web.Migrations
                     b.Navigation("MediaFile");
                 });
 
+            modelBuilder.Entity("EShop.Core.Catalog.Brands.Domain.ProductBrand", b =>
+                {
+                    b.HasOne("EShop.Core.Catalog.Brands.Domain.Brand", "Brand")
+                        .WithMany()
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EShop.Core.Catalog.Products.Domain.Product", "Product")
+                        .WithMany("Brands")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Brand");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("EShop.Core.Catalog.Categories.Domain.Category", b =>
                 {
                     b.HasOne("EShop.Core.Content.Media.Domain.MediaFile", "MediaFile")
@@ -1858,12 +1889,10 @@ namespace EShop.Web.Migrations
 
             modelBuilder.Entity("EShop.Core.Catalog.Products.Domain.Product", b =>
                 {
-                    b.HasOne("EShop.Core.Catalog.Brands.Domain.Brand", "Brand")
+                    b.HasOne("EShop.Core.Catalog.Brands.Domain.Brand", null)
                         .WithMany("Products")
                         .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Brand");
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("EShop.Core.Catalog.Products.Domain.ProductLink", b =>
@@ -1978,6 +2007,14 @@ namespace EShop.Web.Migrations
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("EShop.Core.Catalog.Products.Domain.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("EShop.Core.Common.Domain.Address", b =>
@@ -1986,6 +2023,11 @@ namespace EShop.Web.Migrations
                         .WithMany()
                         .HasForeignKey("CityId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", null)
+                        .WithMany("Addresses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("City");
                 });
@@ -2007,25 +2049,6 @@ namespace EShop.Web.Migrations
                     b.Navigation("Label");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("EShop.Core.Common.Domain.UserAddress", b =>
-                {
-                    b.HasOne("EShop.Core.Common.Domain.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Address");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EShop.Core.Content.Media.Domain.ProductMedia", b =>
@@ -2084,13 +2107,13 @@ namespace EShop.Web.Migrations
             modelBuilder.Entity("EShop.Core.Platform.Identity.Domain.User", b =>
                 {
                     b.HasOne("EShop.Core.Common.Domain.Address", "BillingAddress")
-                        .WithMany()
-                        .HasForeignKey("BillingAddressId")
+                        .WithOne()
+                        .HasForeignKey("EShop.Core.Platform.Identity.Domain.User", "BillingAddressId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("EShop.Core.Common.Domain.Address", "ShippingAddress")
-                        .WithMany()
-                        .HasForeignKey("ShippingAddressId")
+                        .WithOne()
+                        .HasForeignKey("EShop.Core.Platform.Identity.Domain.User", "ShippingAddressId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("BillingAddress");
@@ -2154,6 +2177,8 @@ namespace EShop.Web.Migrations
 
             modelBuilder.Entity("EShop.Core.Catalog.Products.Domain.Product", b =>
                 {
+                    b.Navigation("Brands");
+
                     b.Navigation("ProductCategories");
 
                     b.Navigation("ProductLinks");
@@ -2184,6 +2209,8 @@ namespace EShop.Web.Migrations
 
             modelBuilder.Entity("EShop.Core.Platform.Identity.Domain.User", b =>
                 {
+                    b.Navigation("Addresses");
+
                     b.Navigation("Orders");
 
                     b.Navigation("ShoppingCartItems");

@@ -16,22 +16,22 @@
         <checkout-flow>
             <form class="js-checkout-form" asp-action="SaveOrder" method="post">
                 <div class="checkout__container">
-                    <div class="checkout__left">
-                        <div class="checkout__main-flow">
-                            <address-flow data-get-address-url="@getAddressUrl">
-                                <div id="checkout-address-load"
-                                     class="checkout-address">
-                                    <partial name="_Checkout.Address" model="Model"/>
-                                </div>
-                                <div id="checkout-payment-load" class="checkout__payment checkout__block">
-                                    <fieldset class="field-group">
-                                        <legend class="field-group__label">Payment</legend>
-                                        @await Component.InvokeAsync("CheckoutPaymentMethodList")
-                                    </fieldset>
-                                </div>
-                            </address-flow>
-                        </div>
+
+                    <div class="checkout__main-flow">
+                        <address-flow data-get-address-url="@getAddressUrl">
+                            <div id="checkout-address-load"
+                                 class="checkout-address">
+                                <partial name="_Checkout.Address" model="Model"/>
+                            </div>
+                            <div id="checkout-payment-load" class="checkout__payment checkout__block">
+                                <fieldset class="field-group">
+                                    <legend class="field-group__label">Payment</legend>
+                                    @await Component.InvokeAsync("CheckoutPaymentMethodList")
+                                </fieldset>
+                            </div>
+                        </address-flow>
                     </div>
+               
                     <div class="checkout__right">
                         @await Component.InvokeAsync("CheckoutSummary")
                     </div>
@@ -40,7 +40,9 @@
         </checkout-flow>
     </div>
 </div>
-
+<p>123</p>
+<p>123</p>
+<p>123</p>
 @section Scripts{
     <partial name="_ValidationScriptsPartial"/>
 }

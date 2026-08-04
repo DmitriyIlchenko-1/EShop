@@ -1654,6 +1654,8 @@ col-start-3 {
     .lg\:overflow-hidden {
         overflow: hidden;
     }
+    
+    
 }
 
 @media (min-width: 1280px) {
@@ -1773,3 +1775,17 @@ col-start-3 {
     background-color: var(--bg-color);
 }
 
+.bg{
+    background-color: rgb(var(--color-foreground-rgb), .1);
+}
+
+/* border */
+[class^=border-], [class*=" border-"] {
+    --border-opacity: 1;
+    --border-width: 1px;
+    --border-style: solid;
+}
+
+.border {
+    border: var(--border-width, 1px) var(--border-style, solid) rgb(var(--color-foreground-rgb), .2);
+}

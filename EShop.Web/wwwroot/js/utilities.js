@@ -16,7 +16,7 @@ window.theme = {
     },
 };
 
- 
+
 export const mediaQueryLarge = matchMedia('(width >= 769px)');
 
 export function isMobileBreakpoint() {
@@ -77,17 +77,17 @@ export function debounce(fn, wait = 300) {
 }
 
 
-export class ElementError extends Error{
+export class ElementError extends Error {
     constructor(messageOrOptions) {
-       let msg = typeof messageOrOptions === 'string' ? messageOrOptions : '';
-       if (typeof messageOrOptions === 'object'){
-           const {component, identifier, element, expectedType} = messageOrOptions;
-           msg = identifier;
-           msg += element ? ` is not of type ${expectedType ?? 'HTMLElement'}` : ' not found';
-           if (component){
-               msg = `${component.name}: ${msg}`;
-           }
-       }
+        let msg = typeof messageOrOptions === 'string' ? messageOrOptions : '';
+        if (typeof messageOrOptions === 'object') {
+            const {component, identifier, element, expectedType} = messageOrOptions;
+            msg = identifier;
+            msg += element ? ` is not of type ${expectedType ?? 'HTMLElement'}` : ' not found';
+            if (component) {
+                msg = `${component.name}: ${msg}`;
+            }
+        }
         super(msg);
     }
 }
@@ -95,3 +95,28 @@ export class ElementError extends Error{
 window.addEventListener('resize', debounce(() => {
     window.dispatchEvent(new CustomEvent('on:debounced-resize'))
 }))
+
+export function createAndSubmitForm(options) {
+    const formId = `DynamicForm_${Math.random().toString().substring(2)}`;
+    const form = Object.assign(document.createElement('form'), {
+        method: options.method,
+        action: options.url,
+        id: formId,
+    })
+    const atfInput = Object.assign(document.createElement('input'), {
+        type: 'hidden',
+        name: '__RequestVerificationToken',
+        value: getAntiforgeryToken(),
+    })
+    form.append(atfInput)
+    document.querySelector('body').append(form);
+    document.getElementById(formId).requestSubmit();
+}
+
+export function getAntiforgeryToken() {
+    return document
+        .querySelector(`meta[name="csrf-token"]`)
+        .getAttribute('content');
+}
+    
+    

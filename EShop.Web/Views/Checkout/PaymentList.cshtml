@@ -1,0 +1,29 @@
+@using EShop.Infrastructure.Extensions
+@model EShop.Web.Models.Checkout.CheckoutPaymentMethodModel
+
+<div class="section section--content-middle color-scheme-1 spacing-style"
+     style=" --padding-block-start: max(20px, calc(var(--spacing-scale) * 68px)); --padding-block-end:max(20px, calc(var(--spacing-scale) * 68px))">
+    <div class="customer checkout">
+        <h1 class="h2">Select payment method</h1>
+        <form asp-action="SelectPaymentMethod" method="post">
+            <div class="checkout__container">
+                <div class="checkout__main-flow">
+                    <fieldset class="list-unstyled grid gap-sm">
+                        @foreach (var item in Model.PaymentMethodModels)
+                        {
+                            <div class="radio radio--tile">
+                                <input id="payment-method-@(item.Id)" value="@item.SystemName" checked="@item.Selected" type="radio" name="paymentSystemName"/>
+                                <label for="payment-method-@(item.Id)" class="radius-md w-full">
+                                    <span class="h5 block m-0">@item.Name</span>
+                                    <span eh-if="@(!item.Description.IsEmpty())" class="mt-md">@item.Description</span>
+                                </label>
+                            </div>
+                        }
+                    </fieldset>
+                </div>
+                @await Component.InvokeAsync("CheckoutSummary")
+            </div>
+        </form>
+    </div>
+</div>
+

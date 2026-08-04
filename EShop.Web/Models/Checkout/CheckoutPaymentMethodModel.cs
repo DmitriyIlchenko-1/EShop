@@ -5,7 +5,6 @@ namespace EShop.Web.Models.Checkout;
 
 public class CheckoutPaymentMethodModel : BaseEntity
 {
-    public bool IsAjaxRequested { get; set; }
     public ICollection<PaymentMethodModel> PaymentMethodModels { get; set; } = [];
 }
 

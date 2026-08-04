@@ -1,0 +1,22 @@
+@using EShop.Web.Components
+@model EShop.Web.Models.Checkout.CheckoutConfirmModel
+
+
+<div class="section section--content-middle color-scheme-1 spacing-style"
+     style=" --padding-block-start: max(20px, calc(var(--spacing-scale) * 68px)); --padding-block-end:max(20px, calc(var(--spacing-scale) * 68px))">
+    <div class="customer checkout">
+        <h1 class="h2">Order confirmation</h1>
+        <form asp-action="SaveOrder" method="post">
+            <div class="checkout__container">
+                <div class="checkout__main-flow">
+                    <div class="checkout__order-data-summary-container">
+                        <partial name="_Checkout.DataSummary" model="@Model.SummaryModel"/>
+                    </div>
+                </div>
+                @await Component.InvokeAsync("CheckoutSummary")
+            </div>
+        </form>
+    </div>
+</div>
+
+ 
