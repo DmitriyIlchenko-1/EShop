@@ -56,7 +56,11 @@ public class PaymentProviderManager : IPaymentProviderManager
 
     public virtual IEnumerable<Provider<IPaymentMethod>> GetActivePaymentMethods()
     {
-        var allPaymentMethods = _providerManager.GetProviders<IPaymentMethod>();
+        var allPaymentMethods = _providerManager.GetProviders<IPaymentMethod>().ToArray();
+        if (allPaymentMethods.Length == 0)
+        {
+            throw new App
+        }
         return allPaymentMethods;
     }
 

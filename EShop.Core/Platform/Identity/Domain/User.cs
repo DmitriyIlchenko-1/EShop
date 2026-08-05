@@ -18,12 +18,33 @@ internal class UserMap : IEntityTypeConfiguration<User>
         builder.HasQueryFilter(x => !x.IsDeleted);
 
         builder
+            .HasMany(c => c.Addresses)
+            .WithMany("Users")
+            .UsingEntity<Dictionary<string, object>>(
+                "UserAddresses",
+                c => c
+                    .HasOne<Address>()
+                    .WithMany()
+                    .HasForeignKey("Address_Id"),
+                c => c
+                    .HasOne<User>()
+                    .WithMany()
+                    .HasForeignKey("User_Id"),
+                c =>
+                {
+                    c.HasIndex("User_Id");
+                    c.HasKey("User_Id", "Address_Id");
+                });
+        
+        builder
             .HasOne(c => c.BillingAddress)
-            .WithOne();
+            .WithOne()
+            .HasForeignKey<User>(c => c.BillingAddressId);
 
         builder
             .HasOne(c => c.ShippingAddress)
-            .WithOne();
+            .WithOne()
+            .HasForeignKey<User>(c => c.ShippingAddressId);
     }
 }
 

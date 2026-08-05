@@ -19,7 +19,7 @@ public partial class AccountHelper
                 Id = address.Id,
                 AddressLine1 = address.AddressLine1,
                 AddressLine2 = address.AddressLine2,
-                CityName = address.CityId.HasValue ? (await _cityService.GetByIdAsync(address.CityId.Value, true)).Name 
+                CityName = address.CityId.HasValue ? (await _cityService.GetByIdAsync(address.CityId.Value)).Name 
                                                      : string.Empty,
                 FirstName = address.FirstName,
                 LastName = address.LastName,
@@ -31,4 +31,6 @@ public partial class AccountHelper
         }
         return model;
     }
+
+   
 }

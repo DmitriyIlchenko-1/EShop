@@ -16,7 +16,10 @@ public class ExceptionHandlerStartup : BaseStartup
     {
         IHostEnvironment environment = EngineContext.Current.Environment;
         if (environment.IsDevelopment())
+        {
             app.UseDeveloperExceptionPage();
+        }
+       
     }
 
     

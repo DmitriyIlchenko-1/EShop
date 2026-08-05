@@ -9,14 +9,14 @@ namespace EShop.Core.Common.Services;
 
 public interface ICityService
 {
-    Task<ICollection<City>> GetAllAsync(bool showHidden = false);
-    Task<City> GetByIdAsync(int cityId, bool showHidden = false);
+    Task<ICollection<City>> GetAllAsync();
+    Task<City> GetByIdAsync(int cityId);
 }
 
 public class CityService : ICityService
 {
     private readonly ApplicationDbContext _db;
-    private const string CitiesAllCacheKey = "cities:all:{0}"; //showHidden
+    private const string CitiesAllCacheKey = "cities:all"; 
     private readonly ICacheManager _cacheManager;
 
     public CityService(ApplicationDbContext db, ICacheManager cacheManager)
@@ -25,33 +25,28 @@ public class CityService : ICityService
         _cacheManager = cacheManager;
     }
 
-    public async Task<ICollection<City>> GetAllAsync(bool showHidden = false)
+    public async Task<ICollection<City>> GetAllAsync()
     {
-        return await PrefetchCitiesAsync(showHidden);
+        return await PrefetchCitiesAsync();
     }
 
-    public async Task<City> GetByIdAsync(int cityId, bool showHidden = false)
+    public async Task<City> GetByIdAsync(int cityId)
     {
         if (cityId < 1)
         {
             return null;
         }
-        var cities = await PrefetchCitiesAsync(showHidden);
+        var cities = await PrefetchCitiesAsync();
         return cities.FirstOrDefault(x => x.Id == cityId);
     }
 
-    protected virtual async Task<City[]> PrefetchCitiesAsync(bool showHidden = false)
+    protected virtual async Task<City[]> PrefetchCitiesAsync()
     {
-        var cacheKey = string.Format(CultureInfo.InvariantCulture, CitiesAllCacheKey, showHidden);
+        var cacheKey = string.Format(CultureInfo.InvariantCulture, CitiesAllCacheKey);
         return await _cacheManager.GetOrCreateAsync(cacheKey,
             async () =>
             {
                 var query = _db.Cities.AsQueryable();
-                if (!showHidden)
-                {
-                    query.Where(x => x.IsCityEnabled);
-                }
-
                 return await query
                     .OrderBy(x => x.DisplayOrder)
                     .ThenBy(x => x.Name)

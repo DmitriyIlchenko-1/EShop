@@ -48,7 +48,7 @@ public partial class CheckoutHelper
     }
 
     public virtual async Task<CheckoutShippingAddressModel> PrepareShippingAddressModelAsync(ShoppingCart cart,
-        bool prepopulateWithUserData = false)
+        bool prepopulateWithUserData = false,  bool disableAddressBaseMapping = false)
     {
         Guard.NotNull(cart);
         var user = _workContext.CurrentUser;
@@ -60,7 +60,7 @@ public partial class CheckoutHelper
             model.ExistingAddresses.Add(addressModel);
         }
         
-        await PrepareAddressModelAsync(model.NewAddress, null, true);
+        await PrepareAddressModelAsync(model.NewAddress, null, prepopulateWithUserData, disableAddressBaseMapping);
         return model;
     }
 

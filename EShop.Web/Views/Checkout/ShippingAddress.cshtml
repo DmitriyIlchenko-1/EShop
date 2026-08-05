@@ -40,13 +40,16 @@
                         </li>
                     }
                 </ul>
-                <div id="add-new-address-panel" class="mt-3xl">
-                    @{
-                        var dataDictNewAddress = new ViewDataDictionary(ViewData);
-                        dataDictNewAddress.TemplateInfo.HtmlFieldPrefix = nameof(Model.NewAddress);
-                        @await Html.PartialAsync("_Checkout.CreateOrUpdateAddress", Model.NewAddress, dataDictNewAddress)
-                    }
-                  
+                <div id="add-new-address-panel" class="mt-3xl" style="display: @{ var display = (Model.HasAddresses && !ViewData.ModelState.IsValid) ? "" : "none"; @display; }">
+                    <div class="checkout__new-address-form-container">
+                        <div asp-validation-summary="ModelOnly"></div>
+                        @{
+                            var dataDictNewAddress = new ViewDataDictionary(ViewData);
+                            dataDictNewAddress.TemplateInfo.HtmlFieldPrefix = nameof(Model.NewAddress);
+                            @await Html.PartialAsync("_CreateOrUpdateAddress", Model.NewAddress, dataDictNewAddress)
+                        }
+                        <button type="submit" class="button mt-lg">Save</button>
+                    </div>
                 </div>
             </form>
         </shipping-address-flow>

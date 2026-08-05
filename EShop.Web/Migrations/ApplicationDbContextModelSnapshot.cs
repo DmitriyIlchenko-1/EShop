@@ -1028,9 +1028,6 @@ namespace EShop.Web.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("ZipCode")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -1038,8 +1035,6 @@ namespace EShop.Web.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CityId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Common_Address", (string)null);
                 });
@@ -1689,6 +1684,23 @@ namespace EShop.Web.Migrations
                     b.ToTable("Platform_ThemeVariable", (string)null);
                 });
 
+            modelBuilder.Entity("UserAddresses", b =>
+                {
+                    b.Property<int>("User_Id")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Address_Id")
+                        .HasColumnType("integer");
+
+                    b.HasKey("User_Id", "Address_Id");
+
+                    b.HasIndex("Address_Id");
+
+                    b.HasIndex("User_Id");
+
+                    b.ToTable("UserAddresses");
+                });
+
             modelBuilder.Entity("Discount_CategoryDiscount_Mapping", b =>
                 {
                     b.HasOne("EShop.Core.Catalog.Categories.Domain.Category", null)
@@ -2021,11 +2033,6 @@ namespace EShop.Web.Migrations
                         .HasForeignKey("CityId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", null)
-                        .WithMany("Addresses")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("City");
                 });
 
@@ -2137,6 +2144,21 @@ namespace EShop.Web.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("UserAddresses", b =>
+                {
+                    b.HasOne("EShop.Core.Common.Domain.Address", null)
+                        .WithMany()
+                        .HasForeignKey("Address_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EShop.Core.Platform.Identity.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("User_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("EShop.Core.Catalog.Attributes.Domain.ProductAttribute", b =>
                 {
                     b.Navigation("ProductAttributeOptionsSets");
@@ -2206,8 +2228,6 @@ namespace EShop.Web.Migrations
 
             modelBuilder.Entity("EShop.Core.Platform.Identity.Domain.User", b =>
                 {
-                    b.Navigation("Addresses");
-
                     b.Navigation("Orders");
 
                     b.Navigation("ShoppingCartItems");

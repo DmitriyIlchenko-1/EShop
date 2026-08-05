@@ -217,6 +217,7 @@ p {
     height: var(--size);
     width: var(--size);
     pointer-events: none;
+    fill: currentColor;
 }
 
 /*|| Buttons*/
@@ -1181,11 +1182,6 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
    as match space as its content in case a word that would
     otherwise overflow break onto a new line + do something with anywhere overflow becuase main-nav has break-word that bring inconsistency in here*/
 .badge {
-    /*position: absolute;
-    z-index: var(--layer-heightened);
-    left: 8px;
-    top: 8px;*/
-    /*max-width: calc(100% - 16px);*/
     overflow-wrap: anywhere;
     color: var(--badge-color, currentColor);
     background-color: var(--badge-bg-color, var(--color-background));
@@ -1196,8 +1192,8 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
 }
 
 .badge--info {
-    --badge-color: var(--badge-info-color);
-    --badge-bg-color: var(--badge-info-bg-color)
+    --badge-color: var(--color-white);
+    --badge-bg-color: var(--color-primary)
 }
 
 .badge__message {
@@ -2037,9 +2033,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     --alert-text-color: var(--error-text-color);
 }
 
-#add-new-address-panel{
-    display: none;
-}
+ 
 .checkout__address-control-container .field-validation-error {
     margin-block-start: var(--margin-xs);
 }
@@ -2169,7 +2163,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 .checkout__main-flow {
     @media screen and (width >= 1024px) {
         position: relative;
-        padding-inline: var(--padding-5xl);
+        padding-inline: var(--padding-2xl);
     }
 }
 
@@ -2227,7 +2221,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 .checkout__order-data-summary-container{
     
    @media screen and (width < 1024px) {
-       max-width: 50rem;
+       max-width: var( --checkout-main-flow-inline-size);
        margin-inline: auto;
    }
     border: 1px solid rgb(var(--color-foreground-rgb), .3);
@@ -2485,26 +2479,23 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 }
 
 .account__remove-button, .account__edit-button {
-    transition: background-color .1s ease-in, box-shadow .1s ease-in;
+    transition: all .1s ease-in;
 }
 
 .account__remove-button:is(:hover, :focus-visible) {
-    background-color: var(--icon-button-danger-action-bg-color);
+    background-color: var(--color-accent-darker);
+    color: var(--color-white);
 }
 
-.account__remove-button:is(:hover, :focus-visible) .icon {
-    fill: var(--icon-button-danger-action-color);
+.account__edit-button{
+    border: 1px solid transparent;
 }
-
 .account__edit-button:is(:hover, :focus-visible) {
-    background-color: rgb(var(--color-foreground-rgb), .1);
-    box-shadow: inset 0 0 0 1px rgb(var(--color-foreground-rgb), .1);;
+    background-color: hsla(var(--color-contrast-higher-h), var(--color-contrast-higher-s),var(--color-contrast-higher-l), .15);
+    border-color:  hsla(var(--color-contrast-higher-h), var(--color-contrast-higher-s),var(--color-contrast-higher-l), .2);
 }
 
-.account__action-btn-container {
-    display: flex;
-    gap: var(--gap-md);
-}
+
 
 /*ORDER DETAILS PAGE*/
 

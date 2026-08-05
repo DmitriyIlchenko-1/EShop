@@ -8,7 +8,7 @@
 
 <fieldset class="checkout__address-control-container field-group flex-grow grid grid-cols-2 lg:grid-cols-4 gap-lg">
     <legend class="field-group__label mb-md">@legendText</legend>
-    <input asp-for="Id" type="hidden"/>
+    <input name="Id" value="@Model.Id" type="hidden"/>
     <div class="col-span-2">
         <div class="field field--text">
             <input asp-for="FirstName" placeholder="@Html.DisplayNameFor(x => x.FirstName)"/>
@@ -71,7 +71,6 @@
         <span class="block text-xs" asp-validation-for="CityId"></span>
     </div>
 </fieldset>
-<button class="button mt-lg" type="submit">Save</button>
  
  
 

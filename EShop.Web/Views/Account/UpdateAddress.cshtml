@@ -1,0 +1,8 @@
+@model EShop.Web.Models.Checkout.AddressModel
+@{
+    Layout = "_AccountLayout";
+}
+
+<form asp-action="UpdateAddress" method="post">
+    <partial name="_Checkout.CreateOrUpdateAddress" model="Model"/>
+</form>

@@ -83,7 +83,7 @@ public partial class AccountHelper
                 Id = order.ShippingAddress.Id,
                 AddressLine1 = order.ShippingAddress.AddressLine1,
                 AddressLine2 = order.ShippingAddress.AddressLine2,
-                CityName = order.ShippingAddress.CityId.HasValue ? (await _cityService.GetByIdAsync(order.ShippingAddress.CityId.Value, true)).Name 
+                CityName = order.ShippingAddress.CityId.HasValue ? (await _cityService.GetByIdAsync(order.ShippingAddress.CityId.Value)).Name 
                     : string.Empty,
                 FirstName = order.ShippingAddress.FirstName,
                 LastName = order.ShippingAddress.LastName,

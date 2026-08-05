@@ -77,7 +77,7 @@ public class CheckoutController : EShopBaseController
 
         var user = _workContext.CurrentUser;
         var cart = await _shoppingCartService.GetUserCartAsync(user);
-        var model = await _checkoutHelper.PrepareShippingAddressModelAsync(cart);
+        var model = await _checkoutHelper.PrepareShippingAddressModelAsync(cart, true);
         return View(model);
     }
 
@@ -111,7 +111,7 @@ public class CheckoutController : EShopBaseController
         }
 
         var user = _workContext.CurrentUser;
-        
+
         if (ModelState.IsValid)
         {
             var newAddress = model.NewAddress.ToEntity();
@@ -119,12 +119,16 @@ public class CheckoutController : EShopBaseController
             if (existingAddress != null)
             {
             }
-            
+
             user.ShippingAddress = newAddress;
+            user.Addresses.Add(newAddress);
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(PaymentList));
         }
 
+
+        var cart = await _shoppingCartService.GetUserCartAsync(user);
+        model = await _checkoutHelper.PrepareShippingAddressModelAsync(cart, true, true);
         return View(model);
     }
 
@@ -224,27 +228,7 @@ public class CheckoutController : EShopBaseController
 
         throw new NotImplementedException();
     }
-
-
-    public virtual async Task<IActionResult> GetAddressById(int addressId)
-    {
-        Address address = null;
-        var user = _workContext.CurrentUser;
-        if (addressId != 0)
-        {
-            address = user.Addresses.FirstOrDefault(x => x.Id == addressId);
-        }
-
-        var model = new AddressModel();
-        await _checkoutHelper.PrepareAddressModelAsync(model, address, true);
-        var json = JsonConvert.SerializeObject(model,
-            Formatting.Indented,
-            new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-            });
-        return Json(json);
-    }
+    
 
     public virtual async Task<IActionResult> Completed(int orderId)
     {
@@ -257,21 +241,6 @@ public class CheckoutController : EShopBaseController
         }
 
         return View((object)orderId.ToString());
-    }
-
-
-    private async Task<IActionResult> GetResultAfterSuccessUpdate(ShoppingCart cart)
-    {
-        var model = await _checkoutHelper.PrepareCheckoutModelAsync(cart);
-        return Json(new
-        {
-            renderSections = new
-            {
-                address = await RenderPartialViewToStringAsync("_Checkout.Address", model),
-                payment = await RenderComponentToStringAsync("CheckoutPaymentMethodList")
-            },
-            success = true
-        });
     }
 
     protected virtual async Task<ValidationFlowResult> ValidateCheckoutFlowAsync()
