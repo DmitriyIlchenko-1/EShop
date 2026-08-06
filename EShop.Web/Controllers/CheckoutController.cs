@@ -57,13 +57,7 @@ public class CheckoutController : EShopBaseController
         {
             return result.ActionResult;
         }
-
-        var paymentMethods = _paymentProviderManager.GetActivePaymentMethods();
-        if (!paymentMethods.Any())
-        {
-            return RedirectToRoute("ShoppingCart");
-        }
-
+        
         return RedirectToAction(nameof(ShippingAddress));
     }
 
@@ -94,6 +88,7 @@ public class CheckoutController : EShopBaseController
         var address = user.Addresses.FirstOrDefault(x => x.Id == shippingAddressId);
         if (address == null)
         {
+            return RedirectToAction(nameof(ShippingAddress));
         }
 
         user.ShippingAddress = address;
@@ -114,12 +109,8 @@ public class CheckoutController : EShopBaseController
 
         if (ModelState.IsValid)
         {
+            // TODO: Use a mapper for this thing:
             var newAddress = model.NewAddress.ToEntity();
-            var existingAddress = user.Addresses.FirstOrDefault(x => x == newAddress);
-            if (existingAddress != null)
-            {
-            }
-
             user.ShippingAddress = newAddress;
             user.Addresses.Add(newAddress);
             await _db.SaveChangesAsync();
@@ -159,7 +150,7 @@ public class CheckoutController : EShopBaseController
         }
 
         if (!_paymentProviderManager
-                .GetActivePaymentMethod(paymentSystemName)
+                .GetPaymentMethodBySystemName(paymentSystemName)
                 .IsPaymentMethodActive(_paymentSettings))
         {
             return await PaymentList();
@@ -180,9 +171,10 @@ public class CheckoutController : EShopBaseController
 
         var session = HttpContext.Session;
         var paymentMethodName = session.GetString("PaymentMethod");
-        var paymentMethod = _paymentProviderManager.GetActivePaymentMethod(paymentMethodName);
-        if (paymentMethod == null)
+        var paymentMethod = _paymentProviderManager.GetPaymentMethodBySystemName(paymentMethodName);
+        if (paymentMethod == null || !paymentMethod.IsPaymentMethodActive(_paymentSettings))
         {
+            return RedirectToAction(nameof(PaymentList));
         }
 
         if (paymentMethod.Proviver.SkipPaymentInfo)

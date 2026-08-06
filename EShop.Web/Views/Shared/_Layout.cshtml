@@ -2,7 +2,9 @@
 <html lang="en-US" class="js">
 <head>
     <meta charset="utf-8"/>
-    @await Component.InvokeAsync("Antiforgery")
+    @{ 
+        await Component.InvokeAsync("Antiforgery");
+    }
     <title>@ViewBag.Title</title>
     <link href="~/css/main.css" rel="stylesheet" type="text/css"/>
     <link href="~/css/hero.css" rel="stylesheet" type="text/css"/>

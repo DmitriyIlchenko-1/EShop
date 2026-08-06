@@ -107,7 +107,7 @@ public partial class AccountHelper
             .ToListAsync();
         context.MediaMap = medias.ToDictionary(x => x.ProductId, x => x);
             
-        var paymentProvider = _paymentProviderManager.GetActivePaymentMethod(order.PaymentMethodSystemName);
+        var paymentProvider = _paymentProviderManager.GetPaymentMethodBySystemName(order.PaymentMethodSystemName);
         model.PaymentMethodName = paymentProvider != null ? paymentProvider.Metadata.FriendlyName : order.PaymentMethodSystemName;
       
         if (_performanceSettings.AlwaysPrefetchUrlSlugs)

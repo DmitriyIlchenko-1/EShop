@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using EShop.Infrastructure.Utilities;
 
@@ -59,13 +60,16 @@ public static class DictionaryExtensions
     }
 
     public static bool TryGetAndConvertValue<TConvert>(this IDictionary<string, object> dictionary, string key, out TConvert value)
-        where TConvert : IConvertible
     {
         Guard.NotNull(dictionary);
-        if (dictionary.TryGetValue(key, out object result) && result is IConvertible convertible)
+        if (dictionary.TryGetValue(key, out object result))
         {
-            value = (TConvert)convertible.ToType(typeof(TConvert), null);
-            return true;
+            var converter = TypeDescriptor.GetConverter(typeof(TConvert));
+            if (converter.IsValid(result))
+            {
+                value = (TConvert)converter.ConvertTo(result, typeof(TConvert));
+                return true;
+            }
         }
 
         value = default(TConvert);

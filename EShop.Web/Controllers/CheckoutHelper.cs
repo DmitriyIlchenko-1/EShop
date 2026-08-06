@@ -147,7 +147,7 @@ public partial class CheckoutHelper
         if (_session != null)
         {
             var paymentMethodName = _session.GetString("PaymentMethod");
-            var paymentMethod = _paymentProviderManager.GetActivePaymentMethod(paymentMethodName)
+            var paymentMethod = _paymentProviderManager.GetPaymentMethodBySystemName(paymentMethodName)
                 ?.Metadata.FriendlyName ?? string.Empty;
             model.PaymentMethodName = paymentMethod;
         }

@@ -26,6 +26,7 @@ namespace EShop.Web.Controllers
         [HttpGet("/", Name = "Homepage")]
         public async Task<IActionResult> Index(ProductVariantQuery query)
         {
+            
             //TODO: add home-page settings.
 
             return View();

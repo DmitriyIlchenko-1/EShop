@@ -1,4 +1,5 @@
 using Autofac;
+using EShop.Core.Data.Payment.Exceptions;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Modules.Payment;
 using EShop.Infrastructure.Extensions;
@@ -42,7 +43,7 @@ public class DefaultProviderManager : IProviderManager
 public interface IPaymentProviderManager
 {
     IEnumerable<Provider<IPaymentMethod>> GetActivePaymentMethods();
-    Provider<IPaymentMethod> GetActivePaymentMethod(string systemName);
+    Provider<IPaymentMethod> GetPaymentMethodBySystemName(string systemName);
 }
 
 public class PaymentProviderManager : IPaymentProviderManager
@@ -59,11 +60,11 @@ public class PaymentProviderManager : IPaymentProviderManager
         var allPaymentMethods = _providerManager.GetProviders<IPaymentMethod>().ToArray();
         if (allPaymentMethods.Length == 0)
         {
-            throw new App
+            throw new PaymentException("There are no active payment methods");
         }
         return allPaymentMethods;
     }
 
-    public Provider<IPaymentMethod> GetActivePaymentMethod(string systemName)
+    public Provider<IPaymentMethod> GetPaymentMethodBySystemName(string systemName)
         => _providerManager.GetProvider<IPaymentMethod>(systemName);
 }
