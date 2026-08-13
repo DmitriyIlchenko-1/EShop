@@ -1,73 +1,69 @@
+import {notifyError} from "./utilities.js";
 
-class ProductForm extends HTMLElement{
+
+export class ProductForm extends HTMLElement {
     constructor() {
         super();
-        
-        this.init();
-    }
-    
-    init(){
         this.form = this.querySelector('.js-product-form');
-        if (this.form){
-            this.form.addEventListener('submit', this.handleSubmit.bind(this));
-        }
+        this.cartDrawer = document.querySelector('#cart-drawer');
+        this.form.addEventListener('submit', this.handleSubmit.bind(this));
     }
-    
-    async handleSubmit(e){
+
+
+    async handleSubmit(e) {
         e.preventDefault();
-        this.submitBtn = this.querySelector('[name="add"]');
-        
-        
-       
-        
-        this.submitBtn.disabled = true;
-        this.submitBtn.classList.add('is-loading');
+        const submitter =
+            e.submitter.matches('button[name="add"]') ? e.submitter : null;
+        if (submitter.disabled) return;
+        submitter.disabled = true;
+        submitter.classList.add('is-loading');
         const formData = new FormData(this.form);
-        
-        const fetchOptions = {
-            method: "POST",
-            body: formData
-        };
-        
+        const response = await fetch(this.form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                "Accept": "application/json",
+            },
+        });
+
         try {
-            const action = this.form.getAttribute('action');
-            const response = await fetch(action, fetchOptions)
-            const data = await response.json();
-            ProductForm.updateCartIcon(data);
-            this.displayNotifications(data.warnings);
-            
-            
+            if (!response.ok) {
+                notifyError(response.statusText);
+            } else {
+                if (response.redirected) {
+                    location.replace(response.url);
+                }
+
+                const data = await response.json();
+                const warnings = data.warnings;
+                if (this.cartDrawer) {
+                    await this.cartDrawer.renderContents(data,warnings.length == 0);
+                }
+                
+                data.warnings.forEach(warning => {
+                    notifyError(warning);
+                })
+            }
+        } catch (error) {
+            console.error(error);
+
+        } finally {
+            submitter.disabled = false;
         }
-        catch (error) {
-            
-        }
-        finally {
-            this.submitBtn.disabled = false;
-            this.submitBtn.classList.remove('is-loading');
-        }
-        
-    }
-    
-    displayNotifications(notifications) {
-        const notyf = new Notyf();
-        notifications.forEach(n => {
-            notyf.error(n);
-        })
     }
 
+     
 
-    static updateCartIcon(response){
+    static updateCartIcon(data) {
         const cartIconCount = document.getElementById('cart-icon-count');
-        if (response.partials.addToCartCount && cartIconCount){
-            cartIconCount.innerHTML = response.partials.addToCartCount;
+        if (data.partials.addToCartCount && cartIconCount) {
+            cartIconCount.innerHTML = data.partials.addToCartCount;
         }
     }
-
-
-
-
 }
+
 
 if (!customElements.get('product-form')) {
     customElements.define('product-form', ProductForm);
 }
+ 

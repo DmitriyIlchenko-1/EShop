@@ -83,10 +83,7 @@ public class UrlService : IUrlService
                             StringComparer.OrdinalIgnoreCase);
                     return result;
                 },
-                new CacheEntryOptions()
-                {
-                    AbsoluteExpiration = TimeSpan.FromHours(8)
-                });
+                new CacheEntryOptions(TimeSpan.FromHours(8)));
             var key = GenerateKey(entityId, entityName);
             if (!allActiveSlugs.TryGetValue(key, out slug))
             {

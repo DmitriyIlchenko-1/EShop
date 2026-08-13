@@ -3,6 +3,7 @@ using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Modules;
 using EShop.Infrastructure.Utilities;
 using EShop.Web.Controllers;
+using EShop.Web.Factories;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +31,8 @@ public class WebStartup : BaseStartup
         services.AddScoped<CheckoutHelper>();
         services.AddScoped<ShoppingCartHelper>();
         services.AddScoped<AccountHelper>();
+        
+        services.AddScoped<IAddressModelFactory, DefaultAddressModelFactory>();
     }
 
     public override void ConfigureMvc(IMvcBuilder mvcBuilder, IServiceCollection services)

@@ -1,4 +1,4 @@
- @using EShop.Web.Common.TagHelpers 
+@using EShop.Web.Common.TagHelpers
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model EShop.Web.Models.Catalog.ProductSummaryModel
 
@@ -6,27 +6,25 @@
     var items = Model.Items;
     var anyExist = items.Any();
 }
- 
-<section class="section page-width-narrow section--content-middle color-scheme-1 section-resource-list spacing-style gap-style"
-             style="--padding-block-start: max(20px, calc(var(--spacing-scale) * 48px));
+
+<section
+    class="section page-width-narrow section--content-middle color-scheme-1 section-resource-list spacing-style gap-style"
+    style="--padding-block-start: max(20px, calc(var(--spacing-scale) * 48px));
              --padding-block-end:max(20px, calc(var(--spacing-scale) * 48px))">
-            <div class="section-resource-list__header">
-                <div class="spacing-style text-block h4"
-                     style="--color: var(--color-foreground); --horizontal-alignment: flex-start; --max-width: var(--max-width--body-narrow); --text-align: left; --padding-block-start: 0px; --padding-block-end: 0px;">
-                    <h3>Featured Products</h3>
-                </div>
-            </div>
-            <ul eh-if="anyExist" class="list-unstyled resource-list resource-list--grid
+    <div class="section__header">
+        <h3 class="h4 mb-0 text-start">Featured products</h3>
+    </div>
+    <ul eh-if="anyExist" class="list-unstyled resource-list resource-list--grid
             grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
-                style="
+        style="
                 --resource-list-column-gap-desktop: 24px;
                  --resource-list-row-gap-desktop: 20px;">
 
-                @foreach (var item in items)
-                {
-                    <partial name="_Product.Card" model="item"/>
-                }
-            </ul>
+        @foreach (var item in items)
+        {
+            <partial name="_Product.Card" model="item"/>
+        }
+    </ul>
 
-        </section>
+</section>
  

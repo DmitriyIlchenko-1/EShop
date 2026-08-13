@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model EShop.Web.Models.Checkout.CheckoutShippingAddressModel
 @{
-    
+    ViewBag.Title = "Shipping address";
 }
 <div class="section section--content-middle color-scheme-1 spacing-style"
      style=" --padding-block-start: max(20px, calc(var(--spacing-scale) * 68px)); --padding-block-end:max(20px, calc(var(--spacing-scale) * 68px))">
@@ -25,7 +25,6 @@
                                     <dl>
                                         <dt>Phone number</dt>
                                         <dd>@item.PhoneNumber</dd>
-                                        <dt class="visually-hidden">Full name</dt>
                                         <dt class="visually-hidden">Address 1</dt>
                                         <dd>@item.AddressLine1</dd>
                                         <div eh-if="@(item.AddressLine2 != null)">
@@ -40,7 +39,7 @@
                         </li>
                     }
                 </ul>
-                <div id="add-new-address-panel" class="mt-3xl" style="display: @{ var display = (Model.HasAddresses && !ViewData.ModelState.IsValid) ? "" : "none"; @display; }">
+                <div id="add-new-address-panel" class="mt-3xl" style="display: @{ var display = (!Model.HasAddresses || !ViewData.ModelState.IsValid) ? "" : "none"; @display; }">
                     <div class="checkout__new-address-form-container">
                         <div asp-validation-summary="ModelOnly"></div>
                         @{

@@ -70,6 +70,10 @@
         </div>
         <span class="block text-xs" asp-validation-for="CityId"></span>
     </div>
+    <div class="col-span-2" eh-if="@Model.EnableSelectAsDefault">
+        <input asp-for="IsDefault" class="checkbox" type="checkbox"/>
+        <label asp-for="IsDefault">@Html.DisplayNameFor(x => x.IsDefault)</label>
+    </div>
 </fieldset>
  
  

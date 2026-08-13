@@ -36,5 +36,11 @@ public static class HttpContextExtensions
         return factoryResult;
     }
 
+    public static bool IsRequestFetch(this HttpRequest request)
+    {
+        Guard.NotNull(request);
+        return request.Headers.Accept.Contains("application/json", StringComparer.InvariantCultureIgnoreCase);
+    }
+
      
 }

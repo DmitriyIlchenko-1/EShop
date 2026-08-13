@@ -4,6 +4,7 @@ using EShop.Core.Data.Cart.Services;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Logging.Services;
 using EShop.Infrastructure.Caching;
+using EShop.Infrastructure.Data;
 using EShop.Infrastructure.Extensions;
 using EShop.Web.Common.Controllers;
 using EShop.Web.Models.Checkout;
@@ -41,19 +42,65 @@ public class ShoppingCartController : EShopBaseController
         return View(model);
     }
 
-    [HttpPost("/card/addproduct/{productId:int}", Name = "AddProduct")]
+    [HttpPost("/cart/addproductsimple/{productId:int}")]
+    public async Task<IActionResult> AddProductSimple(int productId)
+    {
+        var product = await _db
+            .Products
+            .Include(x => x.ProductVariantAttributes)
+            .FindByIdAsync(productId);
+        if (product == null)
+        {
+            //TODO: handle this error
+        }
+
+        var addToCartContext = new AddToCartContext()
+        {
+            Product = product,
+            Quantity = product.MinAddToCartNumber,
+            VariantQuery = new ProductVariantQuery()
+        };
+
+        var (warnings, isAdded) = await _shoppingCartService.AddProductToCart(addToCartContext);
+        if (!isAdded)
+        {
+            // The user has to visit the product's page to more likely fix whatever to add the product to their cart
+            return RedirectToAction(nameof(ProductController.ProductDetails),
+                "Product",
+                new { productId });
+        }
+
+        _activityLogger.InsertActivity(KnownActivityLogType.AddToShoppingCart,
+            KnownActivityFormats.AddToShoppingCart,
+            product.Name);
+
+        var cart = await _shoppingCartService.GetUserCartAsync();
+        var shoppingCartModel = await _shoppingCartHelper.PrepareShoppingCartModelAsync(cart);
+        var cartCountModel = await _shoppingCartService.GetUserCartItemCountAsync();
+
+        return Json(new
+        {
+            productId,
+            warnings,
+            partials = new
+            {
+                cartDrawer = await RenderComponentToStringAsync("CartDrawer", shoppingCartModel),
+                addToCartCount = await RenderComponentToStringAsync("AddToCartCount", cartCountModel),
+            }
+        });
+    }
+
+    [HttpPost("/cart/addproduct/{productId:int}", Name = "AddProduct")]
     public async Task<IActionResult> AddProduct(int productId, ProductVariantQuery query)
     {
+       
         var product = await _db
             .Products
             .Include(x => x.ProductVariantAttributes)
             .FirstOrDefaultAsync(x => x.Id == productId);
         if (product is null)
         {
-            return Json(new
-            {
-                redirectUrl = Url.RouteUrl("Homepage")
-            });
+            return RedirectToRoute("Homepage");
         }
 
         var form = HttpContext.Request.Form;
@@ -70,7 +117,7 @@ public class ShoppingCartController : EShopBaseController
             VariantQuery = query
         };
 
-        ICollection<string> warnings = await _shoppingCartService.AddProductToCart(addToCartContext);
+        var (warnings, _) = await _shoppingCartService.AddProductToCart(addToCartContext);
 
 
         _activityLogger.InsertActivity(KnownActivityLogType.AddToShoppingCart,
@@ -78,13 +125,18 @@ public class ShoppingCartController : EShopBaseController
             product.Name);
 
         var cartCount = await _shoppingCartService.GetUserCartItemCountAsync();
+        var cart = await _shoppingCartService.GetUserCartAsync();
+        var settings = new ShoppingCartModelMappingSettings();
+        _shoppingCartHelper.GetBestFitShoppingCartModelMappingSettings(settings, CartSummaryLocation.CartDrawer);
+        var cartModel = await _shoppingCartHelper.PrepareShoppingCartModelAsync(cart, settings);
         return Json(new
         {
             productId,
             warnings,
             partials = new
             {
-                addToCartCount = await RenderComponentToStringAsync("AddToCartCount", cartCount)
+                addToCartCount = await RenderComponentToStringAsync("AddToCartCount", cartCount),
+                cartDrawer = await RenderComponentToStringAsync("CartDrawer", cartModel),
             }
         });
     }
@@ -103,6 +155,7 @@ public class ShoppingCartController : EShopBaseController
         string message = string.Empty;
         var cart = await _shoppingCartService.GetUserCartAsync();
         var cartItem = cart.Items.FirstOrDefault(x => x.Id == model.CartItemId);
+        string[] requestedPartials = model.RequestedPartials;
         if (cartItem is null)
         {
             return Json(new
@@ -121,17 +174,37 @@ public class ShoppingCartController : EShopBaseController
             var warnings = await _shoppingCartService.UpdateCartItemAsync(cartItem, model.NewQuantity);
             message = string.Join(". ", warnings.Take(2));
         }
-        
+
+        IDictionary<string, string> partials = new Dictionary<string, string>();
+
         var cartCount = cart.GetCount();
-        var cartModel = await _shoppingCartHelper.PrepareShoppingCartModelAsync(cart);
+        partials.Add("addToCartCount", await RenderComponentToStringAsync("AddToCartCount", cartCount));
+
+        if (requestedPartials.Contains("cartDrawer", StringComparer.InvariantCultureIgnoreCase))
+        {
+            var shoppingCartModel = await _shoppingCartHelper.PrepareShoppingCartModelAsync(cart);
+            partials.Add("cartDrawer", await RenderComponentToStringAsync("CartDrawer", shoppingCartModel));
+        }
+
+        if (requestedPartials.Contains("totalSummary", StringComparer.InvariantCultureIgnoreCase))
+        {
+            var cartModel = await _shoppingCartHelper.PrepareShoppingCartModelAsync(cart);
+            partials.Add("totalSummary", await RenderPartialViewToStringAsync("_ShoppingCart.TotalSummary", cartModel));
+        }
+
+        if (requestedPartials.Contains("cart", StringComparer.InvariantCultureIgnoreCase))
+        {
+            var cartModel = await _shoppingCartHelper.PrepareShoppingCartModelAsync(cart);
+            partials.Add("cart", await RenderPartialViewToStringAsync("Cart", cartModel));
+        }
+        
+
         return Json(new
         {
             success = true,
             message,
-            cartHtml = await RenderPartialViewToStringAsync("_ShoppingCart.CartItems", cartModel),
-            totalSummaryHtml = await RenderPartialViewToStringAsync("_ShoppingCart.TotalSummary", cartModel),
-            cartCountHtml = await RenderComponentToStringAsync("AddToCartCount", cartCount),
-            cartCount
+            partials,
+            cartCount 
         });
     }
 }

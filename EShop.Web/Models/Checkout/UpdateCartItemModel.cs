@@ -6,4 +6,5 @@ public class UpdateCartItemModel : BaseModel
 {
     public int CartItemId { get; set; }
     public int NewQuantity { get; set; }
+    public string[] RequestedPartials { get; set; }
 }

@@ -18,7 +18,6 @@ public class ProductVariantAttributeSelection : IEquatable<ProductVariantAttribu
 
     public ProductVariantAttributeSelection(string rawAttributes)
     {
-        Guard.NotEmpty(rawAttributes);
         _attributes = GetAttributesFromJson(rawAttributes);
     }
 

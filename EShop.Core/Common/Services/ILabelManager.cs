@@ -55,8 +55,7 @@ public class DefaultLabelManager : ILabelManager
                 var reader = xmlDocument.CreateReader();
                 reader.MoveToContent();
                 return reader.ReadOuterXml();
-            },
-            new CacheEntryOptions() { AbsoluteExpiration = TimeSpan.FromSeconds(60) });
+            });
     }
 
     private string GenerateIconHash(string name, IDictionary<string, object> parameters)

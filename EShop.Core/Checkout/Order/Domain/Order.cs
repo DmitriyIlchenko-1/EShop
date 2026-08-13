@@ -2,8 +2,19 @@ using EShop.Core.Common.Domain;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Modules.Payment;
 using EShop.Infrastructure.Domain;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EShop.Core.Checkout.Orders.Domain;
+
+internal class OrderMap : IEntityTypeConfiguration<Order>
+{
+    public void Configure(EntityTypeBuilder<Order> builder)
+    {
+        builder.HasQueryFilter(x => !x.IsDeleted);
+    }
+}
+
 
 public class Order : BaseEntity, ISoftDeletableEntity, IAuditableEntity
 {

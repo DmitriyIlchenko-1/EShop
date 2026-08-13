@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using EShop.Core.Common.Domain;
 using EShop.Infrastructure.Domain;
 using EShop.Web.Common.Models;
@@ -10,6 +11,7 @@ namespace EShop.Web.Models.Checkout;
 
 public class AddressModel : BaseModel
 {
+    
     public string Fullname => string.Join(" ", FirstName, LastName);
     public string FirstName { get; set; }
     
@@ -23,29 +25,11 @@ public class AddressModel : BaseModel
     public string ZipCode { get; set; }
     public int CityId { get; set; }
     public string CityName { get; set; }
-    [JsonIgnore]
-    public string AddressString { get; set; }
-    [JsonIgnore]
-    public bool Selected { get; set; }
-
-   
-
-    public ICollection<SelectListItem> AvailableCities { get; set; } = [];
     
-    public Address ToEntity()
-    {
-        return new Address()
-        {
-            Id = Id,
-            CityId = CityId,
-            FirstName = FirstName,
-            LastName = LastName,
-            PhoneNumber = PhoneNumber,
-            AddressLine1 = AddressLine1,
-            AddressLine2 = AddressLine2,
-            ZipCode = ZipCode,
-        };
-    }
+    [DisplayName("Select as default shipping address")]
+    public bool IsDefault { get; set; }
+    public bool EnableSelectAsDefault { get; set; }
+    public ICollection<SelectListItem> AvailableCities { get; set; } = [];
 }
 
 public class AddressModelValidator : AbstractValidator<AddressModel>

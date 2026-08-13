@@ -90,8 +90,6 @@ public partial class CatalogHelper
             Id = product.Id,
             Name = product.Name,
             ShortDescription = product.ShortDescription,
-            MaxAddToCartNumber = product.MaxAddToCartNumber,
-            MinAddToCartNumber = product.MinAddToCartNumber,
             MetaTitle = product.MetaTitle,
             MetaDescriptions = product.MetaDescription,
             IsAvailable = product.IsAvailable,
@@ -115,7 +113,6 @@ public partial class CatalogHelper
 
         #region Specifications
 
-        //TODO: Fix the cache problem, which is that we can't store values in cache forever without not specifying a time span (999)
         await PrepareProductSpecificationModelAsync(context, model);
 
         #endregion
@@ -346,7 +343,11 @@ public partial class CatalogHelper
             model.ProductVariantAttributes.Add(attributeVm);
         }
 
-        await PrepareProductAttributeCombinationsModelAsync(context, model);
+        if (query.Variants.Count > 0)
+        {
+            await PrepareProductAttributeCombinationsModelAsync(context, model);
+        }
+        
     }
 
     private async Task PrepareProductAttributeCombinationsModelAsync(ProductDetailsModelContext context,
@@ -379,13 +380,15 @@ public partial class CatalogHelper
         {
             model.IsAvailable = true;
         }
-        
+
+        int stockQuantity = selectedCombination?.StockQuantity ?? product.StockQuantity;
         model.MaxAddToCartNumber =
-            (selectedCombination.StockQuantity != 0 &&
-             selectedCombination.StockQuantity > product.MaxAddToCartNumber)
+            (stockQuantity != 0 &&
+             stockQuantity > product.MaxAddToCartNumber)
                 ? product.MaxAddToCartNumber
-                : selectedCombination.StockQuantity;
+                : stockQuantity;
         model.MinAddToCartNumber = product.MinAddToCartNumber;
+        model.MinAddToCartNumber = Math.Min(model.MinAddToCartNumber, model.MaxAddToCartNumber);
 
         product.MergeDataWithCombination(model.SelectedCombination);
 
@@ -539,8 +542,7 @@ public partial class CatalogHelper
                             DisplayOrder = x.SpecificationAttributeOption.DisplayOrder,
                         })
                         .ToListAsync();
-                },
-                new CacheEntryOptions() { AbsoluteExpiration = TimeSpan.FromHours(999) });
+                });
         model.ProductSpecifications = specs;
     }
 }

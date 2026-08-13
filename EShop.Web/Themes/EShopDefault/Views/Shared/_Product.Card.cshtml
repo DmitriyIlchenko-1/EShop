@@ -1,4 +1,7 @@
 @using EShop.Core.Common.Domain
+@using EShop.Web.Common.TagHelpers
+@using EShop.Web.Controllers
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model EShop.Web.Models.Catalog.ProductSummaryItemModel
 
 @{
@@ -6,10 +9,14 @@
     var parent = Model.Parent;
     var price = Model.PriceModel;
 }
+
 <li class="resource-list__item">
     <div class="product-card">
+        <a class="product-card__link" href="@Model.SeName">
+            <span class="visually-hidden">@Model.Name</span>
+        </a>
         <div
-            class="color-scheme-2 product-grid__card layout-panel-flex  layout-panel-flex--column   border-style gap-style">
+            class="color-scheme-2 product-grid__card layout-panel-flex  layout-panel-flex--column  gap-style">
             <div class="product-card__compare text-sm pb-3">
                 <input class="checkbox product-card__compare-checkbox" type="checkbox" id="compare"
                        name=""/>
@@ -17,7 +24,7 @@
             </div>
 
             <div class="product-card__top-content">
-                <ul class="product-card__labels list-unstyled top-0 left-0 ">
+                <ul class="product-card__labels product-card__labels--overlay list-unstyled top-0 left-0 ">
                     @foreach (var label in Model.ProductLabels)
                     {
                         var classNames = "product-card__label product-card__label--rounded ";
@@ -35,13 +42,18 @@
                                              xmlns:xlink="http://www.w3.org/1999/xlink"
                                              viewBox="-2.56 -2.56 69.12 69.12" enable-background="new 0 0 64 64"
                                              xml:space="preserve" fill="#000000" transform="rotate(90)">
-                                               <g id="SVGRepo_bgCarrier" stroke-width="0"></g><g
+                                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                            <g
                                                 id="SVGRepo_tracerCarrier" stroke-linecap="round"
-                                                stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.128"></g><g
-                                                id="SVGRepo_iconCarrier"> <g> <polygon fill="none" stroke="#000000"
-                                                                                       stroke-width="5.3759999999999994"
-                                                                                       stroke-miterlimit="10"
-                                                                                       points="25,1 63,39 39,63 1,25 1,1 "></polygon> <circle
+                                                stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.128"></g>
+                                            <g
+                                                id="SVGRepo_iconCarrier">
+                                                <g>
+                                                    <polygon fill="none" stroke="#000000"
+                                                             stroke-width="5.3759999999999994"
+                                                             stroke-miterlimit="10"
+                                                             points="25,1 63,39 39,63 1,25 1,1 "></polygon>
+                                                    <circle
                                                         fill="none" stroke="#000000" stroke-width="5.3759999999999994"
                                                         stroke-miterlimit="10" cx="17" cy="17"
                                                         r="6"></circle> </g> </g></svg>
@@ -88,95 +100,92 @@
 
                 </ul>
                 <!--The Media part of the product card-->
-                <div class="card-gallery spacing-style border-style"
-                     style="--padding-block-start: 0px;
-                                     --padding-block-end: 0px;
-                                     --padding-inline-start: 0px;
-                                     --padding-inline-end: 0px;
---gallery-aspect-ratio: 4 / 5"> <!--1, 16/9, 4/5-->
-                    <div class="slideshow">
-                        <div class="slideshow__container">
-                            <div class="slideshow-arrows" position="center">
-                                <button aria-label="Previous slide"
-                                        class=" button-unstyled--transparent slideshow__control button--unstyled slideshow__control--previous flip-x">
-                                    <svg aria-hidden="true" focusable="false" class="icon icon-arrow"
-                                         viewBox="0 0 24 24" fill="none"
-                                         xmlns="http://www.w3.org/2000/svg">
-                                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
-                                           stroke-linejoin="round"></g>
-                                        <g id="SVGRepo_iconCarrier">
-                                            <path
-                                                d="M7.82054 20.7313C8.21107 21.1218 8.84423 21.1218 9.23476 20.7313L15.8792 14.0868C17.0505 12.9155 17.0508 11.0167 15.88 9.84497L9.3097 3.26958C8.91918 2.87905 8.28601 2.87905 7.89549 3.26958C7.50497 3.6601 7.50497 4.29327 7.89549 4.68379L14.4675 11.2558C14.8581 11.6464 14.8581 12.2795 14.4675 12.67L7.82054 19.317C7.43002 19.7076 7.43002 20.3407 7.82054 20.7313Z"
+                <div class="card-gallery spacing-style"
+                     style="
+                     --padding-block-start: 0px;
+                     --padding-block-end: 0px;
+                     --padding-inline-start: 0px;
+                     --padding-inline-end: 0px;">
+                        <media-gallery class="media-gallery" style="--image-gap:0; --gallery-aspect-ratio: 4/5">
+                            <div class="media-gallery__viewer">
+                                <ul class="media-viewer list-unstyled w-full" tabindex="-1">
+                                    @foreach (var image in Model.Images)
+                                    {
+                                        var id = image.Id;
+                                        <li class="media-viewer__item" data-media-id="@id">
+                                            <a class="product-media product-media--fit" href="@Model.SeName" aria-label="@Model.Name" tabindex="-1">
+                                                <img class="product-media__image"
+                                                     src="@image.Url"
+                                                     max-src-width="3840"
+                                                     min-src-width="300"
+                                                     tol=".40"
+                                                     alt="@image.Alt"/>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
 
-                                                fill="currentColor"></path>
-                                        </g>
-                                    </svg>
-                                </button>
-                                <button aria-label="Next slide"
-                                        class="button-unstyled--transparent slideshow__control button--unstyled slideshow__control--next">
-                                    <svg aria-hidden="true" focusable="false" class="icon icon-arrow"
-                                         viewBox="0 0 24 24" fill="none"
-                                         xmlns="http://www.w3.org/2000/svg">
-                                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
-                                           stroke-linejoin="round"></g>
-                                        <g id="SVGRepo_iconCarrier">
-                                            <path
-                                                d="M7.82054 20.7313C8.21107 21.1218 8.84423 21.1218 9.23476 20.7313L15.8792 14.0868C17.0505 12.9155 17.0508 11.0167 15.88 9.84497L9.3097 3.26958C8.91918 2.87905 8.28601 2.87905 7.89549 3.26958C7.50497 3.6601 7.50497 4.29327 7.89549 4.68379L14.4675 11.2558C14.8581 11.6464 14.8581 12.2795 14.4675 12.67L7.82054 19.317C7.43002 19.7076 7.43002 20.3407 7.82054 20.7313Z"
-                                                fill="currentColor"></path>
-                                        </g>
-                                    </svg>
-                                </button>
+                                <div eh-if="@(Model.Images.Count > 1)" class="media-controls" position="center">
+                                    <button aria-label="Previous slide" aria-controls=""
+                                            class="media-controls__btn media-controls__btn--previous button-unstyled--transparent button--unstyled flip-x">
+                                        <svg aria-hidden="true" focusable="false" class="icon icon-arrow"
+                                             viewBox="0 0 24 24" fill="none"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
+                                               stroke-linejoin="round"></g>
+                                            <g id="SVGRepo_iconCarrier">
+                                                <path
+                                                    d="M7.82054 20.7313C8.21107 21.1218 8.84423 21.1218 9.23476 20.7313L15.8792 14.0868C17.0505 12.9155 17.0508 11.0167 15.88 9.84497L9.3097 3.26958C8.91918 2.87905 8.28601 2.87905 7.89549 3.26958C7.50497 3.6601 7.50497 4.29327 7.89549 4.68379L14.4675 11.2558C14.8581 11.6464 14.8581 12.2795 14.4675 12.67L7.82054 19.317C7.43002 19.7076 7.43002 20.3407 7.82054 20.7313Z"
+
+                                                    fill="currentColor"></path>
+                                            </g>
+                                        </svg>
+                                    </button>
+                                    <button aria-label="Next slide"
+                                            class="media-controls__btn media-controls__btn--next button-unstyled--transparent button--unstyled ">
+                                        <svg aria-hidden="true" focusable="false" class="icon icon-arrow"
+                                             viewBox="0 0 24 24" fill="none"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
+                                               stroke-linejoin="round"></g>
+                                            <g id="SVGRepo_iconCarrier">
+                                                <path
+                                                    d="M7.82054 20.7313C8.21107 21.1218 8.84423 21.1218 9.23476 20.7313L15.8792 14.0868C17.0505 12.9155 17.0508 11.0167 15.88 9.84497L9.3097 3.26958C8.91918 2.87905 8.28601 2.87905 7.89549 3.26958C7.50497 3.6601 7.50497 4.29327 7.89549 4.68379L14.4675 11.2558C14.8581 11.6464 14.8581 12.2795 14.4675 12.67L7.82054 19.317C7.43002 19.7076 7.43002 20.3407 7.82054 20.7313Z"
+                                                    fill="currentColor"></path>
+                                            </g>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
-                            <!--TODO: aria-hidden on individual slides if not in the focus? (all of them but one currently displayed)-->
-                            <div class="slideshow__slides">
-                                @foreach (var img in Model.Images)
-                                {
-                                    <div
-                                        class="slideshow__slide product-media-container media-fit product-media-container--image">
-                                        <div class="product-media">
-                                            <img class="product-media__image" loading="eager"
-                                                 fetchpriority="auto"
-                                                 src="@img.Url"
-                                                 max-src-width="3840"
-                                                 min-src-width="300"
-                                                 tol=".40"
-                                                 alt="@img.Alt"/>
-                                        </div>
-                                    </div>
-                                    //TODO: TEMP: process only one image until the gallery component is done.
-                                    break;
-                                }
-                            </div>
-                        </div>
-                    </div>
+                        </media-gallery>
+                  
+
                 </div>
-                <!---->
             </div>
-
-
+            <!---->
             <div class="product-card__main-content">
 
 
-                <p eh-if="@(parent.ShowBrand && Model.Brand != null)" class="product-card__ribbon-text text-sm mb-1"><span
+
+                <p eh-if="@(parent.ShowBrand && Model.Brand != null)"
+                   class="product-card__ribbon-text text-sm mb-2">
+                    <span
                         class="visually-hidden">Brand:</span>@Model.Brand.Name
                 </p>
 
 
                 <div class="paragraph mb-1">
                     <h2 class="product-card__heading m-0">
-                        <a href="@Model.SeName" class="product-card__link">
-                            @Model.Name
-                        </a>
+                        @Model.Name
                     </h2>
                 </div>
-                
+
                 <div eh-if="@(parent.ShowRating && Model.TotalReviews > 0)" class="rating">
                     @{
                         var ratingPercent = Model.RatingSum / (decimal)Model.TotalReviews;
                         var roundRating = decimal.Round(ratingPercent, 1);
-                        Console.WriteLine();
                     }
                     <div role="img" aria-label="@(roundRating) out of 5.0 stars."
                          class="rating__star-container inline-block align-middle">
@@ -190,12 +199,13 @@
                 </div>
 
                 <p class="price mt-2">
-                    
+
                     <span class="price__current">
                         <span class="visually-hidden">Sale price
                         </span>@Html.Raw(price.FinalPrice)
                     </span>
-                    <s eh-if="price.Saving.HasSaving" class="price__regular"><span
+                    <s eh-if="price.Saving.HasSaving" class="price__regular">
+                        <span
                             class="visually-hidden">Old price</span>@Html.Raw(price.Saving.SavingPrice)</s>
                 </p>
 
@@ -217,16 +227,19 @@
             </div>
 
             <div class="card__cta">
-                <div class="product-form">
-                    <form method="post" action="cart/add">
-                        <button class="button-secondary w-full">
+                <product-form>
+                    <form method="post" asp-route-productId="@Model.Id"
+                          asp-action="@nameof(ShoppingCartController.AddProductSimple)" asp-controller="ShoppingCart" class="js-product-form">
+                        <button name="add" class="button-secondary w-full">
                             <span class="cta-button-text">Add to Cart</span>
                         </button>
                     </form>
-                </div>
+                </product-form>
             </div>
         </div>
 
 
     </div>
+
+
 </li>   

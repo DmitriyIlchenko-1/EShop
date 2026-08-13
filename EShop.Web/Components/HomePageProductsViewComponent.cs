@@ -30,7 +30,7 @@ public class HomePageProductsViewComponent : BaseViewComponent
             .Products.AsNoTracking()
             .Where(x => x.IsPublished)
             .Where(x => x.ShowOnHomePage)
-            .OrderBy(x => x.HomePageDisplayOrder)
+            .OrderBy(x => x.HomePageDisplayOrder)  
             .SelectSummaryOnly()
             .ToListAsync();
 

@@ -274,17 +274,6 @@ public class DataSeeder
                     IsActive = true,
                     EmailConfirmed = true,
                     SecurityStamp = "",
-                    ShippingAddress= new Address
-                    {
-                        FirstName = "John",
-                        LastName = "Doe",
-                        PhoneNumber = "555-0101",
-                        AddressLine1 = "123 Main St",
-                        AddressLine2 = "Apt 4B",
-                        ZipCode = "90210",
-                        CreatedOnUtc = DateTime.UtcNow,
-                        CityId = 12
-                    },
                     Addresses = new List<Address>()
                     {
                         new Address
@@ -474,7 +463,7 @@ public class DataSeeder
                     IsAvailable = true,
                     IsPublished = true,
                     ShowOnHomePage = true,
-                    AttributeCombinationRequired = true,
+                    AttributeCombinationRequired = Random.Shared.Next() % 2 == 0,
                     DisplayStockQuantity = true,
                     ApprovedReviewCount = approvedReviewCount,
                     ApprovedRatingSum = approvedRatingSum,
@@ -487,7 +476,7 @@ public class DataSeeder
                     Height = (decimal)new Random().NextDouble() * 5,
                     Width = (decimal)new Random().NextDouble() * 5,
                     Length = (decimal)new Random().NextDouble() * 5,
-                    StockQuantity = new Random().Next(0, 50),
+                    StockQuantity = new Random().Next(15, 50),
                     Brands = new List<ProductBrand>()
                     {
                         new ProductBrand
@@ -1032,7 +1021,7 @@ public class DataSeeder
                         ProductId = product.Id,
                         ProductAttributeId = attribute.Id,
                         DisplayOrder = new Random().Next(1, 4),
-                        IsRequired = attribute.Name == "Color", // Color is always required,
+                        IsRequired = new Random().Next() % 2 == 0,
                         IsActive = true,
                         AttributeControlType = attribute.Name == "Color"
                             ? AttributeControlType.Swatch
@@ -1084,7 +1073,7 @@ public class DataSeeder
 
     private async Task SeedCombinationsAsync()
     {
-        var products = _dbContext.Products.ToList();
+        var products = _dbContext.Products.Where(x => x.AttributeCombinationRequired).ToList();
         var productVariantAttributes = _dbContext
             .ProductVariantAttributes.Include(x => x.ProductAttribute)
             .Include(x => x.ProductVariantAttributeValues)

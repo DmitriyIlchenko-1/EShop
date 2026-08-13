@@ -234,7 +234,6 @@ p {
 );
     background-size: 300% 100%;
     border: none;
-    font: inherit;
     margin-block: 0;
     transition: background-position .4s ease-out;
     cursor: pointer;
@@ -242,7 +241,7 @@ p {
     outline-offset: 3px;
     padding-block: var(--button-padding-block);
     padding-inline: var(--button-padding-inline);
-    line-height: normal;
+    text-align: var(--text-align);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -315,13 +314,12 @@ button {
     font-size: var(--font-body--size);
 }
 
-.icon-button {
+.interactive-button {
     display: flex;
     align-items: center;
     justify-content: center;
     width: var(--minimum-touch-target);
     height: var(--minimum-touch-target);
-    background: var(--icon-bg-color), var(--color-background);
     color: var(--icon-color, var(--color-foreground));
 }
 
@@ -329,14 +327,18 @@ button {
     border-radius: var(--border-radius-sm);
 }
 
-.icon-button:hover {
+.interactive-button:hover {
     cursor: pointer;
 }
 
 .icon {
+    --size: var(--icon-size-sm);
     pointer-events: none;
     aspect-ratio: 1;
-    width: var(--icon-size-sm);
+    width: var(--size);
+}
+.icon--lg{
+    --size: var(--icon-size-lg);
 }
 
 .field__button {
@@ -991,7 +993,7 @@ Defining margins as columns lets us use background images that will display acro
 .overlay {
     position: absolute;
     inset: 0;
-    z-index: var(--overlay-layer);
+    z-index: var(--layer-overlay);
     pointer-events: none;
 }
 
@@ -1000,14 +1002,17 @@ Defining margins as columns lets us use background images that will display acro
 }
 
 .overlay--nav {
+    z-index: var(--layer-window-overlay);
+}
+
+.overlay--fixed{
     position: fixed;
     visibility: hidden;
     opacity: 0;
     transition: visibility linear .4s, opacity .4s ease-in-out;
-
 }
 
-.overlay--nav.is-visible {
+.overlay--fixed.is-visible {
     visibility: visible;
     opacity: 1;
     pointer-events: initial;
@@ -1048,6 +1053,35 @@ Defining margins as columns lets us use background images that will display acro
 
 :is(.animate-arrow:hover, .animate-arrow:focus-visible) .icon-caret {
     transform: scale(1.2);
+}
+
+.animate-close .icon-close {
+    transition: transform .2s ease
+}
+
+:is(.animate-close:hover, .animate-close:focus-visible) .icon-close {
+    transform: scale(1.07);
+}
+
+
+.inset-0 {
+    inset: 0;
+}
+
+.bottom-0 {
+    bottom: 0;
+}
+
+.left-0 {
+    left: 0;
+}
+
+.right-0 {
+    right: 0;
+}
+
+.top-0 {
+    top: 0;
 }
 
 .visually-hidden:not(:focus):not(:active) {
@@ -1251,23 +1285,16 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
     text-decoration: none; /**/
 }
 
-.resource-list__item:has(.product-card .product-card__link:focus-visible) {
-    outline: var(--focus-outline-width) var(--focus-outline-style) var(--focus-outline-color);
-    outline-offset: var(--focus-outline-offset);
-}
-
 
 .product-card {
     position: relative;
     height: 100%;
 }
 
-/*TODO: I remove the abs for now while debuging*/
-.product-card__link::after {
-    content: "";
-    /*  position: absolute;
-      inset: 0;
-      z-index: var(--layer-flat);*/
+
+.product-card__link {
+    position: absolute;
+    inset: 0;
 }
 
 .product-grid__card {
@@ -1275,13 +1302,7 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
     flex-flow: column nowrap;
     text-decoration: none;
     color: var(--color, var(--color-foreground));
-    overflow: hidden;
-    padding-block: 16px;
     border-radius: var(--product-card-corner-radius);
-
-    @media (width > 830px) {
-        padding-block: 10px;
-    }
 }
 
 
@@ -1378,16 +1399,14 @@ In the case of titles (headings), we want to you the text-wrap: balance value so
 
 /*|| MEDIA CONTROLS*/
 
-.media-gallery__controls {
-    position: absolute;
-    inset: 0;
-    z-index: var(--layer-overlay);
-    mix-blend-mode: difference;
-}
 
 .media-controls {
     display: flex;
     pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: var(--layer-heightened);
+    mix-blend-mode: difference;
 }
 
 .media-controls[position='center'] {
@@ -2024,20 +2043,20 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     color: var(--alert-text-color);
     padding-inline: var(--padding-xl);
     padding-block: var(--padding-lg);
-    border: 1px solid rgb(var(--error-text-color-rgb) / .2);
-    width: fit-content;
+    border: 1px solid var(--alert-border-color);
 }
 
 .alert--error {
-    --alert-bg-color: var(--error-bg-color);
-    --alert-text-color: var(--error-text-color);
+    --alert-bg-color: hsla(var(--color-error-h), var(--color-error-s), var(--color-error-l), .2);
+    --alert-text-color: var(--color-error-darker);
+    --alert-border-color: hsla(var(--color-error-darker-h), var(--color-error-darker-s), var(--color-error-darker-l), .4);
 }
 
- 
+
 .checkout__address-control-container .field-validation-error {
     margin-block-start: var(--margin-xs);
 }
- 
+
 
 .checkout__new-address .button-secondary[name='add'] {
     padding-block: 0;
@@ -2148,10 +2167,11 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     padding-block: var(--padding-sm);
     background-color: rgb(var(--color-foreground-rgb), .05);
     border-radius: var(--border-radius-md);
-    @media screen and (width < 1024px){
+    @media screen and (width < 1024px) {
         margin-block-start: var(--margin-xl);
     }
     @media screen and (width >= 1024px) {
+        align-self: flex-start;
         padding-inline: var(--padding-xl);
         padding-block: var(--padding-lg);
         position: sticky;
@@ -2162,6 +2182,9 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 
 .checkout__main-flow {
     @media screen and (width >= 1024px) {
+        display: grid;
+        grid-template-rows: 1fr auto;
+        row-gap: var(--gap-lg);
         position: relative;
         padding-inline: var(--padding-2xl);
     }
@@ -2208,7 +2231,6 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     margin-block-start: var(--margin-3xl);
 }
 
- 
 
 .checkout__cart-items {
     padding-block: var(--padding-md);
@@ -2218,12 +2240,12 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     margin-block-start: var(--margin-xl);
 }
 
-.checkout__order-data-summary-container{
-    
-   @media screen and (width < 1024px) {
-       max-width: var( --checkout-main-flow-inline-size);
-       margin-inline: auto;
-   }
+.checkout__order-data-summary-container {
+
+    @media screen and (width < 1024px) {
+        max-width: var(--checkout-main-flow-inline-size);
+        margin-inline: auto;
+    }
     border: 1px solid rgb(var(--color-foreground-rgb), .3);
     border-radius: var(--border-radius-sm);
     padding: var(--padding-lg);
@@ -2474,6 +2496,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     column-gap: 12rem;
     row-gap: var(--gap-sm);
 }
+
 .account-order-description, .account__order-actions {
     padding: var(--padding-md);
 }
@@ -2487,14 +2510,14 @@ to make it sit where it sits now. It just makes it easier to place the square - 
     color: var(--color-white);
 }
 
-.account__edit-button{
+.account__edit-button {
     border: 1px solid transparent;
 }
-.account__edit-button:is(:hover, :focus-visible) {
-    background-color: hsla(var(--color-contrast-higher-h), var(--color-contrast-higher-s),var(--color-contrast-higher-l), .15);
-    border-color:  hsla(var(--color-contrast-higher-h), var(--color-contrast-higher-s),var(--color-contrast-higher-l), .2);
-}
 
+.account__edit-button:is(:hover, :focus-visible) {
+    background-color: hsla(var(--color-contrast-higher-h), var(--color-contrast-higher-s), var(--color-contrast-higher-l), .15);
+    border-color: hsla(var(--color-contrast-higher-h), var(--color-contrast-higher-s), var(--color-contrast-higher-l), .2);
+}
 
 
 /*ORDER DETAILS PAGE*/
@@ -2543,5 +2566,77 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 
 }
 
+
+.drawer {
+    --drawer-bg: var(--color-bg);
+    --drawer-border-radius: var(--border-radius, var(--border-radius-md));
+    position: fixed;
+    z-index: var(--layer-menu-drawer);
+    max-width: 540px;
+    height: 100vh;
+    visibility: hidden;
+    transform: translate3d(100%, 0, 0);
+    transition: visibility .7s, transform .7s cubic-bezier(.19, 1, .22, 1);
+    @media screen and (width <= 769px) {
+        top: auto;
+        bottom: 0px;
+        height: calc(100dvh - 100px);
+        transform: translate3d(0, 100%, 0);
+    }
+    background-color: var(--drawer-bg);
+}
+
+.drawer[open] {
+    visibility: visible;
+    transform: translateZ(0);
+    transition: visibility 0s, transform .7s cubic-bezier(.19, 1, .22, 1);
+
+}
+
+.drawer__content {
+    overflow: scroll;
+
+}
+
+.cart-drawer {
+    --cart-drawer-padding: var(--padding-md) var(--padding-xl);
+    --card-drawer-padding-desktop: var(--padding-xl) var(--padding-2xl);
+}
+
+.cart-drawer__header {
+    border-radius: var(--drawer-border-radius);
+    /*position: sticky;*/
+    /*top: 0;*/
+    /*z-index: var(--layer-sticky);*/
+}
+
+.cart-drawer__header, .cart-drawer__summary, .cart-drawer__content {
+    padding: var(--cart-drawer-padding);
+    @media screen and (width >= 769px) {
+        padding: var(--card-drawer-padding-desktop);
+    }
+}
+
+
+.drawer__content.drawer__content--flex{
+    display: flex;
+    flex-direction: column;
+}
+.drawer__content.drawer__content--flex > .cart-drawer__content {
+    display: flex;
+    flex-grow: 1;
+}
+.cart-drawer__summary {
+    position: sticky;
+    top: 0;
+    background-color: var(--drawer-bg);
+    border-block: 1px solid var(--color-contrast-lower);
+    padding-block-end: var(--padding-3xl);
+
+    &:empty {
+        display: none;
+    }
+}
+ 
 
  

@@ -9,6 +9,7 @@ using EShop.Core.Platform.Modules;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Data;
 using EShop.Infrastructure.Utilities;
+using EShop.Web.Factories;
 using EShop.Web.Models.Checkout;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -18,37 +19,20 @@ namespace EShop.Web.Controllers;
 public partial class CheckoutHelper
 {
     private readonly IWorkContext _workContext;
-    private readonly ApplicationDbContext _dbContext;
     private readonly ISession _session;
-    private readonly IAddressService _addressService;
-    private readonly ICityService _cityService;
-    private readonly IShoppingCartService _shoppingCartService;
+    private readonly IAddressModelFactory _addressModelFactory;
     private readonly IPaymentProviderManager _paymentProviderManager;
-    private const string UserAddressesCacheKey = "user:addresses:{0}";
 
-    public CheckoutHelper(IWorkContext workContext, IAddressService addressService, IHttpContextAccessor contextAccessor,
-        ApplicationDbContext dbContext, ICityService cityService, IPaymentProviderManager paymentProviderManager, IShoppingCartService shoppingCartService)
+    public CheckoutHelper(IWorkContext workContext, IHttpContextAccessor contextAccessor,
+        IPaymentProviderManager paymentProviderManager, IAddressModelFactory addressModelFactory)
     {
         _workContext = workContext;
-        _addressService = addressService;
         _session = contextAccessor.HttpContext?.Session;
-        _dbContext = dbContext;
-        _cityService = cityService;
         _paymentProviderManager = paymentProviderManager;
-        _shoppingCartService = shoppingCartService;
+        _addressModelFactory = addressModelFactory;
     }
 
-    public virtual async Task<CheckoutModel> PrepareCheckoutModelAsync(ShoppingCart cart)
-    {
-        Guard.NotNull(cart);
-        var model = new CheckoutModel();
-        //TODO: when we first go to checkout and we do have an existing address, we don't (do we???) want to populate NewAddress with the user's fields cuz there's no need for it. We can do this when we click the add btn to display the form to add a new address. Another thing is do we need to refetch the data (populateWithUserData:true) for the new address every time we click the add btn? 
-        model.CheckoutShippingAddressModel = await PrepareShippingAddressModelAsync(cart, false);
-        return model;
-    }
-
-    public virtual async Task<CheckoutShippingAddressModel> PrepareShippingAddressModelAsync(ShoppingCart cart,
-        bool prepopulateWithUserData = false,  bool disableAddressBaseMapping = false)
+    public virtual async Task<CheckoutShippingAddressModel> PrepareShippingAddressModelAsync(ShoppingCart cart)
     {
         Guard.NotNull(cart);
         var user = _workContext.CurrentUser;
@@ -56,60 +40,17 @@ public partial class CheckoutHelper
         foreach (var address in user.Addresses.OrderBy(x => x.Id))
         {
             var addressModel = new AddressModel();
-            await PrepareAddressModelAsync(addressModel, address);
+            await _addressModelFactory.PrepareAddressModelAsync(addressModel, address);
             model.ExistingAddresses.Add(addressModel);
         }
-        
-        await PrepareAddressModelAsync(model.NewAddress, null, prepopulateWithUserData, disableAddressBaseMapping);
+
+        model.NewAddress = new AddressModel();
+        await _addressModelFactory.PrepareAddressModelAsync(model.NewAddress,
+            null,
+            true, true);
         return model;
     }
 
-
-    public virtual async Task PrepareAddressModelAsync(AddressModel model, Address address, 
-        bool prepopulateWithUserData = false, bool disableAddressBaseMapping = false)
-    {
-        Guard.NotNull(model);
-        var user = _workContext.CurrentUser;
-        if (address != null && !disableAddressBaseMapping)
-        {
-            model.Id = address.Id;
-            model.Selected = user.ShippingAddressId == address.Id;
-            model.AddressString = address.ToString();
-            model.FirstName = address.FirstName;
-            model.LastName = address.LastName;
-            model.PhoneNumber = address.PhoneNumber;
-            model.AddressLine1 = address.AddressLine1;
-            model.AddressLine2 = address.AddressLine2;
-            model.ZipCode = address.ZipCode;
-            model.CityId = address.CityId.HasValue ? address.CityId.Value : 0;
-        }
-        else if (prepopulateWithUserData)
-        {
-            if (!disableAddressBaseMapping)
-            {
-                model.FirstName = user.FirstName;
-                model.LastName = user.LastName;
-                model.PhoneNumber = user.PhoneNumber;
-            }
-
-            var cities = await _cityService.GetAllAsync();
-            model.AvailableCities.Add(new SelectListItem()
-            {
-                Text = "Select city",
-                Value = "0",
-            });
-
-            foreach (var city in cities)
-            {
-                model.AvailableCities.Add(new SelectListItem()
-                {
-                    Text = city.Name,
-                    Value = city.Id.ToString(),
-                    Selected = model.CityId == city.Id
-                });
-            }
-        }
-    }
 
     public virtual CheckoutPaymentMethodModel PreparePaymentModelAsync()
     {
@@ -142,7 +83,7 @@ public partial class CheckoutHelper
         var user = _workContext.CurrentUser;
         var model = new CheckoutDataSummaryModel();
         var shippingAddress = user.ShippingAddress;
-        await PrepareAddressModelAsync(model.ShippingAddress, shippingAddress);
+        await _addressModelFactory.PrepareAddressModelAsync(model.ShippingAddress, shippingAddress);
 
         if (_session != null)
         {

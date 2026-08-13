@@ -18,6 +18,6 @@ public class AntiforgeryViewComponent : BaseViewComponent
         var hasStarted = HttpContext.Response.HasStarted;
         var tokenSet = hasStarted ? _antiforgery.GetTokens(HttpContext) 
             : _antiforgery.GetAndStoreTokens(HttpContext);
-        return HtmlContent($"<meta name='csrf-token' content='{tokenSet.RequestToken}'");
+        return HtmlContent($"<meta name='csrf-token' content='{tokenSet.RequestToken}'/>");
     }
 }

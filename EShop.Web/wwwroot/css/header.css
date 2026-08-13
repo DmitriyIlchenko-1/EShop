@@ -16,7 +16,7 @@
 .header-section:has(> #header-component[sticky="always"]) {
     position: sticky;
     top: -1px; /*1. */
-    z-index: var(--layer-menu-drawer);
+    z-index: var(--layer-header-menu);
 }
 
 

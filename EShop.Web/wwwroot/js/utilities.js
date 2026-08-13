@@ -1,6 +1,7 @@
 /*
 * TODO: temp. move to the .cshtml to get the values from the settings / theme variables.
 * */
+import {Notyf} from "../lib/notyf/notyf.es.js";
 
 window.theme = {
     mediaQueries: {
@@ -118,5 +119,29 @@ export function getAntiforgeryToken() {
         .querySelector(`meta[name="csrf-token"]`)
         .getAttribute('content');
 }
+
+export function getElementHtml(html, selector) {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    const el = template.content.querySelector(selector);
+    return el?.innerHTML ?? '';
+}
+
+
+export const notyf = new Notyf({
+    duration: 5000,
+    dismissible: true,
+});
+
+export function notifySuccess(msg) {
+    if(msg === typeof(String) && !msg) return;
+    notyf.success(msg);
     
-    
+}
+
+export function notifyError(msg) {
+    if(msg === typeof(String) && !msg) return;
+    notyf.error(msg);
+}
+ 
+ 

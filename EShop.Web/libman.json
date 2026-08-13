@@ -22,6 +22,16 @@
       "provider": "jsdelivr",
       "library": "notyf@3.10.0",
       "destination": "wwwroot/lib/notyf"
+    },
+    {
+      "provider": "unpkg",
+      "library": "tabbable@6.5.0",
+      "destination": "wwwroot/lib/tabbable"
+    },
+    {
+      "provider": "unpkg",
+      "library": "focus-trap@8.2.2",
+      "destination": "wwwroot/lib/focus-trap"
     }
   ]
 }

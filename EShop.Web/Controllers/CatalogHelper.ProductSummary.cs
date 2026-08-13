@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Security.Policy;
 using EShop.Core.Catalog.Attributes.Domain;
-
 using EShop.Core.Catalog.Brands.Domain;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Products;
@@ -96,9 +95,9 @@ public partial class CatalogHelper
             Id = product.Id,
             Name = product.Name,
             SeName = seName,
-            DetailUrl = _urlHelper.RouteUrl("Product", new {SeName = seName})
+            DetailUrl = _urlHelper.RouteUrl("Product", new { SeName = seName })
         };
-        
+
 
         // var labels = await lazyContext.ProductLabels.GetOrLoadAsync(product.Id);
         // foreach (var productLabel in labels)
@@ -152,7 +151,8 @@ public partial class CatalogHelper
 
         if (settings.MapBrands)
         {
-            var productBrand = (await ctx.BatchProductContext.ProductBrands.GetOrLoadAsync(product.Id)).FirstOrDefault();
+            var productBrand =
+                (await ctx.BatchProductContext.ProductBrands.GetOrLoadAsync(product.Id)).FirstOrDefault();
             if (productBrand != null)
             {
                 item.Brand = await PrepareBrandSummaryModelAsync(productBrand.Brand);
@@ -176,7 +176,7 @@ public partial class CatalogHelper
         }
 
         item.DeliveryTimeModel = await PrepareDeliveryTimeModelAsync(product, settings);
-       
+
         if (product.IsNew(_catalogSettings))
         {
             item.ProductLabels.Add(new ProductLabelModel()
@@ -204,7 +204,7 @@ public partial class CatalogHelper
             Id = product.DeliveryTimeId ?? 0,
             ShowDeliveryTime = settings.ShowDeliveryTime,
         };
-        
+
         if (model.ShowDeliveryTime)
         {
             var deliveryTime = await _deliveryTimeService.GetDeliveryTimeAsync(model.Id);
@@ -225,7 +225,8 @@ public partial class CatalogHelper
         {
             if (product.StockQuantity > 0)
             {
-                model.StockAvailability = string.Format(CatalogMessages.Product.StockAvailability, product.StockQuantity);
+                model.StockAvailability =
+                    string.Format(CatalogMessages.Product.StockAvailability, product.StockQuantity);
             }
             else
             {
@@ -419,10 +420,7 @@ public partial class CatalogHelper
 
         model.Id = productBrand.Id;
         model.Name = productBrand.Name;
-        model.SeName = _urlService
-            .GetActiveSlugAsync(productBrand.Id, productBrand.GetEntityName())
-            .GetAwaiter()
-            .GetResult();
+        model.SeName = await _urlService.GetActiveSlugAsync(productBrand.Id, productBrand.GetEntityName());
 
         return model;
     }
@@ -522,8 +520,6 @@ public partial class CatalogHelper
             .ToListAsync();
         return imageModels;
     }
-    
-     
 
 
     public virtual ProductSummaryMappingSettings GetProductSummaryMappingSettings(

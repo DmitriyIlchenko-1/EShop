@@ -1,10 +1,14 @@
+@using EShop.Infrastructure.Extensions
+@using EShop.Web.Components
+@using EShop.Web.Controllers
 <!DOCTYPE html>
 <html lang="en-US" class="js">
 <head>
     <meta charset="utf-8"/>
-    @{ 
-        await Component.InvokeAsync("Antiforgery");
-    }
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+    @await Component.InvokeAsync("Antiforgery")
+
+
     <title>@ViewBag.Title</title>
     <link href="~/css/main.css" rel="stylesheet" type="text/css"/>
     <link href="~/css/hero.css" rel="stylesheet" type="text/css"/>
@@ -21,19 +25,20 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
-
+    <script type="module" src="~/lib/notyf/notyf.es.js"></script>
+    <script type="module" src="~/js/utilities.js"></script>
     <script src="~/lib/jquery/jquery.min.js"></script>
     <script src="~/js/eshop.scrollto.js"></script>
     <script src="~/js/critical.js" type="module"></script>
     <script src="~/js/header.js" type="module"></script>
     <script src="~/js/main.js" type="module"></script>
-    <script src="~/js/utilities.js" type="module"></script>
     <script type="module" src="~/js/variant-selector.js"></script>
-    <script type="module" src="~/js/product-form.js"></script>
+    <script type="module" src="~/js/cart-form.js"></script>
     <script type="module" src="~/js/media-gallery.js"></script>
     <script type="module" src="~/js/cart-items.js"></script>
     <script type="module" src="~/js/checkout-flow.js"></script>
-
+    <script type="module" src="~/js/cart-drawer.js"></script>
+    <script type="module" src="~/js/product-form.js"></script>
 
 
 
@@ -41,7 +46,6 @@
     <!--Font imports-->
     <partial name="_FontImports"/>
 
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 
     <style>
 
@@ -104,7 +108,7 @@
 
 
             --product-thumbnail-bagde-offset: .4rem;
-            
+
             /*Borders*/
             --style-border-radius-buttons: 10px; /*from settings*/
 
@@ -387,8 +391,8 @@
 
 
             /*Alert colors*/
-            --error-bg-color-rgb:252 237 238;
-            --error-text-color-rgb:180 12 28;
+            --error-bg-color-rgb: 252 237 238;
+            --error-text-color-rgb: 180 12 28;
             --success-bg-color-rgb: 232 246 234;
             --success-text-color-rgb: 44 126 63;
             --info-bg-color-rgb: 228 237 250;
@@ -399,6 +403,17 @@
             --success-text-color: rgb(44 126 63);
             --info-bg-color: rgb(228 237 250);
             --info-text-color: rgb(26 102 210);
+
+            --shadow-ring: 0 0 0 1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.05);
+            --shadow-xs: 0 0 0 1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.02), 0 1px 3px -1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.2);
+            --shadow-sm: 0 0.3px 0.4px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.02), 0 0.9px 1.5px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.045), 0 3.5px 6px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.09);
+            --shadow-md: 0 0.9px 1.25px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.025), 0 3px 5px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.05), 0 12px 20px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.09);
+            --shadow-lg: 0 1.2px 1.9px -1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.01), 0 3px 5px -1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.015), 0 8px 15px -1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.05), 0 28px 40px -1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.1);
+            --shadow-xl: 0 1.5px 2.1px -6px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.009), 0 3.6px 5.2px -6px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.0115), 0 7.3px 10.6px -6px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.0125), 0 16.2px 21.9px -6px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.025), 0 46px 60px -6px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.15);
+            /* inner-glow */
+            --inner-glow: inset 0 0 0.5px 1px hsla(var(--color-white-h), var(--color-white-s), var(--color-white-l), 0.075);
+            --inner-glow-top: inset 0 1px 0.5px hsla(var(--color-white-h), var(--color-white-s), var(--color-white-l), 0.075);
+
 
         }
 
@@ -456,9 +471,8 @@
             --color-selected-variant-hover-background: rgb(26 26 26 / 1.0);
             --color-selected-variant-hover-text: rgb(255 255 255 / 1.0);
             --color-selected-variant-hover-border: rgb(26 26 26 / 1.0);
-            
-            
-            
+
+
             /*updated theme color values*/
             --color-primary-darker-h: 250;
             --color-primary-darker-s: 84%;
@@ -643,12 +657,18 @@
 <main>
     @RenderBody()
 </main>
-<div class="overlay overlay--nav overlay--solid js-overlay" style="--overlay-layer: var(--layer-overlay) "></div>
+@{
+    if (Context.Request.RouteValues.GetValueOrDefaultAs<string>("action") 
+        != nameof(ShoppingCartController.Cart))
+    {
+        @await Component.InvokeAsync("CartDrawer")
+    }
+}
+<div class="overlay overlay--fixed overlay--solid js-overlay"></div>
 
 </body>
 @(await RenderSectionAsync("Scripts", false))
 <script src="~/lib/jquery-validate/jquery.validate.min.js"></script>
 <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
-<script  src="~/lib/notyf/notyf.min.js"></script>
 </html>

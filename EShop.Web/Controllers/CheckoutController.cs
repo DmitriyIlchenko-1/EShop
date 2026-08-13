@@ -4,16 +4,19 @@ using EShop.Core.Common.Services;
 using EShop.Core.Data;
 using EShop.Core.Data.Cart.Domain;
 using EShop.Core.Data.Cart.Services;
+using EShop.Core.Data.Extensions;
 using EShop.Core.Data.Orders.Extensions;
 using EShop.Core.Data.Payment;
 using EShop.Core.Data.Settings;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Identity.Extensions;
+using EShop.Core.Platform.Logging.Services;
 using EShop.Core.Platform.Modules;
 using EShop.Infrastructure.Data;
 using EShop.Infrastructure.Extensions;
 using EShop.Web.Common.Controllers;
+using EShop.Web.Mappers;
 using EShop.Web.Models.Checkout;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -34,9 +37,8 @@ public class CheckoutController : EShopBaseController
     private readonly PaymentSettings _paymentSettings;
 
     public CheckoutController(IShoppingCartService shoppingCartService, IWorkContext workContext,
-        CheckoutSettings checkoutSettings, IPaymentProviderManager paymentProviderManager,
-        IAddressService addressService, CheckoutHelper checkoutHelper, ApplicationDbContext db,
-        IOrderService orderService, PaymentSettings paymentSettings)
+        CheckoutSettings checkoutSettings, IPaymentProviderManager paymentProviderManager, CheckoutHelper checkoutHelper, ApplicationDbContext db,
+        IOrderService orderService, PaymentSettings paymentSettings, INotificationManager notificationManager)
     {
         _shoppingCartService = shoppingCartService;
         _workContext = workContext;
@@ -57,7 +59,7 @@ public class CheckoutController : EShopBaseController
         {
             return result.ActionResult;
         }
-        
+
         return RedirectToAction(nameof(ShippingAddress));
     }
 
@@ -71,7 +73,7 @@ public class CheckoutController : EShopBaseController
 
         var user = _workContext.CurrentUser;
         var cart = await _shoppingCartService.GetUserCartAsync(user);
-        var model = await _checkoutHelper.PrepareShippingAddressModelAsync(cart, true);
+        var model = await _checkoutHelper.PrepareShippingAddressModelAsync(cart);
         return View(model);
     }
 
@@ -93,7 +95,7 @@ public class CheckoutController : EShopBaseController
 
         user.ShippingAddress = address;
         await _db.SaveChangesAsync();
-        return RedirectToAction(nameof(PaymentList));
+        return RedirectToAction(nameof(SelectPaymentMethod));
     }
 
     [HttpPost, ActionName("ShippingAddress")]
@@ -109,21 +111,21 @@ public class CheckoutController : EShopBaseController
 
         if (ModelState.IsValid)
         {
-            // TODO: Use a mapper for this thing:
-            var newAddress = model.NewAddress.ToEntity();
-            user.ShippingAddress = newAddress;
-            user.Addresses.Add(newAddress);
+            var address = new Address();
+            model.NewAddress.ToAddress(address);
+            user.ShippingAddress = address;
+            user.Addresses.Add(address);
             await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(PaymentList));
+            return RedirectToAction(nameof(SelectPaymentMethod));
         }
 
 
         var cart = await _shoppingCartService.GetUserCartAsync(user);
-        model = await _checkoutHelper.PrepareShippingAddressModelAsync(cart, true, true);
+        model = await _checkoutHelper.PrepareShippingAddressModelAsync(cart);
         return View(model);
     }
 
-    public virtual async Task<IActionResult> PaymentList()
+    public virtual async Task<IActionResult> SelectPaymentMethod()
     {
         var result = await ValidateCheckoutFlowAsync();
         if (result.ActionResult != Empty)
@@ -132,7 +134,7 @@ public class CheckoutController : EShopBaseController
         }
 
         var model = _checkoutHelper.PreparePaymentModelAsync();
-        return View("PaymentList", model);
+        return View(model);
     }
 
     [HttpPost]
@@ -144,18 +146,14 @@ public class CheckoutController : EShopBaseController
             return result.ActionResult;
         }
 
-        if (paymentSystemName.IsEmpty())
-        {
-            return await PaymentList();
-        }
-
-        if (!_paymentProviderManager
+        if (paymentSystemName.IsEmpty() || !_paymentProviderManager
                 .GetPaymentMethodBySystemName(paymentSystemName)
                 .IsPaymentMethodActive(_paymentSettings))
         {
-            return await PaymentList();
+            var model = _checkoutHelper.PreparePaymentModelAsync();
+            return View(model);
         }
-
+        
         var session = HttpContext.Session;
         session.SetString("PaymentMethod", paymentSystemName);
         return RedirectToAction(nameof(PaymentInfo));
@@ -174,7 +172,7 @@ public class CheckoutController : EShopBaseController
         var paymentMethod = _paymentProviderManager.GetPaymentMethodBySystemName(paymentMethodName);
         if (paymentMethod == null || !paymentMethod.IsPaymentMethodActive(_paymentSettings))
         {
-            return RedirectToAction(nameof(PaymentList));
+            return RedirectToAction(nameof(SelectPaymentMethod));
         }
 
         if (paymentMethod.Proviver.SkipPaymentInfo)
@@ -198,7 +196,7 @@ public class CheckoutController : EShopBaseController
         return View(model);
     }
 
-    [HttpPost]
+    [HttpPost, ActionName("Confirm")]
     public virtual async Task<IActionResult> SaveOrder()
     {
         var validationFlowResult = await ValidateCheckoutFlowAsync();
@@ -215,12 +213,17 @@ public class CheckoutController : EShopBaseController
         var result = await _orderService.PlaceOrderAsync(paymentRequest);
         if (result.Succeeded)
         {
-            return RedirectToAction(nameof(Completed), new { orderId = result.Order.Id });
+            return RedirectToAction(nameof(Completed), new { orderId = result.Order!.Id });
         }
-
-        throw new NotImplementedException();
+        else
+        {
+            var model = new CheckoutConfirmModel();
+            model.SummaryModel = await _checkoutHelper.PrepareCheckoutDataSummaryModelAsync();
+            result.Errors.Each(error => model.Errors.Add(error));
+            return View(model);
+        }
     }
-    
+
 
     public virtual async Task<IActionResult> Completed(int orderId)
     {

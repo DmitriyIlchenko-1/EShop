@@ -1,4 +1,6 @@
-@model EShop.Web.Models.Account.AddressListModel
+@using EShop.Web.Common.TagHelpers
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model IEnumerable<EShop.Web.Models.Checkout.AddressModel>
 @{
     Layout = "_AccountLayout";
 }
@@ -6,11 +8,11 @@
 <div class="account__address-info">
     <h1 class="h3">Addresses</h1>
     <ul class="grid gap-y-lg gap-x-lg lg:grid-cols-2 list-unstyled">
-        @foreach (var item in Model.Addresses)
+        @foreach (var item in Model)
         {
             <li>
                 <div class="flex flex-col h-full border radius-sm">
-                    <div class="p-md">
+                    <div class="p-md flex-grow">
                         <h3 class="h5">@item.Fullname</h3>
                         <div class="flex-grow">
                             <dl>
@@ -31,7 +33,7 @@
                         <div class="flex items-center gap-md">
                             <form asp-action="DeleteAddress" method="post">
                                 <input type="hidden" value="@item.Id" name="Id"/>
-                                <button class="account__remove-button icon-button icon-button--round"
+                                <button class="account__remove-button interactive-button icon-button--round"
                                         aria-label="Remove address">
                                     <svg class="icon" aria-hidden="true" focusable="false"
                                          xmlns="http://www.w3.org/2000/svg"
@@ -42,7 +44,7 @@
                                     </svg>
                                 </button>
                             </form>
-                            <a class="account__edit-button icon-button icon-button--round"
+                            <a class="account__edit-button interactive-button icon-button--round"
                                aria-label="Edit address" asp-action="UpdateAddress" asp-route-id="@item.Id">
                                 <svg class="icon" aria-hidden="true" focusable="false"
                                      xmlns="http://www.w3.org/2000/svg" width="200" height="200"
@@ -52,8 +54,8 @@
                                 </svg>
                             </a>
                         </div>
-                        <div eh-if="true" class="badge badge--info">
-                            <p class="badge__message m-0">You default shipping address</p>
+                        <div eh-if="@item.IsDefault" class="badge badge--info">
+                            <p class="badge__message m-0">Your default shipping address</p>
                         </div>
                     </div>
                 </div>

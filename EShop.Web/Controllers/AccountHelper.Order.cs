@@ -14,6 +14,7 @@ using EShop.Core.Platform.Modules;
 using EShop.Core.Platform.Routing;
 using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
+using EShop.Web.Mappers;
 using EShop.Web.Models.Account;
 using EShop.Web.Models.Checkout;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,11 @@ public partial class AccountHelper
     private readonly IProductService _productService;
     private readonly CatalogHelper _catalogHelper;
     private readonly ICityService _cityService;
-    public AccountHelper(IWorkContext workContext, IDateTimeService dateTimeService, ApplicationDbContext db, IPaymentProviderManager paymentProviderManager, IUrlHelper urlHelper, IUrlService urlService, PerformanceSettings performanceSettings, IProductAttributeMaterializer attributeMaterializer, IProductService productService, CatalogHelper catalogHelper, ICityService cityService)
+
+    public AccountHelper(IWorkContext workContext, IDateTimeService dateTimeService, ApplicationDbContext db,
+        IPaymentProviderManager paymentProviderManager, IUrlHelper urlHelper, IUrlService urlService,
+        PerformanceSettings performanceSettings, IProductAttributeMaterializer attributeMaterializer,
+        IProductService productService, CatalogHelper catalogHelper, ICityService cityService)
     {
         _workContext = workContext;
         _dateTimeService = dateTimeService;
@@ -49,16 +54,9 @@ public partial class AccountHelper
         _cityService = cityService;
     }
 
-    public virtual async Task<OrderListModel> PrepareOrderListModelAsync()
+    public virtual async Task<OrderListModel> PrepareOrderListModelAsync(IEnumerable<Order> orders)
     {
-        var user = _workContext.CurrentUser;
         var model = new OrderListModel();
-        var orders = await _db
-            .Orders
-            .Where(x => x.UserId == user.Id)
-            .Include(x => x.OrderItems)
-            .AsNoTracking()
-            .ToListAsync();
         foreach (var order in orders)
         {
             var orderModel = PrepareOrderModelAsync(order);
@@ -78,21 +76,15 @@ public partial class AccountHelper
             OrderStatus = order.OrderStatus.ToString(),
             Subtotal = order.SubtotalRounded,
             PaymentMethodName = order.PaymentMethodSystemName,
-            AddressModel = new AddressModel()
-            {
-                Id = order.ShippingAddress.Id,
-                AddressLine1 = order.ShippingAddress.AddressLine1,
-                AddressLine2 = order.ShippingAddress.AddressLine2,
-                CityName = order.ShippingAddress.CityId.HasValue ? (await _cityService.GetByIdAsync(order.ShippingAddress.CityId.Value)).Name 
-                    : string.Empty,
-                FirstName = order.ShippingAddress.FirstName,
-                LastName = order.ShippingAddress.LastName,
-                PhoneNumber = order.ShippingAddress.PhoneNumber,
-                ZipCode = order.ShippingAddress.ZipCode,
-            }
         };
+        var addressModel = new AddressModel();
+        // simple property mapping
+        order.ShippingAddress.ToAddressModel(addressModel);
+        addressModel.CityName = order.ShippingAddress.CityId.HasValue 
+            ? (await _cityService.GetByIdAsync(order.ShippingAddress.CityId.Value)).Name : string.Empty;
+        model.AddressModel = addressModel;
         var context = new OrderDetailModelContext();
-        
+
         var products = order
             .OrderItems.Select(x => x.Product)
             .ToList();
@@ -106,16 +98,18 @@ public partial class AccountHelper
             .Where(x => productsIds.Contains(x.ProductId) && x.MainImage)
             .ToListAsync();
         context.MediaMap = medias.ToDictionary(x => x.ProductId, x => x);
-            
+
         var paymentProvider = _paymentProviderManager.GetPaymentMethodBySystemName(order.PaymentMethodSystemName);
-        model.PaymentMethodName = paymentProvider != null ? paymentProvider.Metadata.FriendlyName : order.PaymentMethodSystemName;
-      
+        model.PaymentMethodName = paymentProvider != null
+            ? paymentProvider.Metadata.FriendlyName
+            : order.PaymentMethodSystemName;
+
         if (_performanceSettings.AlwaysPrefetchUrlSlugs)
         {
             var productIds = products.Select(x => x.Id);
             await _urlService.PrefetchUrlRecordsAsync(nameof(Product), productIds);
         }
-       
+
         var batchContext = context.BatchContext = _productService.CreateProductBatchContext(products);
         await batchContext.Attributes.LoadAllAsync();
         await batchContext.ProductBrands.LoadAllAsync();
@@ -126,7 +120,7 @@ public partial class AccountHelper
 
         return model;
     }
-    
+
     protected virtual OrderModel PrepareOrderModelAsync(Order order)
     {
         var model = new OrderModel();
@@ -162,14 +156,14 @@ public partial class AccountHelper
         {
             model.Brand = await _catalogHelper.PrepareBrandSummaryModelAsync(productBrand.Brand);
         }
+
         return model;
     }
-    
+
     protected virtual async Task MapImageAsync(OrderItemModel model, OrderDetailModelContext ctx)
     {
         var mediaMap = ctx.MediaMap;
         //TODO: Do something to query a small copy of big files rather than simple let the browser query the widest image and resize it.
-        Guard.NotNull(model);
         if (mediaMap.TryGetValue(model.ProductId, out var mediaFile))
         {
             model.Image = (await _catalogHelper.PrepareProductImageModelAsync([mediaFile])).First();
@@ -179,7 +173,6 @@ public partial class AccountHelper
     public class OrderDetailModelContext
     {
         public IDictionary<int, ProductMedia> MediaMap { get; set; }
-        public ProductBatchContext BatchContext { get; set; }   
+        public ProductBatchContext BatchContext { get; set; }
     }
 }
-

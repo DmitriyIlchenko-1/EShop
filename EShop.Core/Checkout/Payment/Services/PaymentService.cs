@@ -1,5 +1,6 @@
  
 using EShop.Core.Checkout.Orders.Services;
+using EShop.Core.Data.Payment.Exceptions;
 using EShop.Core.Data.Settings;
 using EShop.Core.Platform.Modules;
 using EShop.Core.Platform.Modules.Payment;
@@ -22,11 +23,11 @@ public class PaymentService : IPaymentService
     {
         Guard.NotNull(request);
         var paymentMethod = _providerManager.GetProvider<IPaymentMethod>(request.PaymentMethodSystemName)
-                            ?? throw new InvalidOperationException("Specified payment method not found");
+                            ?? throw new PaymentException("Chosen payment method cannot be loaded");
 
         if (!paymentMethod.IsPaymentMethodActive(_paymentSettings))
         {
-            throw new InvalidOperationException("Chosen payment method is not active");
+            throw new PaymentException("Chosen payment method cannot be loaded");
         }
 
         return await paymentMethod.Proviver.ProcessPaymentAsync(request);

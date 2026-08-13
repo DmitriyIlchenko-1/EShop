@@ -211,6 +211,10 @@ public class ShoppingCartHelper
         {
             settings.MapBrands = false;
         }
+        else if (location == CartSummaryLocation.CartDrawer)
+        {
+            settings.MapBrands = false;
+        }
     }
 }
 
@@ -224,7 +228,8 @@ public class ShoppingCartModelMappingSettings
 public enum CartSummaryLocation
 {
     ShoppingCart,
-    CheckoutSummary
+    CheckoutSummary,
+    CartDrawer
 }
 
 public class ShoppingCartModelContext

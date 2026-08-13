@@ -11,8 +11,8 @@
           asp-action="@nameof(ShoppingCartController.AddProduct)" asp-controller="ShoppingCart">
         <div class="product-info__add-to-cart">
             <quantity-selector id="quantity-selector" class="quantity-selector">
-                <button tabindex="-1" aria-hidden="true" class="button button-unstyled quantity-minus"
-                        disabled="@addToCartDisabled">
+                <button type="button" aria-hidden="true" class="button button-unstyled quantity-minus"
+                        disabled="@addToCartDisabled" tabindex="-1">
 
                     <svg aria-hidden="true" focusable="false" class="icon-plus" width="15" height="15"
                          viewBox="0 0 24 24" fill="none"
@@ -33,9 +33,8 @@
                 </button>
                 <label class="visually-hidden" for="quantity">Enter quantity</label>
 
-                <input id="quantity" name="quantity" min="@Model.MinAddToCartNumber"
-                       max="@Model.MaxAddToCartNumber" type="number" disabled="@addToCartDisabled"/>
-                <button tabindex="-1" aria-hidden="true" class="button button-unstyled quantity-plus"
+                <input id="quantity" name="quantity" min="@Model.MinAddToCartNumber" max="@Model.MaxAddToCartNumber" type="number" disabled="@addToCartDisabled"/>
+                <button type="button"  tabindex="-1" aria-hidden="true" class="button button-unstyled quantity-plus"
                         disabled="@addToCartDisabled">
 
                     <svg aria-hidden="true" focusable="false" class="icon-minus" width="15" height="15"

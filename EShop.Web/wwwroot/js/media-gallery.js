@@ -99,21 +99,21 @@ class MediaGallery extends HTMLElement {
 
         // We get the left slide if a value before rounding is < 0.5 and the right one if >= 0.5. 
         const newIndex = Math.round(this.viewer.scrollLeft / this.viewerItemOffset);
-        console.log(`this.viewer.scrollLeft ${this.viewer.scrollLeft}`);
-        console.log(`this.viewerItemOffset: ${this.viewerItemOffset}`);
+        // console.log(`this.viewer.scrollLeft ${this.viewer.scrollLeft}`);
+        // console.log(`this.viewerItemOffset: ${this.viewerItemOffset}`);
 
         // The scroll event fires twice during a snap meaning the first time it fires, the index is the same. 
         // We do nothing the first time this method runs.
-        console.log(`handleScroll(): Has been called. A new index (newIndex) is ${newIndex}. The current one (this.currentIndex) is ${this.currentIndex}`);
+        // console.log(`handleScroll(): Has been called. A new index (newIndex) is ${newIndex}. The current one (this.currentIndex) is ${this.currentIndex}`);
         // This check sometimes also stops 'resizing' from calling 'this.setActiveMedia' during resizing.
         if (newIndex !== this.currentIndex) {
             const viewerItemOffset = this.visibleItems[1].offsetLeft - this.visibleItems[0].offsetLeft;
             // The event also fires during resize, which is when we don't need to take any action because resnap happens automatically, 
             // the same item that there was before resizing will still be in the view.
             // handleResize() changes viewerItemOffset during resizing so that this line still returns true.
-            console.log(`handleScroll(): Calculated viewerItemOffset is ${viewerItemOffset}. this.viewerItemOffset is ${this.viewerItemOffset}`);
+            // console.log(`handleScroll(): Calculated viewerItemOffset is ${viewerItemOffset}. this.viewerItemOffset is ${this.viewerItemOffset}`);
             if (viewerItemOffset === this.viewerItemOffset) {
-                console.log(`handleScroll() the most inner check has been passed`);
+                // console.log(`handleScroll() the most inner check has been passed`);
                 this.setActiveMedia(this.visibleItems[newIndex], false);
 
             }
@@ -126,9 +126,9 @@ class MediaGallery extends HTMLElement {
      * Called during resizing to change the value of 'viewerItemOffset' to prevent 'handleScroll()' from doing anything during resizing.
      */
     handleResize() {
-        const was = this.viewerItemOffset;
+        // const was = this.viewerItemOffset;
         this.viewerItemOffset = this.visibleItems[1].offsetLeft - this.visibleItems[0].offsetLeft;
-        console.log(`handleResize(): Has been called. A new viewerItemOffset is ${this.visibleItems[1].offsetLeft - this.visibleItems[0].offsetLeft}. Was ${was}`);
+        // console.log(`handleResize(): Has been called. A new viewerItemOffset is ${this.visibleItems[1].offsetLeft - this.visibleItems[0].offsetLeft}. Was ${was}`);
         /* We need to manually place the current thumb into the view if the thumb wasn't snapped to meaning it was activated without calling 'scrollTo()'. */
         if (this.thumbs) {
             this.checkThumbVisibility(this.currentThumb);

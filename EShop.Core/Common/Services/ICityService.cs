@@ -51,7 +51,6 @@ public class CityService : ICityService
                     .OrderBy(x => x.DisplayOrder)
                     .ThenBy(x => x.Name)
                     .ToArrayAsync();
-            },
-            new CacheEntryOptions(TimeSpan.FromHours(999)));
+            });
     }
 }

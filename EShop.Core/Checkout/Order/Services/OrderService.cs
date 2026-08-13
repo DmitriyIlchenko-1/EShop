@@ -7,12 +7,16 @@ using EShop.Core.Checkout.Orders.Domain;
 using EShop.Core.Common.Domain;
 using EShop.Core.Data;
 using EShop.Core.Data.Cart.Domain;
+using EShop.Core.Data.Cart.Exceptions;
 using EShop.Core.Data.Cart.Services;
+using EShop.Core.Data.Orders.Exceptions;
+using EShop.Core.Data.Payment.Exceptions;
 using EShop.Core.Data.Payment.Services;
 using EShop.Core.Data.Settings;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Core.Platform.Identity.Extensions;
+using EShop.Core.Platform.Logging.Services;
 using EShop.Core.Platform.Modules;
 using EShop.Core.Platform.Modules.Payment;
 using EShop.Infrastructure.Caching;
@@ -63,20 +67,21 @@ public class DefaultOrderService : IOrderService
     public virtual async Task<PlaceOrderResult> PlaceOrderAsync(ProcessPaymentRequest paymentRequest)
     {
         Guard.NotNull(paymentRequest);
-        if (paymentRequest.OrderGuid == Guid.Empty)
-        {
-            throw new InvalidOperationException("Order's Guid must not be empty in the passed PaymentRequestInfo");
-        }
-
-        OrderPlacementContext orderContext = new OrderPlacementContext();
-        PrepareUserDetailsAsync(orderContext);
-        await PrepareAndValidateShoppingCartAsync(orderContext);
-        PrepareAndValidateShippingDetailsAsync(orderContext);
-        await PrepareOrderTotalAsync(orderContext);
-        var paymentResult = await ProcessPaymentAsync(paymentRequest);
         var placeOrderResult = new PlaceOrderResult();
         try
         {
+            if (paymentRequest.OrderGuid == Guid.Empty)
+            {
+                //TODO: We've got to wrap this msg in an inner exception and display a user friendly msg instead.
+                throw new OrderException("Order's Guid must not be empty in the passed PaymentRequestInfo");
+            }
+
+            OrderPlacementContext orderContext = new OrderPlacementContext();
+            PrepareUserDetailsAsync(orderContext);
+            await PrepareAndValidateShoppingCartAsync(orderContext);
+            PrepareAndValidateShippingDetailsAsync(orderContext);
+            await PrepareOrderTotalAsync(orderContext);
+            var paymentResult = await ProcessPaymentAsync(paymentRequest);
             if (paymentResult.Succeeded)
             {
                 var order = await SaveOrderAsync(paymentRequest, paymentResult, orderContext);
@@ -154,7 +159,8 @@ public class DefaultOrderService : IOrderService
 
             var historyRecords = new List<DiscountUsageHistory>();
             foreach (var discount in ctx
-                         .CartSubtotal.ShoppingCartLines.Select(x => x.Subtotal.AppliedDiscount)
+                         .CartSubtotal.ShoppingCartLines
+                         .Select(x => x.Subtotal.AppliedDiscount)
                          .Where(x => x != null))
             {
                 historyRecords.Add(new DiscountUsageHistory()
@@ -169,7 +175,7 @@ public class DefaultOrderService : IOrderService
             {
                 _db.DiscountUsageHistories.AddRange(historyRecords);
             }
-            
+
             await _db.SaveChangesAsync();
         }
 
@@ -190,15 +196,8 @@ public class DefaultOrderService : IOrderService
     {
         if (!context.User.ShippingAddressId.HasValue)
         {
-            throw new InvalidOperationException("Shipping address must be specified to place order");
+            throw new ShoppingCartException("Shipping address must be specified to place order");
         }
-
-        if (context.User.ShippingAddressId == null)
-        {
-            throw new InvalidOperationException("Shipping address must be specified to place order");
-        }
-
-        //TODO: assing shipping address chosen through the <select> in the checkout.chtml view. 
         var shippingAddress = context.User.ShippingAddress;
         context.ShippingAddress = shippingAddress.Clone();
         context.ShippingStatus = ShippingStatus.NotShipped;
@@ -213,13 +212,13 @@ public class DefaultOrderService : IOrderService
             
         if (!cart.Items.Any())
         {
-            throw new InvalidOperationException("No items have been added to the cart to place the order");
+            throw new ShoppingCartException("No items have been added to the cart to place the order");
         }
 
         var warnings = await _shoppingCartService.ValidateShoppingCartAsync(cart);
         if (warnings.Any())
         {
-            throw new InvalidOperationException(string.Join(";", warnings));
+            throw new ShoppingCartException(string.Join(";", warnings));
         }
 
         foreach (var item in cart.Items)
@@ -228,7 +227,7 @@ public class DefaultOrderService : IOrderService
             warnings = await _shoppingCartService.ValidateShoppingCartItemAsync(item, combination);
             if (warnings.Any())
             {
-                throw new InvalidOperationException(string.Join(";", warnings));
+                throw new ShoppingCartException(string.Join(";", warnings));
             }
         }
     }

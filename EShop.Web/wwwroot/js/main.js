@@ -1,5 +1,6 @@
 import {ElementError, canHover, isDesktopBreakpoint, isMobileBreakpoint} from "./utilities.js";
 import {QuantitySelectorUpdateEvent} from "./events.js";
+import {createFocusTrap} from "../lib/focus-trap/index.js";
 
 /*TODO:
 *  1. Read about progressive einhansment. is showHideButton.removeAttribute('hidden'); all what's needed to be done?
@@ -107,7 +108,7 @@ class MainMenu extends HTMLElement {
     }
 
 
-    disconnectedCallback(){
+    disconnectedCallback() {
         window.removeEventListener('focusin', this.focusOutHandler);
         window.removeEventListener('on:breakpoint-change', this.breakpointChangeHandler);
     }
@@ -280,7 +281,9 @@ class MainMenu extends HTMLElement {
         console.log(`transition value passed is ${transition}`);
         this.mainContent.classList.remove('is-visible');
         this.mainToggle.setAttribute('aria-expanded', 'false');
-        document.body.classList.remove('overflow-hidden');
+        if (!document.getElementById('cart-drawer').hasAttribute('open')){
+            document.body.classList.remove('overflow-hidden');
+        }
         //if transition is true, handleMainContentTransition will remove .is-open after the transition's over.
         if (!transition) {
             console.log('remove(is-open)');
@@ -333,7 +336,9 @@ class MainMenu extends HTMLElement {
      */
     toggleOverlay(show) {
         this.overlayOpen = show;
+        this.overlay.classList.toggle('overlay--nav', show);
         this.overlay.classList.toggle('is-visible', show);
+
         if (show) {
             this.closeHandler = this.closeHandler || this.handleClose.bind(this);
 
@@ -544,7 +549,9 @@ class MainMenu extends HTMLElement {
 
 
         if (isDesktopBreakpoint() && !el.closest('.main-nav__child')) {
-            document.body.classList.remove('overflow-hidden');
+            if (!document.getElementById('cart-drawer').hasAttribute('open')){
+                document.body.classList.remove('overflow-hidden');
+            }
         }
     }
 
@@ -561,11 +568,12 @@ class QuantitySelector extends HTMLElement {
     constructor() {
         super();
         this.quantityInput = this.querySelector('input[type="number"]');
-        this.quantityInput.addEventListener('blur', this.setQuantity.bind(this));
+        this.quantityInput.addEventListener('change', this.setQuantity.bind(this));
         this.minusBtn = this.querySelector('.quantity-minus');
         this.plusBtn = this.querySelector('.quantity-plus');
         this.minusBtn.addEventListener('click', this.decreaseQuantity.bind(this));
         this.plusBtn.addEventListener('click', this.increaseQuantity.bind(this));
+        
         this.init();
     }
 
@@ -856,7 +864,7 @@ class ProductComparisonGrid extends HTMLElement {
 if (!customElements.get('product-comparison-grid')) {
     customElements.define('product-comparison-grid', ProductComparisonGrid);
 }
- 
+
 class AdvancedDisclosure extends HTMLElement {
     constructor() {
         super();
@@ -864,37 +872,100 @@ class AdvancedDisclosure extends HTMLElement {
         this.summary = this.querySelector('summary');
         this.maximizeOnLargeScreen = this.dataset.maximizeOnLargeScreen;
         const largeScreenWidth = Number.parseInt(this.dataset.largeScreenWidth);
-        if (!largeScreenWidth && this.maximizeOnLargeScreen){
+        if (!largeScreenWidth && this.maximizeOnLargeScreen) {
             this.largeScreenWidth = theme.mediaQueries.md;
-        }
-        else{
+        } else {
             this.largeScreenWidth = `(min-width:${largeScreenWidth}px)`;
         }
-        if (this.maximizeOnLargeScreen){
+        if (this.maximizeOnLargeScreen) {
             this.reset();
             this.handleReset = this.reset.bind(this);
             window.addEventListener('on:breakpoint-change', this.handleReset);
         }
-        
+
     }
 
-    disconnectedCallback(){
+    disconnectedCallback() {
         window.removeEventListener('on:breakpoint-change', this.handleReset);
     }
-    
-    
-    reset(){
-       const isLargeScreen = window.matchMedia(this.largeScreenWidth).matches;
-       this.disclosure.open = isLargeScreen;
-       if (isLargeScreen){
-           this.summary.setAttribute('tabindex', '-1');
-       }
-       else{
-           this.summary.removeAttribute('tabindex');
-       }
+
+
+    reset() {
+        const isLargeScreen = window.matchMedia(this.largeScreenWidth).matches;
+        this.disclosure.open = isLargeScreen;
+        if (isLargeScreen) {
+            this.summary.setAttribute('tabindex', '-1');
+        } else {
+            this.summary.removeAttribute('tabindex');
+        }
     }
 }
 
 if (!customElements.get('advanced-disclosure')) {
     customElements.define('advanced-disclosure', AdvancedDisclosure);
 }
+
+
+export class SideDrawer extends HTMLElement {
+    constructor() {
+        super();
+        this.overlay = document.querySelector('.js-overlay');
+        this.focusTrap = createFocusTrap('#cart-drawer', {
+            allowOutsideClick: true
+        });
+        this.handleFocus = (e) => {
+            if (e.key === 'Escape') {
+                this.close();
+            }
+        };
+        window.addEventListener('keyup', this.handleFocus);
+    }
+
+    disconnectedCallback(){
+        window.removeEventListener('keyup', this.handleFocus);
+    }
+
+    handleClick(e) {
+        if (e.target.matches('.drawer__close-btn') || e.target === this.overlay) {
+            this.close();
+        }
+    }
+
+    open(opener, callback) {
+        this.overlay.classList.add('is-visible');
+        document.body.classList.add('overflow-hidden');
+        this.setAttribute('open', '');
+        this.setAttribute('aria-hidden', 'false'); //need this?
+        this.opener = opener;
+        this.focusTrap.activate();
+
+        this.clickHandler = this.clickHandler || this.handleClick.bind(this);
+        this.addEventListener('click', this.clickHandler);
+        this.overlay.addEventListener('click', this.clickHandler);
+
+        // transitionEnd?
+    }
+
+    close() {
+        this.overlay.classList.remove('is-visible');
+        document.body.classList.remove('overflow-hidden');
+        this.setAttribute('aria-hidden', 'true');
+        this.removeAttribute('open');
+
+        this.focusTrap.deactivate();
+        this.removeEventListener('click', this.clickHandler);
+        //why does it fire on this apparently unfocused element? 
+        this.removeEventListener('keyup', this.keyupHandler);
+        this.overlay.removeEventListener('click', this.clickHandler);
+
+        // transitionEnd?
+    }
+}
+
+if (!customElements.get('side-drawer')) {
+    customElements.define('side-drawer', SideDrawer);
+}
+ 
+
+
+ 

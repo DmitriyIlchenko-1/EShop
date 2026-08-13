@@ -2,12 +2,16 @@ using EShop.Core.Common.Services;
 using EShop.Core.Data;
 using EShop.Core.Data.Orders.Extensions;
 using EShop.Core.Platform.Common;
+using EShop.Infrastructure.Data;
 using EShop.Web.Common.Controllers;
+using EShop.Web.Factories;
+using EShop.Web.Mappers;
 using EShop.Web.Models.Checkout;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Azure;
 
 namespace EShop.Web.Controllers;
 
@@ -15,40 +19,44 @@ namespace EShop.Web.Controllers;
 public class AccountController : EShopBaseController
 {
     private readonly AccountHelper _accountHelper;
-    private readonly CheckoutHelper _checkoutHelper;
+    private readonly IAddressModelFactory _addressModelFactory;
     private readonly ApplicationDbContext _db;
     private readonly IWorkContext _workContext;
-    ICityService _cityService;
+
 
     public AccountController(AccountHelper accountHelper, ApplicationDbContext db, IWorkContext workContext,
-        CheckoutHelper checkoutHelper, ICityService cityService)
+        IAddressModelFactory addressModelFactory)
     {
         _accountHelper = accountHelper;
         _db = db;
         _workContext = workContext;
-        _checkoutHelper = checkoutHelper;
-        _cityService = cityService;
+        _addressModelFactory = addressModelFactory;
     }
 
     public virtual async Task<IActionResult> OrderList()
     {
-        var model = await _accountHelper.PrepareOrderListModelAsync();
+        var orders = await _db
+            .Orders
+            .ApplyStandardFilter(_workContext.CurrentUser.Id)
+            .ToListAsync();
+        var model = await _accountHelper.PrepareOrderListModelAsync(orders);
         return View(model);
     }
 
 
     public virtual async Task<IActionResult> OrderDetails(int id)
     {
-        if (id < 1)
-        {
-        }
-
         var order = await _db
             .Orders.AsNoTracking()
-            .ApplyStandardFilter(_workContext.CurrentUser.Id)
-            .FirstOrDefaultAsync(o => o.Id == id);
+            .AsSplitQuery()
+            .Include(x => x.OrderItems)
+            .ThenInclude(x => x.Product)
+            .Include(x => x.ShippingAddress)
+            .FirstOrDefaultAsync(x => x.UserId == _workContext.CurrentUser.Id && x.Id == id);
+        
         if (order == null)
         {
+            return NotFound();
         }
 
         var model = await _accountHelper.PrepareOrderDetailModelAsync(order);
@@ -57,41 +65,31 @@ public class AccountController : EShopBaseController
 
     public virtual async Task<IActionResult> AddressList()
     {
-        var model = await _accountHelper.PrepareAddressListModelAsync(_workContext.CurrentUser.Addresses);
-        return View(model);
+        ICollection<AddressModel> addresses = new List<AddressModel>();
+        foreach (var address in _workContext.CurrentUser.Addresses)
+        {
+            var model = new AddressModel();
+            await _addressModelFactory.PrepareAddressModelAsync(model, address);
+            addresses.Add(model);
+        }
+
+        return View(addresses);
     }
 
     public virtual async Task<IActionResult> UpdateAddress(int id)
     {
-        if (id < 1)
-        {
-        }
-
         var user = _workContext.CurrentUser;
         var address = user.Addresses.FirstOrDefault(x => x.Id == id);
         if (address == null)
         {
+            return NotFound();
         }
-        
-        //TODO: use a mapper instead.
-        AddressModel model = new AddressModel();
-        await _checkoutHelper.PrepareAddressModelAsync(model, address);
-        var cities = await _cityService.GetAllAsync();
-        model.AvailableCities.Add(new SelectListItem()
-        {
-            Text = "Select city",
-            Value = "0",
-        });
 
-        foreach (var city in cities)
+        var model = new AddressModel
         {
-            model.AvailableCities.Add(new SelectListItem()
-            {
-                Text = city.Name,
-                Value = city.Id.ToString(),
-                Selected = model.CityId == city.Id
-            });
-        }
+            EnableSelectAsDefault = true,
+        };
+        await _addressModelFactory.PrepareAddressModelAsync(model, address, loadCities: true);
         return View(model);
     }
 
@@ -104,43 +102,47 @@ public class AccountController : EShopBaseController
         {
             return NotFound();
         }
+
+        model.EnableSelectAsDefault = true;
+
         if (ModelState.IsValid)
         {
-            var entity = model.ToEntity();
-            var existing = user.Addresses.FirstOrDefault(x => x == entity);
-            if (existing != null)
+            model.ToAddress(address);
+
+            if (model.EnableSelectAsDefault)
             {
-                
+                if (model.IsDefault)
+                {
+                    user.ShippingAddress = address;
+                }
+                else
+                {
+                    if (user.ShippingAddressId == address.Id)
+                    {
+                        user.ShippingAddress = null;
+                    }
+                }
             }
-            //TODO: do with a mapper.
-            address.FirstName = model.FirstName;
-            address.LastName = model.LastName;
-            address.PhoneNumber = model.PhoneNumber;
-            address.AddressLine1 = model.AddressLine1;
-            address.AddressLine2 = model.AddressLine2;
-            address.ZipCode = model.ZipCode;
-            address.CityId = model.CityId;
+
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(AddressList));
         }
-        
+
+        await _addressModelFactory.PrepareAddressModelAsync(model, address, loadCities: true);
         return View(model);
     }
 
     [HttpPost]
     public virtual async Task<IActionResult> DeleteAddress(int id)
     {
-        if (id < 1)
-        {
-        }
-
         var user = _workContext.CurrentUser;
         var address = user.Addresses.FirstOrDefault(x => x.Id == id);
         if (address == null)
         {
+            return NotFound();
         }
 
-        user.Addresses.Remove(address);
+        _db.Addresses.Remove(address);
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(AddressList));
     }

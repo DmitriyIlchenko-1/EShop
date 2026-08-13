@@ -1,6 +1,7 @@
 using EShop.Caching;
 using EShop.Core.Catalog.Attributes.Domain;
 using EShop.Core.Catalog.Attributes.Services;
+using EShop.Core.Catalog.Products;
 using EShop.Core.Catalog.Products.Domain;
 using EShop.Core.Data.Cart.Domain;
 using EShop.Core.Data.Settings;
@@ -15,14 +16,16 @@ namespace EShop.Core.Data.Cart.Services;
 
 public interface IShoppingCartService
 {
-    Task<ICollection<string>> AddProductToCart(AddToCartContext ctx);
+    Task<(ICollection<string> Warning, bool IsAdded)> AddProductToCart(AddToCartContext ctx);
     Task<ICollection<string>> UpdateCartItemAsync(ShoppingCartItem item, int newQuantity);
     Task ResetCartAsync(ShoppingCart cart);
     Task RemoveCartItemAsync(ShoppingCartItem cartItem);
     Task<int> GetUserCartItemCountAsync(User user = null);
     Task<ShoppingCart> GetUserCartAsync(User? user = null);
     Task<ICollection<string>> ValidateShoppingCartAsync(ShoppingCart shoppingCart);
-    Task<ICollection<string>> ValidateShoppingCartItemAsync(ShoppingCartItem shoppingCartItem, ProductVariantAttributeCombination combination);
+
+    Task<ICollection<string>> ValidateShoppingCartItemAsync(ShoppingCartItem shoppingCartItem,
+        ProductVariantAttributeCombination combination);
 }
 
 public class DefaultShoppingCartService : IShoppingCartService
@@ -52,7 +55,7 @@ public class DefaultShoppingCartService : IShoppingCartService
         _productAttributeMaterializer = productAttributeMaterializer;
     }
 
-    public virtual async Task<ICollection<string>> AddProductToCart(AddToCartContext ctx)
+    public virtual async Task<(ICollection<string>, bool)> AddProductToCart(AddToCartContext ctx)
     {
         Guard.NotNull(ctx);
         var warnings = new List<string>();
@@ -64,26 +67,28 @@ public class DefaultShoppingCartService : IShoppingCartService
         if (quantity < 1)
         {
             warnings.Add("Quantity must be greater than 0");
-            return warnings;
+            return (warnings, false);
         }
 
         if (errors.Any())
         {
-            return errors;
+            return (errors, false);
         }
 
-
+       
         var selection =
             _attributeMaterializer.CreateAttributeSelection(query, product.ProductVariantAttributes, product.Id);
-        var rawAttributes = selection.AsJson();
-        if (rawAttributes == null && product.AttributeCombinationRequired)
+
+        if (selection.IsEmpty() && (product.AttributeCombinationRequired ||
+                                    product.ProductVariantAttributes.Any(x => x.IsRequired)))
         {
-            throw new InvalidOperationException(
-                $"A combination is required to order {product.Id}:{product.Name} product");
+            warnings.Add($"Choose from the given options to order {product.Name}");
+            return (warnings, false);
         }
 
-        var item =
-            userCart.Items.FirstOrDefault(x => x.ProductId == product.Id && x.RawAttributes == rawAttributes);
+        var rawAttributes = selection.AsJson();
+        var item = userCart.Items.FirstOrDefault(x =>
+            x.ProductId == product.Id && (!product.AttributeCombinationRequired || x.RawAttributes == rawAttributes));
         if (item == null)
         {
             item = new ShoppingCartItem()
@@ -95,13 +100,20 @@ public class DefaultShoppingCartService : IShoppingCartService
                 Product = product,
             };
         }
-        
-        var combination =
-            await _attributeMaterializer.FindAttributeCombinationAsync(item.ProductId, item.AttributeSelection);
-        var maxAddToCartNumber = 
-            (combination.StockQuantity != 0 && combination.StockQuantity > product.MaxAddToCartNumber) 
-            ? product.MaxAddToCartNumber 
-            : combination.StockQuantity;
+
+        int stockQuantity = product.StockQuantity;
+        var combination = await _attributeMaterializer.FindAttributeCombinationAsync(item.ProductId, item.AttributeSelection);
+        if (product.AttributeCombinationRequired)
+        {
+            stockQuantity = combination.StockQuantity;
+        }
+
+
+        var maxAddToCartNumber =
+            (stockQuantity != 0 && stockQuantity > product.MaxAddToCartNumber)
+                ? product.MaxAddToCartNumber
+                : stockQuantity;
+
         if (!userCart.Items.Contains(item) && quantity < product.MinAddToCartNumber)
         {
             item.Quantity = product.MinAddToCartNumber;
@@ -128,11 +140,12 @@ public class DefaultShoppingCartService : IShoppingCartService
             item.Quantity += correctedQuantity;
         }
 
-        
-        errors = await ValidateShoppingCartItemAsync(item, combination);
+
+        // combination can be null at this point if product doesn't have any
+        errors = await ValidateShoppingCartItemAsync(item,combination);
         if (errors.Any())
         {
-            return errors;
+            return (errors, false);
         }
 
         var cacheKey = string.Format(ShoppingCartCacheKey, userCart.User.Id);
@@ -142,9 +155,9 @@ public class DefaultShoppingCartService : IShoppingCartService
         {
             userCart.User.ShoppingCartItems.Add(item);
         }
-
+        
         await _db.SaveChangesAsync();
-        return warnings;
+        return (warnings, true);
     }
 
 
@@ -171,12 +184,19 @@ public class DefaultShoppingCartService : IShoppingCartService
                 $"Cannot update cart info for non-existing product {item.ProductId}.");
         }
 
-        var combination =
-            await _attributeMaterializer.FindAttributeCombinationAsync(item.ProductId, item.AttributeSelection);
-        var maxAddToCartNumber = 
-            (combination.StockQuantity != 0 && combination.StockQuantity > product.MaxAddToCartNumber) 
-                ? product.MaxAddToCartNumber 
-                : combination.StockQuantity;
+        int stockQuantity = product.StockQuantity;
+        var combination = await _attributeMaterializer.FindAttributeCombinationAsync(item.ProductId, item.AttributeSelection);
+        if (product.AttributeCombinationRequired)
+        {
+            stockQuantity = combination.StockQuantity;
+        }
+
+
+        var maxAddToCartNumber =
+            (stockQuantity != 0 && stockQuantity > product.MaxAddToCartNumber)
+                ? product.MaxAddToCartNumber
+                : stockQuantity;
+        
         if (newQuantity < product.MinAddToCartNumber)
         {
             item.Quantity = product.MinAddToCartNumber;
@@ -194,14 +214,14 @@ public class DefaultShoppingCartService : IShoppingCartService
                 if (item.Quantity <= maxAddToCartNumber &&
                     maxAddToCartNumber <= newQuantity)
                 {
-                    warnings.Add($"{maxAddToCartNumber} has been added to your cart because of the limit.");
+                    warnings.Add($"{maxAddToCartNumber} has been added to your cart. You can't add more");
                 }
 
                 item.Quantity = maxAddToCartNumber;
             }
         }
 
-        
+
         errors = await ValidateShoppingCartItemAsync(item, combination);
         if (errors.Any())
         {
@@ -274,19 +294,19 @@ public class DefaultShoppingCartService : IShoppingCartService
     }
 
     public virtual async Task<ICollection<string>> ValidateShoppingCartItemAsync(
-        ShoppingCartItem item, ProductVariantAttributeCombination combination)
+        ShoppingCartItem item, ProductVariantAttributeCombination? combination = null)
     {
         Guard.NotNull(item);
         var errors = new List<string>();
         var product = item.Product;
         if (product.IsDeleted)
         {
-            errors.Add($"Cart contains a deleted product {product.Id}:{product.Name}");
+            errors.Add($"Cart contains a deleted product");
         }
 
         if (!product.IsPublished)
         {
-            errors.Add($"Cart contains a non published product {product.Id}:{product.Name}");
+            errors.Add($"The product you're trying to add is not published");
         }
 
         // These two checks are redundant because we safely fix any logical errors before we call this method.
@@ -302,23 +322,21 @@ public class DefaultShoppingCartService : IShoppingCartService
         //         $"Product's ({product.Id}:{product.Name}) quantity in cart must be smaller than {product.MaxAddToCartNumber}");
         // }
 
-        //TODO: Have to implement stock management first, for the time being we treat products as though they can't be ordered without a combination.
-        // if (shoppingCartItem.Quantity > product.StockQuantity)
-        // {
-        //     warnings.Add($"Product's ({product.Id}:{product.Name}) stock quantity cannot be smaller than the cart item's quantity");
-        // }
-
-        
         if (combination != null)
         {
             if (!combination.IsActive)
             {
-                errors.Add(
-                    $"Cannot add inactive product combination. combination id:{combination.Id}, product id: {product.Id}");
+                errors.Add($"Selected product's combination is not available.");
             }
         }
-
-
+        else
+        {
+            if (item.Quantity > product.StockQuantity)
+            {
+                errors.Add($"Stock quantity is not big enough to reach the minimum order amount for this product");
+            }
+        }
+         
         return errors;
     }
 

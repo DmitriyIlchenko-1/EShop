@@ -1,14 +1,14 @@
-import {debounce} from "./utilities.js";
-
+import {debounce, getElementHtml, notifyError} from "./utilities.js";
+import {ProductForm} from './product-form.js';
 
 class CartItems extends HTMLElement {
     #abortController;
 
-// do it in here, not WebStorm.
     constructor() {
         super();
         this.updateCartUrl = this.closest('.js-cart-form').dataset.updateCartUrl;
         this.removeCartItemUrl = this.closest('.js-cart-form').dataset.removeCartItemUrl;
+        this.cartDrawer = document.getElementById('cart-drawer');
         this.init();
     }
 
@@ -24,20 +24,15 @@ class CartItems extends HTMLElement {
         await this.updateQuantity(cartItem.dataset.cartItemId, 0, document.activeElement.name, true)
     }
 
-    handleChange(e) {
+    async handleChange(e) {
         const cartItem = e.target.closest('.js-cart-item');
         if (cartItem && cartItem.dataset.cartItemId && cartItem.dataset.cartItemId > 0) {
-            this.updateQuantity(cartItem.dataset.cartItemId, e.quantity, document.activeElement.name);
+            await this.updateQuantity(cartItem.dataset.cartItemId, e.quantity, document.activeElement.name);
         }
     }
 
 
     async updateQuantity(cartItemId, newQuantity, name, isRemoved = false) {
-        const urlParams = new URLSearchParams({
-            cartItemId,
-            newQuantity
-        });
-
         const cartItemErrorId = `cart-item-error-${cartItemId}`;
         document.querySelectorAll(`.cart-item__error:not([id="${cartItemErrorId}"])`)
             .forEach(errorEl => {
@@ -45,6 +40,12 @@ class CartItems extends HTMLElement {
                 errorEl.innerHTML = '';
             });
 
+        const urlParams = new URLSearchParams({cartItemId, newQuantity});
+        const partials = this.getPartialsToRender();
+        partials.forEach(partial => {
+            if (urlParams.has("requestedPartials", partial.name)) return;
+            urlParams.append("requestedPartials", partial.name);
+        })
         this.#abortController?.abort();
         this.#abortController = new AbortController();
         const fetchOptions = {
@@ -62,52 +63,82 @@ class CartItems extends HTMLElement {
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
+                notifyError(response.statusText)
             }
 
-            this.finalizeUpdating(data);
+            this.finalizeUpdating(data, cartItemId, name);
             this.updateNotifications(cartItemErrorId, data.message);
 
 
         } catch (error) {
             if (error.name === 'AbortError') {
                 console.warn('Fetch has been aborted by user.');
-            }
-           else{
-                console.log(error);
+            } else {
+                console.error(error);
             }
         }
     }
 
-    finalizeUpdating(data, name) {
+    finalizeUpdating(data, cartItemId, name) {
 
-        if (data.success){
-            const cartContent = document.querySelector('.js-cart-content');
-            if (data.cartCount === 0) {
-                const emptyMessage = document.querySelector('.js-cart-empty-message');
-                cartContent.innerHTML = emptyMessage.outerHTML;
-                cartContent.querySelector('.js-cart-empty-message').classList.remove('hidden');
-            }
+        const drawerContent = this.cartDrawer ? this.cartDrawer.querySelector('.drawer__content') : null;
 
-            const cartBody = this.querySelector('.js-cart-body');
-            if (data.cartHtml && cartBody) {
-                cartBody.innerHTML = data.cartHtml;
-            }
-
-            const cartSummary = document.querySelector('.js-cart-summary');
-            if (data.totalSummaryHtml && cartSummary) {
-                cartSummary.innerHTML = data.totalSummaryHtml;
-            }
-
-            if (data.cartCountHtml) {
-                document.getElementById('cart-icon-count').innerHTML = data.cartCountHtml;
-            }
+        const cartCount = data.cartCount;
+        if (this.cartDrawer) {
+            drawerContent.classList.toggle('drawer__content--flex', cartCount === 0);
+        } else if (cartCount === 0) {
+            this.closest('.cart').classList.add('cart--empty');
         }
 
-        if (name) {
-            this.setFocus(cartItemId, name)
+        // Redisplay partials
+        this.getPartialsToRender().forEach(partialSection => {
+            const pEl = document.getElementById(partialSection.id);
+            if (!pEl) return;
+            const el = pEl.querySelector(partialSection.selector) ?? pEl;
+            const replaceWith = getElementHtml(data.partials[partialSection.name], partialSection.selector);
+            el.innerHTML = replaceWith.trim();
+        })
+        ProductForm.updateCartIcon(data);
+
+        if (this.cartDrawer && cartCount === 0) {
+            drawerContent.classList.add('items-center');
         }
 
+        // We set focus on the number input because the plus and minus buttons aren't accessible for assistive technologies.
+        this.setFocus(cartItemId)
+    }
+
+
+    getPartialsToRender() {
+        let partials = []
+        if (this.cartDrawer) {
+            partials = [...partials,
+                {
+                    id: "cart-drawer",
+                    name: "cartDrawer",
+                    selector: ".cart-drawer__summary",
+                },
+                {
+                    id: "cart-items",
+                    name: "cartDrawer",
+                    selector: "#cart-items",
+                },
+            ]
+        } else {
+            partials = [...partials,
+                {
+                    id: "cart-summary",
+                    name: "cart",
+                    selector: "#cart-summary",
+                },
+                {
+                    id: "cart-items",
+                    name: "cart",
+                    selector: "#cart-items",
+                },
+            ]
+        }
+        return partials;
     }
 
     updateNotifications(carItemErrorId, message) {
@@ -122,13 +153,11 @@ class CartItems extends HTMLElement {
         }
     }
 
-    setFocus(cartItemId, controlName) {
-        const cartItem = this.querySelector(`.js-cart-item[data-cart-item-id="${cartItemId}"]`)
-        if (!cartItem) return;
-        const controlEl = cartItem.querySelector(`[name="${controlName}"]`);
-        if (controlEl) {
-            controlEl.focus();
-        }
+    setFocus(cartItemId) {
+        const numberInput = this.querySelector(`.quantity-selector > input[id="quantity-${cartItemId}"]`)
+        if (!numberInput) return;
+        numberInput.focus({focusVisible: true});
+        numberInput.select();
     }
 
 }

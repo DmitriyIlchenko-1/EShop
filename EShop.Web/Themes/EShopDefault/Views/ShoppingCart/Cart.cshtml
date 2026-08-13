@@ -1,11 +1,9 @@
 @using EShop.Web.Controllers
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model EShop.Web.Models.Checkout.ShoppingCartModel
-@inject IUrlHelper UrlHelper
+
 @{
     ViewData["Title"] = "Cart";
-    var updateCartUrl = UrlHelper.Action(nameof(ShoppingCartController.UpdateCartItem), "ShoppingCart");
-    var removeCartItemUrl = UrlHelper.Action(nameof(ShoppingCartController.RemoveCartItem), "ShoppingCart");
 }
 <section class="section section--content-middle color-scheme-1 spacing-style"
          style=" --padding-block-start: max(20px, calc(var(--spacing-scale) * 68px)); --padding-block-end:max(20px, calc(var(--spacing-scale) * 68px))">
@@ -13,40 +11,16 @@
     <div class="section__header">
         <h1 class="h2">Your cart</h1>
     </div>
-    
-    <div class="js-cart-content">
-        <div
-            class="js-cart-empty-message flex flex-col items-center @(Model.Items.Count > 0 ? " hidden" : "")">
-            <p class="h4">Your cart's empty.</p>
-            <a class="link" asp-route="Homepage">Go back to keep shopping</a>
-        </div>
-        @if (Model.Items.Count > 0)
-        {
-            <form class="cart js-cart-form" data-update-cart-url="@updateCartUrl"
-                  data-remove-cart-item-url="@removeCartItemUrl">
-                <cart-items class="cart-items" id="cart-items" data-section>
-                    <table class="w-full">
-                        <thead class="visually-hidden">
-                        <tr>
-                            <th colspan="2">Product</th>
-                            <th>Quantity</th>
-                            <th>Subtotal</th>
-                        </tr>
-                        </thead>
-                        <tbody class="js-cart-body">
-                        <partial name="_ShoppingCart.CartItems" model="Model"/>
-                        </tbody>
-                    </table>
-                </cart-items>
-                <div class="cart__summary p-xl" id="cart-summary">
-                    <h2 class="h4">Order summary</h2>
-                    <div class="js-cart-summary">
-                        <partial name="_ShoppingCart.TotalSummary" model="Model"/>
-                    </div>
-                </div>
-            </form>
-        }
-    </div>
 
+    <form class="js-cart-form"
+          data-update-cart-url="@Url.Action(nameof(ShoppingCartController.UpdateCartItem), "ShoppingCart")"
+          data-remove-cart-item-url="@Url.Action(nameof(ShoppingCartController.RemoveCartItem), "ShoppingCart")">
+        <div class="cart @(@Model.Items.Count == 0 ? "cart--empty" : "")">
+            <partial name="_Cart" model="Model"/>
+            <div eh-if="@Model.Items.Count != 0" class="cart__summary" id="cart-summary">
+                <partial name="_ShoppingCart.TotalSummary" model="Model"/>
+            </div>
+        </div>
+    </form>
 
 </section>

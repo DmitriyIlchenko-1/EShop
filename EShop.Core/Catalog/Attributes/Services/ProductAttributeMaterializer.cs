@@ -115,8 +115,8 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
         }
 
         int hashCode = selection.GetHashCode();
-        var cache = string.Format(AttributeCombinationByIdHashCodeKey, productId, hashCode);
-        return await _requestCache.GetOrCreateAsync<ProductVariantAttributeCombination>(cache,
+        var cacheKey = string.Format(AttributeCombinationByIdHashCodeKey, productId, hashCode);
+        return await _requestCache.GetOrCreateAsync<ProductVariantAttributeCombination>(cacheKey,
             async () =>
             {
                 return await _db
@@ -137,7 +137,8 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
     
         int hashCode = selection.GetHashCode();
         var cacheKey = string.Format(AttributeCombinationByIdHashCodeKey, productId, hashCode);
-        return _requestCache.TryGet<ProductVariantAttributeCombination>(cacheKey, out combination);
+        _requestCache.TryGet<ProductVariantAttributeCombination>(cacheKey, out combination);
+        return combination != null;
     }
 
 
@@ -184,8 +185,7 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
 
                     return new Dictionary<int, CombinationAvailabilityInfo>();
                 },
-                //TODO: change the cache time after debugging's over.
-                new CacheEntryOptions() { AbsoluteExpiration = TimeSpan.FromSeconds(1) });
+                new CacheEntryOptions(TimeSpan.FromHours(3)));
 
 
         // No UNavailable combinations - return null unless the product needs a combination to be ordered.

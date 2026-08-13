@@ -15,7 +15,7 @@ public class ExceptionHandlerStartup : BaseStartup
     public override void ConfigureApplication(IApplicationBuilder app)
     {
         IHostEnvironment environment = EngineContext.Current.Environment;
-        //TODO: temp workaround
+      
         if (!environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();

@@ -16,7 +16,6 @@
     <ItemGroup>
         <Folder Include="Areas\" />
         <Folder Include="Themes\EShopDefault\wwwroot\" />
-        <Folder Include="Views\Home\Partials\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -43,6 +42,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.7" />
+        <PackageReference Include="Riok.Mapperly" Version="4.3.1" />
     </ItemGroup>
 
     <ItemGroup>
@@ -545,40 +545,6 @@
 
     <ItemGroup>
       <AdditionalFiles Include="Themes\EShopDefault\Views\Product\Product.cshtml" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Include="node_modules\.package-lock.json" />
-      <Content Include="node_modules\notyf\LICENSE.md" />
-      <Content Include="node_modules\notyf\notyf.es.js" />
-      <Content Include="node_modules\notyf\notyf.js" />
-      <Content Include="node_modules\notyf\notyf.min.css" />
-      <Content Include="node_modules\notyf\notyf.min.js" />
-      <Content Include="node_modules\notyf\notyf.umd.js" />
-      <Content Include="node_modules\notyf\package.json" />
-      <Content Include="node_modules\notyf\README.md" />
-      <Content Include="node_modules\toastify-js\.gitattributes" />
-      <Content Include="node_modules\toastify-js\.prettierrc" />
-      <Content Include="node_modules\toastify-js\.travis.yml" />
-      <Content Include="node_modules\toastify-js\CHANGELOG.md" />
-      <Content Include="node_modules\toastify-js\example\pattern.png" />
-      <Content Include="node_modules\toastify-js\example\script.css" />
-      <Content Include="node_modules\toastify-js\example\script.js" />
-      <Content Include="node_modules\toastify-js\index.html" />
-      <Content Include="node_modules\toastify-js\LICENSE" />
-      <Content Include="node_modules\toastify-js\package.json" />
-      <Content Include="node_modules\toastify-js\README.md" />
-      <Content Include="node_modules\toastify-js\src\toastify-es.js" />
-      <Content Include="node_modules\toastify-js\src\toastify.css" />
-      <Content Include="node_modules\toastify-js\src\toastify.js" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <TypeScriptCompile Include="node_modules\notyf\index.d.ts" />
-      <TypeScriptCompile Include="node_modules\notyf\notyf.d.ts" />
-      <TypeScriptCompile Include="node_modules\notyf\notyf.models.d.ts" />
-      <TypeScriptCompile Include="node_modules\notyf\notyf.options.d.ts" />
-      <TypeScriptCompile Include="node_modules\notyf\notyf.view.d.ts" />
     </ItemGroup>
 
 </Project>

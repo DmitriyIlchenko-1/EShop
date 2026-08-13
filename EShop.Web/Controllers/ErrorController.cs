@@ -6,10 +6,10 @@ using EShop.Web.Models.Error;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
- 
+
 
 namespace EShop.Web.Controllers;
- 
+
 public class ErrorController : Controller
 {
     [Route("error/{status?}")]
@@ -27,13 +27,18 @@ public class ErrorController : Controller
             Exception = exceptionHandlerPathFeature?.Error,
             Path = exceptionHandlerPathFeature?.Path ?? statusCodeReExecuteFeature?.OriginalPath
         };
-        
-        
+
+        if (Request.IsRequestFetch())
+        {
+            return Json(model);
+        }
+
         if (IsFilePathError(model) && MimeTypes.TryGetContentType(model.Path, out var contentType))
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
             return Content("Resource not found", contentType);
         }
+
         switch (statusCode)
         {
             case HttpStatusCode.NotFound:
@@ -51,6 +56,5 @@ public class ErrorController : Controller
                model.Exception is PathTooLongException ||
                model.Exception is NotSupportedException ||
                model.Exception is IOException;
-
     }
 }
