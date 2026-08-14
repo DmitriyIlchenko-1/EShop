@@ -1793,7 +1793,7 @@ to make it sit where it sits now. It just makes it easier to place the square - 
 
 }
 
-/*TODO: deal with this*/
+
 .color-swatch__control:focus-visible::before,
 .color-swatch__control:hover::before,
 .color-swatch__control:hover::after,

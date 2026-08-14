@@ -4,12 +4,8 @@
  
  
  @{
-     ViewData["Title"] = Model.MetaTitle ?? Model.Name;
-      
-     Console.WriteLine();
+     ViewBag.Title = Model.MetaTitle ?? Model.Name;
  }
-
- 
  
 <section class="section section--content-middle color-scheme-1">
     <!--TODO: add skip to content link-->

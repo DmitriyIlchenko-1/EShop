@@ -258,7 +258,7 @@ public class ProductAttributeMaterializer : IProductAttributeMaterializer
         // If no UNavailable combinations were found (or this particular combination is not on that list), then we still have to prove it exists and if it does, it's considered Available.
         // If no UNavailable combinations were found because of the performance settings, we just go ahead and query the db to find the combination for the given selection and if it does exist,
         // it's considered Available even if it's stock value or 'IsActive' values are not valid.
-        //TODO:  'considered Available even if it's stock value or 'IsActive' values are not valid ...' does it mean i can order this combination? 
+        //TODO:  'considered Available even if it's stock value or 'IsActive' values are not valid ...' does it mean we can order this combination? 
         if (product.AttributeCombinationRequired && await FindAttributeCombinationAsync(product.Id, selection) == null)
         {
             return new() { IsActive = false };

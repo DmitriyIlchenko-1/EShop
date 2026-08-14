@@ -35,7 +35,7 @@ public class Category : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IDis
 
     [StringLength(500)] public string Description { get; set; }
 
-    //TODO: Do we need to keep it?
+   
     public string Slug { get; set; }
 
     [StringLength(400)] public string MetaTitle { get; set; }

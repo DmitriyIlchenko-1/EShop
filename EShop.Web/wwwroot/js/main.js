@@ -4,7 +4,6 @@ import {createFocusTrap} from "../lib/focus-trap/index.js";
 
 /*TODO:
 *  1. Read about progressive einhansment. is showHideButton.removeAttribute('hidden'); all what's needed to be done?
-* 2. Get back to the UK gov and read the rest (no matter what it is about, not only about autofill or autocomplete) about this component after reading about autofill.
   */
 class PasswordInputComponent extends HTMLElement {
     constructor() {

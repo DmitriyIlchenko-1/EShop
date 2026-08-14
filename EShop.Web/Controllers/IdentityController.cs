@@ -25,7 +25,7 @@ namespace EShop.Web.Controllers;
 /*
  * TODO:
  * 1. Deal with security stamps because right now we're using a workaround.
- * 2. Add password validator for registration.
+ * 2. Add password validator for registration so that we can validate password at the front-end and just only when the request comes to the server.
  * 5. Style the summary list on top of the from.
  * 6. Learn and apply autocomplete.
  * 7. Make email validation stricter at the backend (don't touch jQuery for this)

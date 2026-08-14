@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
-
+using EfState = Microsoft.EntityFrameworkCore.EntityState;
 
 namespace EShop.Infrastructure.Data;
 
@@ -174,15 +174,8 @@ public static class EfCoreExtensions
     }
 
     /// <summary>
-    /// We first see if an entity is already tracked by this db context instance.
-    /// If so - we just get it from there and return, if not - we query the database.
+    /// Method first looks for an entity with the same id that is already being tracked and returns it if the method has found it, otherwise the method queries the database.
     /// </summary>
-    /// <param name="query"></param>
-    /// <param name="id"></param>
-    /// <param name="track"></param>
-    /// <param name="cancellationToken"></param>
-    /// <typeparam name="TEntity"></typeparam>
-    /// <returns></returns>
     public static ValueTask<TEntity> FindByIdAsync<TEntity>(this DbSet<TEntity> dbSet, int id,
         CancellationToken cancellationToken = default, bool track = true) where TEntity : BaseEntity
     {
@@ -199,8 +192,7 @@ public static class EfCoreExtensions
                 .ApplyTracking(track)
                 .SingleOrDefaultAsync(x => x.Id == id, cancellationToken));
     }
-
-
+    
     public static IQueryable<TEntity> ApplyTracking<TEntity>(this IQueryable<TEntity> query, bool track = true)
         where TEntity : BaseEntity
     {
@@ -231,173 +223,101 @@ public static class EfCoreExtensions
                 .SingleOrDefaultAsync(x => x.Id == id, cancellationToken));
     }
 
-
-    // /// <summary>
-    // /// If there's another instance referencing the same entity attached to this instance of DbContext,
-    // /// we detach it and attach the given one to persist the made changes.
-    // /// If no other instances referencing the same entity are attached, we simply update the given entity.
-    // ///
-    // /// </summary>
-    // /// <param name="entity"></param>
-    // /// <typeparam name="TEntity"></typeparam>
-    // /// <returns></returns>
-    // public static bool TryUpdate<TEntity>(this DbContext context, TEntity entity) where TEntity : BaseEntity
-    // {
-    //     Guard.NotNull(context);
-    //     Guard.NotNull(entity);
-    //     var oldDetention = context.ChangeTracker.AutoDetectChangesEnabled;
-    //     context.ChangeTracker.AutoDetectChangesEnabled = false;
-    //     using (new ActionDisposable(
-    //                () => context.ChangeTracker.AutoDetectChangesEnabled = oldDetention))
-    //     {
-    //         var set = context.Set<TEntity>();
-    //         var tracked = set
-    //             .Local.FindEntry(entity.Id);
-    //         if (tracked != null)
-    //         {
-    //             //TODO: if the same instances then take necessary action
-    //             if (tracked.State == Microsoft.EntityFrameworkCore.EntityState.Unchanged)
-    //             {
-    //                 tracked.State = Microsoft.EntityFrameworkCore.EntityState.Detached;
-    //                 set.Update(entity);
-    //                 return true;
-    //             }
-    //             else
-    //             {
-    //                 return false;
-    //             }
-    //         }
-    //
-    //         if (set.Entry(entity).State == Microsoft.EntityFrameworkCore.EntityState.Added)
-    //         {
-    //             return false;
-    //         }
-    //
-    //         set.Entry(entity)
-    //             .State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-    //         return true;
-    //     }
-    //     
-    //      
-    // }
-    public static bool TryUpdate<TEntity>(this DbContext ctx, TEntity entity) where TEntity : BaseEntity
+    public static bool TryUpdate<TEntity>(this DbContext db, TEntity entity) where TEntity : BaseEntity
     {
-        var detectChanges = ctx.ChangeTracker.AutoDetectChangesEnabled;
-        ctx.ChangeTracker.AutoDetectChangesEnabled = false;
-
-        using (new ActionDisposable(() => ctx.ChangeTracker.AutoDetectChangesEnabled = detectChanges))
+        Guard.NotNull(db);
+        Guard.NotNull(entity);
+        var entry = db.Entry(entity);
+        if (entry.State == EfState.Detached)
         {
-            // (perf) Turning off AutoDetectChangesEnabled prevents that ctx.Entry() performs change detection internally.
-            var entry = ctx.Entry(entity);
-            if (entry.State == Microsoft.EntityFrameworkCore.EntityState.Detached)
-            {
-                TryDetachAlreadyTrackedEntity(ctx, entity);
-
-                entry.State = Microsoft.EntityFrameworkCore.EntityState.Unchanged;
-                entry.State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-
-                return true;
-            }
-
-            return false;
-        }
-    }
-    
-    private static bool TryDetachAlreadyTrackedEntity<TEntity>(DbContext ctx, TEntity entity) where TEntity : BaseEntity
-    {
-        // Attaching an entity while another instance with same primary key is attached will throw.
-        // First we gonna try to locate an already attached entity...
-        var attachedEntry = ctx.Set<TEntity>().Local.FindEntry(entity.Id);
-        if (attachedEntry != null)
-        {
-            if (attachedEntry.State == Microsoft.EntityFrameworkCore.EntityState.Unchanged || attachedEntry.State == Microsoft.EntityFrameworkCore.EntityState.Deleted)
-            {
-                // ...and detach it, but only Unchanged or Deleted entities and let others throw later.
-                attachedEntry.State = Microsoft.EntityFrameworkCore.EntityState.Detached;
-                return true;
-            }
+            db.TryDetachAlreadyTrackedEntity(entity);
+            entry.State = EfState.Modified;
+            return true;
         }
 
         return false;
     }
-    
-     public static async Task<CollectionEntry<TEntity, TCollection>?> LoadCollectionAsync<TEntity, TCollection>(
-        this DbHandlerContext ctx,
-        TEntity entity,
-        Expression<Func<TEntity, IEnumerable<TCollection>>> navigationProperty,
-        bool force = false,
-        Func<IQueryable<TCollection>, IQueryable<TCollection>>? queryModifier = null,
-        CancellationToken cancelToken = default)
+
+    private static bool TryDetachAlreadyTrackedEntity<TEntity>(this DbContext db, TEntity entity) where TEntity : BaseEntity
+    {
+        var otherEntry = db.Set<TEntity>().Local.FindEntry(entity.Id);
+        if (otherEntry != null 
+            && otherEntry.State != EfState.Added 
+            && otherEntry.State != EfState.Modified)
+        {
+            otherEntry.State = EfState.Detached;
+            return true;
+        }
+
+        return false;
+    }
+
+ 
+    public static async Task<CollectionEntry<TEntity, TNavigationProperty>>? LoadCollectionAsync<TEntity,
+        TNavigationProperty>(this DbHandlerContext db, TEntity entity,
+        Expression<Func<TEntity, IEnumerable<TNavigationProperty>>> navigationProperty, bool force = false,
+        Func<IQueryable<TNavigationProperty>, IQueryable<TNavigationProperty>> queryModifier = null,
+        CancellationToken cancellationToken = default)
         where TEntity : BaseEntity
-        where TCollection : BaseEntity
+        where TNavigationProperty : BaseEntity
     {
         Guard.NotNull(entity);
         Guard.NotNull(navigationProperty);
-
-        if (entity.Id == 0)
+        if (!entity.HasRealId())
         {
             return null;
         }
 
-        var entry = ctx.Entry(entity);
-        if (entry.State == Microsoft.EntityFrameworkCore.EntityState.Deleted)
+        var entry = db.Entry(entity);
+        if (entry.State == EfState.Deleted)
         {
             return null;
         }
 
         var collection = entry.Collection(navigationProperty);
-        // TODO: (core) Entities with hashSets as collections always return true here, as they are never null (for example: Product.ProductVariantAttributes).
-        var isLoaded = collection.CurrentValue != null || collection.IsLoaded;
+        var isLoaded = collection.IsLoaded;
 
-        if (!isLoaded && entry.State == Microsoft.EntityFrameworkCore.EntityState.Detached)
+        if (!isLoaded && entry.State == EfState.Detached)
         {
-            try
-            {
-                // Attaching an entity while another instance with same primary key is attached will throw.
-                // First we gonna try to locate an already attached entity.
-                var other = ctx.Set<TEntity>().Local.FindEntry(entity.Id)?.Entity;
-                if (other != null)
-                {
-                    // An entity with same key is attached already. So we gonna load the navigation property of attached entity
-                    // and copy the result to this detached entity. This way we don't need to attach the source entity.
-                    var otherCollection = await ctx.LoadCollectionAsync(other, navigationProperty, force, queryModifier, cancelToken: cancelToken);
+            var trackedEntity = db
+                .Set<TEntity>()
+                .Local.FindEntry(entity.Id);
 
-                    // Copy collection over to detached entity.
-                    collection.CurrentValue = otherCollection?.CurrentValue;
-                    collection.IsLoaded = true;
-                    isLoaded = true;
-                    force = false;
-                }
-                else
-                {
-                    ctx.Attach(entity);
-                }
-            }
-            catch
+            if (trackedEntity != null)
             {
-                // Attach may throw!
+                var otherCollection = await db.LoadCollectionAsync(trackedEntity.Entity,
+                    navigationProperty,
+                    force,
+                    queryModifier,
+                    cancellationToken);
+                collection.CurrentValue = otherCollection?.CurrentValue;
+                collection.IsLoaded = true;
+                isLoaded = true;
+                force = false;
+            }
+            else
+            {
+                db.Attach(entity);
             }
         }
 
         if (force)
         {
             collection.IsLoaded = false;
-            isLoaded = false;
         }
 
-        if (!isLoaded)
+        if (!isLoaded || force)
         {
             if (queryModifier != null)
             {
                 var query = queryModifier(collection.Query());
-                collection.CurrentValue = await query.ToListAsync(cancellationToken: cancelToken);
+                collection.CurrentValue = await query.ToListAsync(cancellationToken);
+                collection.IsLoaded = true;
             }
             else
             {
-                await collection.LoadAsync(cancelToken);
+                await collection.LoadAsync(cancellationToken);
             }
-
-            collection.IsLoaded = true;
         }
 
         return collection;

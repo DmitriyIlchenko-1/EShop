@@ -7,24 +7,20 @@
     var anyExist = items.Any();
 }
 
-<section
-    class="section page-width-narrow section--content-middle color-scheme-1 section-resource-list spacing-style gap-style"
-    style="--padding-block-start: max(20px, calc(var(--spacing-scale) * 48px));
-             --padding-block-end:max(20px, calc(var(--spacing-scale) * 48px))">
-    <div class="section__header">
-        <h3 class="h4 mb-0 text-start">Featured products</h3>
-    </div>
-    <ul eh-if="anyExist" class="list-unstyled resource-list resource-list--grid
+<div class="section__header">
+    <h3 class="h4 mb-0 text-start">Featured products</h3>
+</div>
+<ul eh-if="anyExist" class="list-unstyled resource-list resource-list--grid
             grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
-        style="
+    style="
                 --resource-list-column-gap-desktop: 24px;
                  --resource-list-row-gap-desktop: 20px;">
 
-        @foreach (var item in items)
-        {
-            <partial name="_Product.Card" model="item"/>
-        }
-    </ul>
+    @foreach (var item in items)
+    {
+        <partial name="_Product.Card" model="item"/>
+    }
+</ul>
 
-</section>
+ 
  

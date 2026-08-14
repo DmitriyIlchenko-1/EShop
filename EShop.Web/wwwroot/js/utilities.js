@@ -1,8 +1,10 @@
+ 
+import {Notyf} from "../lib/notyf/notyf.es.js";
+
+
 /*
 * TODO: temp. move to the .cshtml to get the values from the settings / theme variables.
 * */
-import {Notyf} from "../lib/notyf/notyf.es.js";
-
 window.theme = {
     mediaQueries: {
         sm: '(min-width: 600px)',

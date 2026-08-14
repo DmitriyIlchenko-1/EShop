@@ -3,6 +3,7 @@ using System.Xml.Linq;
 using NUnit.Framework;
 using EShop.Core.Platform.Themes;
 using EShop.Core.Platform.Themes.Services;
+using EShop.Infrastructure.Engine;
 using EShop.Infrastructure.Extensions;
  
 using EShop.Tests.Framework;
@@ -28,13 +29,12 @@ public class ThemeRegisterTests
             .Location);
         _themeFolderPath = Path.Join(currentLocation, "Themes");
         PrepareThemes();
-        var envMock = new Mock<IWebHostEnvironment>();
-        envMock
-            .Setup(x => x.ContentRootPath)
-            .Returns(currentLocation);
-        var webEnv = envMock.Object;
-        // ILocalFileProvider fileProvider = new DefaultLocalFileProvider(webEnv.WebRootPath);
-        // _themeRegistry = new DefaultThemeRegistry(new PhysicalFileProvider(webEnv.WebRootPath));
+        var appContextMock = new Mock<IApplicationContext>();
+        appContextMock
+            .Setup(x => x.ContentRoot)
+            .Returns(new PhysicalFileProvider(currentLocation));
+        var appContext = appContextMock.Object;
+        _themeRegistry = new DefaultThemeRegistry(appContext);
     }
 
     private void PrepareThemes()

@@ -86,7 +86,7 @@ public class DiscountPriceCalculator : IPriceCalculator
         var categoryDiscounts = await _discountService.GetAllDiscountsAsync(DiscountType.CategoryDiscount);
         if (categoryDiscounts.Any())
         {
-            //TODO: should I do the same check with Entry.Collection first before calling GetOrLoadAsync()? 
+          
             var productCategories = await batchContext.ProductCategories.GetOrLoadAsync(product.Id);
             foreach (var pc in productCategories)
             {

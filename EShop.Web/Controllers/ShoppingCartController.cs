@@ -51,7 +51,7 @@ public class ShoppingCartController : EShopBaseController
             .FindByIdAsync(productId);
         if (product == null)
         {
-            //TODO: handle this error
+            return NotFound();
         }
 
         var addToCartContext = new AddToCartContext()

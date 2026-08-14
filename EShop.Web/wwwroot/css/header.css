@@ -6,7 +6,7 @@
 .header {
     --search-bg-color: rgb(228, 228, 228); /*TODO: will be generated later on based on the bg of the header*/
     --search-modal-border-radius: 8px;
-    --bg-color: rgb(211, 218, 246); /*TODO:fo */
+    --bg-color: rgb(211, 218, 246); 
     --nav-bg-color: rgb(211, 218, 246);
     --header-accent-color: rgb(255, 123, 43);
     --text-color: rgb(0, 0, 0);
@@ -19,14 +19,6 @@
     z-index: var(--layer-header-menu);
 }
 
-
-/*
- 1. So we can write JavaScript to help us to track the header's sticky state
-(i.e. if it's being scrolled at the moment)
-
-
-
-*/
 
 /*
 TODO:
@@ -286,7 +278,7 @@ TODO:
 }
 
 
-.header__link { /*TODO: */
+.header__link { 
     display: flex;
     align-items: center;
     text-decoration: none;
