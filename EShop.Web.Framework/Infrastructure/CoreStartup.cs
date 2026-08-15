@@ -35,6 +35,7 @@ using EShop.Infrastructure.Modules;
 using EShop.Infrastructure.Modules.Launch;
 using EShop.Infrastructure.Storage;
 using EShop.Infrastructure.Utilities;
+using EShop.Web.Common.Filters;
 using EShop.Web.Common.Razor;
 using EShop.Web.Common.TagHelpers;
 using Microsoft.AspNetCore.Builder;
@@ -50,7 +51,6 @@ public class CoreStartup : BaseStartup
     
     public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
-         
         services.AddSingleton<IJsonSerializer, NewtonsoftJsonSerializer>();
         services.AddScoped<IWidgetInstanceService, WidgetInstanceService>();
         services.AddScoped<IMediaStorageProvider, FileMediaStorageProvider>();
@@ -89,7 +89,7 @@ public class CoreStartup : BaseStartup
         services.AddScoped<IAddressService, DefaultAddressService>();
         services.AddScoped<ICityService, CityService>();
         services.AddScoped<IPaymentService, PaymentService>();
-        
+        services.AddScoped<IViewDataAccessor,DefaultViewDataAccessor>();
      
         /*
          * Caching 

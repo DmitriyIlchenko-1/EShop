@@ -6,6 +6,7 @@ using EShop.Core.Platform.Infructructure.Types;
 using EShop.Infrastructure.Modules;
 using EShop.Infrastructure.Types;
 using EShop.Infrastructure.Utilities;
+using EShop.Web.Common.Filters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -168,7 +169,10 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
 
     protected override void ConfigureServicesCore(IServiceCollection services, IConfiguration configuration)
     {
-        var mvcBuilder = services.AddControllersWithViews();
+        var mvcBuilder = services.AddControllersWithViews(options =>
+        {
+            options.Filters.AddService<IViewDataAccessor>();
+        });
         services.AddSingleton<IApplicationContext>(Engine.ApplicationContext);
 
         foreach (var startup in Startups)

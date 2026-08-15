@@ -17,6 +17,6 @@ public abstract class EShopRazorPage<TModel> : RazorPage<TModel>
     protected dynamic Config => ViewHelper.GetThemeVariables();
     
     //TEMP:
-    protected IThemeVariableService ServiceVariable 
+    protected IThemeVariableService VariableService 
         => ViewContext.HttpContext.RequestServices.GetRequiredService<IThemeVariableService>();
 }

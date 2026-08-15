@@ -1,0 +1,37 @@
+@using OrchardCore.ResourceManagement
+@model EShop.Web.Components.NotificationViewModel
+@addTagHelper *, OrchardCore.ResourceManagement
+
+<script type="module" at="Head">
+    import {notifySuccess, notifyError} from "/js/utilities.js";
+    const notificationHolder = document.getElementById("data-notification-holder");
+    if (!notificationHolder.dataset.isEmpty){
+        notificationHolder.querySelector('[data-notification-type="error"]')?.querySelectorAll('[data-notification-msg]')?.forEach((msg, index) => {
+            notifyError(msg.getAttribute('data-notification-msg'));
+        })
+        notificationHolder.querySelector('[data-notification-type="success"]')?.querySelectorAll('[data-notification-msg]')?.forEach(msg => {
+            notifySuccess(msg.getAttribute('data-notification-msg'));
+        })
+    }
+</script>
+
+<div data-isEmpty="@(!Model.HasNotifications)" id="data-notification-holder">
+    <div eh-if="Model.Errors.Any()" data-notification-type="error">
+        @foreach (var n in Model.Errors)
+        {
+            <span data-notification-msg="@Html.Raw(n.Message)" ></span>
+        }
+    </div>
+    <div eh-if="Model.Warnings.Any()" data-notification-type="warning">
+        @foreach (var n in Model.Warnings)
+        {
+            <span data-notification-msg="@Html.Raw(n.Message)" ></span>
+        }
+    </div>
+    <div eh-if="Model.Successes.Any()" data-notification-type="success">
+        @foreach (var n in Model.Successes)
+        {
+            <span data-notification-msg="@Html.Raw(n.Message)" ></span>
+        }
+    </div>
+</div>

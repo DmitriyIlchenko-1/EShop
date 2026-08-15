@@ -369,6 +369,17 @@
           "lib/net10.0/AngleSharp.dll": {}
         }
       },
+      "AnyAscii/0.3.3": {
+        "runtime": {
+          "lib/netcoreapp3.0/AnyAscii.dll": {
+            "assemblyVersion": "0.3.3.0",
+            "fileVersion": "0.3.3.0"
+          }
+        },
+        "compile": {
+          "lib/netcoreapp3.0/AnyAscii.dll": {}
+        }
+      },
       "Aspose.SVG/26.4.0": {
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "10.0.10",
@@ -597,6 +608,31 @@
         },
         "compile": {
           "lib/net8.0/FluentValidation.DependencyInjectionExtensions.dll": {}
+        }
+      },
+      "Json.More.Net/2.2.0": {
+        "runtime": {
+          "lib/net10.0/Json.More.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.2.0.0"
+          }
+        },
+        "compile": {
+          "lib/net10.0/Json.More.dll": {}
+        }
+      },
+      "JsonPath.Net/2.2.0": {
+        "dependencies": {
+          "Json.More.Net": "2.2.0"
+        },
+        "runtime": {
+          "lib/net10.0/JsonPath.Net.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.2.0.0"
+          }
+        },
+        "compile": {
+          "lib/net10.0/JsonPath.Net.dll": {}
         }
       },
       "MailKit/4.17.0": {
@@ -1245,6 +1281,71 @@
           "lib/netstandard2.0/nunit.framework.dll": {}
         }
       },
+      "OrchardCore.Abstractions/3.0.1": {
+        "dependencies": {
+          "AnyAscii": "0.3.3",
+          "JsonPath.Net": "2.2.0",
+          "Microsoft.IO.RecyclableMemoryStream": "3.0.1",
+          "ZString": "2.6.0"
+        },
+        "runtime": {
+          "lib/net10.0/OrchardCore.Abstractions.dll": {
+            "assemblyVersion": "3.0.1.0",
+            "fileVersion": "3.0.1.0"
+          }
+        },
+        "compile": {
+          "lib/net10.0/OrchardCore.Abstractions.dll": {}
+        }
+      },
+      "OrchardCore.ResourceManagement/3.0.1": {
+        "dependencies": {
+          "AnyAscii": "0.3.3",
+          "JsonPath.Net": "2.2.0",
+          "Microsoft.IO.RecyclableMemoryStream": "3.0.1",
+          "OrchardCore.ResourceManagement.Core": "3.0.1",
+          "ZString": "2.6.0"
+        },
+        "runtime": {
+          "lib/net10.0/OrchardCore.ResourceManagement.dll": {
+            "assemblyVersion": "3.0.1.0",
+            "fileVersion": "3.0.1.0"
+          }
+        },
+        "compile": {
+          "lib/net10.0/OrchardCore.ResourceManagement.dll": {}
+        }
+      },
+      "OrchardCore.ResourceManagement.Abstractions/3.0.1": {
+        "runtime": {
+          "lib/net10.0/OrchardCore.ResourceManagement.Abstractions.dll": {
+            "assemblyVersion": "3.0.1.0",
+            "fileVersion": "3.0.1.0"
+          }
+        },
+        "compile": {
+          "lib/net10.0/OrchardCore.ResourceManagement.Abstractions.dll": {}
+        }
+      },
+      "OrchardCore.ResourceManagement.Core/3.0.1": {
+        "dependencies": {
+          "AnyAscii": "0.3.3",
+          "JsonPath.Net": "2.2.0",
+          "Microsoft.IO.RecyclableMemoryStream": "3.0.1",
+          "OrchardCore.Abstractions": "3.0.1",
+          "OrchardCore.ResourceManagement.Abstractions": "3.0.1",
+          "ZString": "2.6.0"
+        },
+        "runtime": {
+          "lib/net10.0/OrchardCore.ResourceManagement.Core.dll": {
+            "assemblyVersion": "3.0.1.0",
+            "fileVersion": "3.0.1.0"
+          }
+        },
+        "compile": {
+          "lib/net10.0/OrchardCore.ResourceManagement.Core.dll": {}
+        }
+      },
       "Pipelines.Sockets.Unofficial/2.2.8": {
         "runtime": {
           "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
@@ -1500,6 +1601,17 @@
           "lib/netstandard2.0/ZiggyCreatures.FusionCache.Serialization.SystemTextJson.dll": {}
         }
       },
+      "ZString/2.6.0": {
+        "runtime": {
+          "lib/net7.0/ZString.dll": {
+            "assemblyVersion": "2.6.0.0",
+            "fileVersion": "2.6.0.0"
+          }
+        },
+        "compile": {
+          "lib/net7.0/ZString.dll": {}
+        }
+      },
       "EShop.Core/1.0.0": {
         "dependencies": {
           "EShop.Infrastructure": "1.0.0",
@@ -1563,7 +1675,9 @@
           "EShop.Core": "1.0.0",
           "EShop.Infrastructure": "1.0.0",
           "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation": "10.0.2",
-          "Microsoft.EntityFrameworkCore.SqlServer": "10.0.10"
+          "Microsoft.EntityFrameworkCore.SqlServer": "10.0.10",
+          "OrchardCore.ResourceManagement": "3.0.1",
+          "OrchardCore.ResourceManagement.Abstractions": "3.0.1"
         },
         "runtime": {
           "EShop.Web.Framework.dll": {
@@ -3573,6 +3687,13 @@
       "path": "anglesharp/1.4.0",
       "hashPath": "anglesharp.1.4.0.nupkg.sha512"
     },
+    "AnyAscii/0.3.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-OY4df79Q9eTerwvelKcAINt7bzrndMoG97Dkk6Qf9RfuNOjqB0FxygTcgu0fLu+0i9rJNZ9SRb5Ka+lpTqolOQ==",
+      "path": "anyascii/0.3.3",
+      "hashPath": "anyascii.0.3.3.nupkg.sha512"
+    },
     "Aspose.SVG/26.4.0": {
       "type": "package",
       "serviceable": true,
@@ -3684,6 +3805,20 @@
       "sha512": "sha512-D0VXh4dtjjX2aQizuaa0g6R8X3U1JaVqJPfGCvLwZX9t/O2h7tkpbitbadQMfwcgSPdDbI2vDxuwRMv/Uf9dHA==",
       "path": "fluentvalidation.dependencyinjectionextensions/12.1.1",
       "hashPath": "fluentvalidation.dependencyinjectionextensions.12.1.1.nupkg.sha512"
+    },
+    "Json.More.Net/2.2.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fiyEZJNgiCzDa7/N9bZ+CnM5qnawyJ54+CkHNZ2svwxWBWNNFzydJ7RlroqMdOjokGBiLcKIxdajNvOklzlYqQ==",
+      "path": "json.more.net/2.2.0",
+      "hashPath": "json.more.net.2.2.0.nupkg.sha512"
+    },
+    "JsonPath.Net/2.2.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-oARgzvSWx8Xp7Y3oxapPDmB+gIGw31aqY0YS2xA0HfydYJMvWW6e0KeJIfPeCmqiOqKcOOXSwAYF/3yE+VhCOg==",
+      "path": "jsonpath.net/2.2.0",
+      "hashPath": "jsonpath.net.2.2.0.nupkg.sha512"
     },
     "MailKit/4.17.0": {
       "type": "package",
@@ -3930,6 +4065,34 @@
       "path": "nunit/3.13.3",
       "hashPath": "nunit.3.13.3.nupkg.sha512"
     },
+    "OrchardCore.Abstractions/3.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-jhUkcGjMh2RkP2O4IDasGOljGaim42AdGhBhzhePJvsE78Pq1da3QJ5P+eCzKUM6ti1ltbIPsvK9n9DcSw1fPg==",
+      "path": "orchardcore.abstractions/3.0.1",
+      "hashPath": "orchardcore.abstractions.3.0.1.nupkg.sha512"
+    },
+    "OrchardCore.ResourceManagement/3.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-vfhtmzYfj6qOzYhE9y3mKSfDEpjnsX7WwXSURjA4vyvIAfWnqv8GYLjojBe2kSIygALjVslWAPbhdbllP9BWlQ==",
+      "path": "orchardcore.resourcemanagement/3.0.1",
+      "hashPath": "orchardcore.resourcemanagement.3.0.1.nupkg.sha512"
+    },
+    "OrchardCore.ResourceManagement.Abstractions/3.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nyfc1zwspzF5pMIZT+fmBJJIqRy7u1YVp25mZxzzv738YtzoZJUN9tBGQA8uCSdv2CXyyLDhhnTwVpaaZRmtbg==",
+      "path": "orchardcore.resourcemanagement.abstractions/3.0.1",
+      "hashPath": "orchardcore.resourcemanagement.abstractions.3.0.1.nupkg.sha512"
+    },
+    "OrchardCore.ResourceManagement.Core/3.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-m+SDv3PZYRACYmT1/GB1/aV6NU2UMOU04ycFAANlfaHZOSejsRYBwCpJltqqOb+3rJLCHYfOCrgwZNqoHhx8pw==",
+      "path": "orchardcore.resourcemanagement.core/3.0.1",
+      "hashPath": "orchardcore.resourcemanagement.core.3.0.1.nupkg.sha512"
+    },
     "Pipelines.Sockets.Unofficial/2.2.8": {
       "type": "package",
       "serviceable": true,
@@ -4062,6 +4225,13 @@
       "sha512": "sha512-wbAZYdwJJCx8bD25RG/DvuN9Lbp8Q+pKUODiFmfYwvkvP2yCYc3Utt/c2d96Na+xTzCrNcu1y6xdRBjTbzWG4A==",
       "path": "ziggycreatures.fusioncache.serialization.systemtextjson/2.4.0",
       "hashPath": "ziggycreatures.fusioncache.serialization.systemtextjson.2.4.0.nupkg.sha512"
+    },
+    "ZString/2.6.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XE8a+11nZg0LRaf+RGABEWaHIf8yGd5w8v/Ra1iWxMBmAVzwuKbW7G21mS0U7w7sh1lYcgckInWGgnz4qyET8A==",
+      "path": "zstring/2.6.0",
+      "hashPath": "zstring.2.6.0.nupkg.sha512"
     },
     "EShop.Core/1.0.0": {
       "type": "project",

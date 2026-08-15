@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 
 namespace EShop.Web.Controllers;
+
 /*
  * TODO:
  * 1. Deal with security stamps because right now we're using a workaround.
@@ -179,7 +180,7 @@ public class IdentityController : EShopBaseController
     [HttpGet(nameof(ConfirmEmail))]
     public async Task<IActionResult> ConfirmEmail(string token, string email)
     {
-        User? user = await _userManager.FindByEmailAsync(email);
+        User? user = await _userManager.FindByEmailAsync(email.EmptyIfNull());
 
         if (user == null)
         {
@@ -520,7 +521,6 @@ public class IdentityController : EShopBaseController
             model.ResultMessage = "The e-mail has been sent";
         }
 
-         
 
         return View(model);
     }
@@ -550,10 +550,13 @@ public class IdentityController : EShopBaseController
         {
             AddModelStateErrors(await validator.ValidateAsync(_userManager, user, model.NewPassword));
         }
-        
+
         if (ModelState.IsValid)
         {
-            var resetResult = await _userManager.ResetPasswordAsync(user, UrlExtensions.Base64UrlDecode(model.Token), model.NewPassword);
+            var resetResult =
+                await _userManager.ResetPasswordAsync(user,
+                    UrlExtensions.Base64UrlDecode(model.Token),
+                    model.NewPassword);
             if (resetResult.Succeeded)
             {
                 model.IsResultSuccess = true;
@@ -578,7 +581,6 @@ public class IdentityController : EShopBaseController
         return View();
     }
 
-    
 
     #region Helpers
 

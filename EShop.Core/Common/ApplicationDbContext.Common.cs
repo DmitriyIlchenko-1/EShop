@@ -14,7 +14,4 @@ public partial class ApplicationDbContext
     public DbSet<City> Cities { get; set; }
     public DbSet<Label> Labels { get; set; }
     public DbSet<DeliveryTime> DeliveryTimes { get; set; }
-   
-   
-    
 }

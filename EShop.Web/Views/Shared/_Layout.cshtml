@@ -7,6 +7,7 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
     @await Component.InvokeAsync("Antiforgery")
+    @(await Component.InvokeAsync<NotificationViewComponent>())
 
 
     <title>@ViewBag.Title</title>
@@ -24,7 +25,8 @@
     <link href="~/css/cart-items.css" rel="stylesheet" type="text/css"/>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
-
+  
+    <resources type="HeadScript"/>
     <script type="module" src="~/lib/notyf/notyf.es.js"></script>
     <script type="module" src="~/js/utilities.js"></script>
     <script src="~/lib/jquery/jquery.min.js"></script>
@@ -663,10 +665,9 @@
     }
 }
 <div class="overlay overlay--fixed overlay--solid js-overlay"></div>
-
-</body>
-@(await RenderSectionAsync("Scripts", false))
 <script src="~/lib/jquery-validate/jquery.validate.min.js"></script>
 <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
-
+<resources type="FootScript"/>
+</body>
+ 
 </html>

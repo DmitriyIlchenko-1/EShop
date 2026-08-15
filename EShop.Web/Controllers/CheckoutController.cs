@@ -4,7 +4,6 @@ using EShop.Core.Common.Services;
 using EShop.Core.Data;
 using EShop.Core.Data.Cart.Domain;
 using EShop.Core.Data.Cart.Services;
-using EShop.Core.Data.Extensions;
 using EShop.Core.Data.Orders.Extensions;
 using EShop.Core.Data.Payment;
 using EShop.Core.Data.Settings;
@@ -38,7 +37,7 @@ public class CheckoutController : EShopBaseController
 
     public CheckoutController(IShoppingCartService shoppingCartService, IWorkContext workContext,
         CheckoutSettings checkoutSettings, IPaymentProviderManager paymentProviderManager, CheckoutHelper checkoutHelper, ApplicationDbContext db,
-        IOrderService orderService, PaymentSettings paymentSettings, INotificationManager notificationManager)
+        IOrderService orderService, PaymentSettings paymentSettings)
     {
         _shoppingCartService = shoppingCartService;
         _workContext = workContext;

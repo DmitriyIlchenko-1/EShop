@@ -31,7 +31,7 @@
         <PackageReference Include="Autofac" Version="9.3.1" />
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
         <PackageReference Include="Bogus" Version="35.6.3" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="10.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="10.0.11" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -41,7 +41,14 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
         <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.7" />
+        <PackageReference Include="OrchardCore" Version="3.0.1" />
+        <PackageReference Include="OrchardCore.Application.Mvc.Targets" Version="3.0.1" />
+        <PackageReference Include="OrchardCore.ResourceManagement" Version="3.0.1" />
+        <PackageReference Include="OrchardCore.ResourceManagement.Abstractions" Version="3.0.1" />
+        <PackageReference Include="OrchardCore.Resources" Version="3.0.1" />
         <PackageReference Include="Riok.Mapperly" Version="4.3.1" />
     </ItemGroup>
 

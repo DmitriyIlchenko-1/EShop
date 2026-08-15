@@ -1,4 +1,5 @@
 using EShop.Core.Platform.Logging.Services;
+using EShop.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -51,17 +52,27 @@ public class NotificationFilterAttribute : TypeFilterAttribute
             if (!newEntries.Any())
                 return;
 
-            var list = dictionary.TryGetValue(NotificationKey, out var value)
-                ? JsonConvert.DeserializeObject<IList<NotificationEntry>>(value.ToString())
-                : new List<NotificationEntry>();
+            var notifications = dictionary.TryGetValue(NotificationKey, out var value)
+                ? JsonConvert.DeserializeObject<NotificationEntry[]>(value.ToString())
+                : Array.Empty<NotificationEntry>();
 
 
-            foreach (var newEntry in newEntries)
+            var persistSet = notifications.Union(newEntries.Where(x => x.Message.HasValue())).ToArray();
+
+            if (persistSet.Any())
             {
-                list.Add(newEntry);
+                dictionary[NotificationKey] = JsonConvert.SerializeObject(TrimNotificationSize(persistSet));
+            }
+        }
+
+        private NotificationEntry[] TrimNotificationSize(NotificationEntry[] notifications)
+        {
+            if (notifications.Length <= 5)
+            {
+                return notifications;
             }
 
-            dictionary[NotificationKey] = JsonConvert.SerializeObject(list);
+            return notifications.Skip(notifications.Length - 5).Take(5).ToArray();
         }
     }
 }
