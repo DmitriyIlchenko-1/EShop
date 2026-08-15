@@ -6,32 +6,12 @@ namespace EShop.Infrastructure.Modules;
 
 public class ModuleManager  
 {
-    private static readonly string ModulesFilename = "modules.json";
     private const string FileName = "InstalledModules.txt";
     private static ModuleManager _instance;
     private readonly HashSet<string> _installedModules = new(StringComparer.OrdinalIgnoreCase);
     public ISet<string> InstalledModules => _installedModules;
     private readonly IApplicationContext _applicationContext;
-
-    public static IEnumerable<ModuleInfo> LoadModules()
-    {
-         
-        string modulesPath = Path.Combine(GlobalConfiguration.ContentRootPath, ModulesFilename);
-        using StreamReader reader = new StreamReader(modulesPath);
-        string content = reader.ReadToEnd();
-        dynamic modulesData = JsonConvert.DeserializeObject(content);
-        foreach (dynamic module in modulesData)
-        {
-            yield return new ModuleInfo
-            {
-                Name = module.name,
-                IsBundledWithHost = module.isBundledWithHost,
-                Version = Version.Parse(module.version.ToString()),
-            };
-        }
-
-    }
-
+    
     private ModuleManager()
     {
         _applicationContext = EngineContext.Current.ApplicationContext;

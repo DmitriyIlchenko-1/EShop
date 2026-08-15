@@ -1,27 +1,11 @@
-using System.Reflection;
 using EasyCaching.Core.Configurations;
 using EasyCaching.InMemory;
-using EasyCaching.Serialization.Json;
-using EShop.Core.Data.DbHandlers;
-using EShop.Core.Data.DbHandlers.Configuration;
 using EShop.Core.Platform.Caching;
-using EShop.Core.Platform.Infructructure.Types;
-using EShop.Infrastructure;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Caching.Adapters.EasyCaching;
-using EShop.Infrastructure.Caching.Adapters.Fusion;
-using EShop.Infrastructure.Engine;
-using EShop.Infrastructure.Extensions;
-using EShop.Infrastructure.Modules;
-using EShop.Infrastructure.Utilities;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using StackExchange.Redis;
-using ZiggyCreatures.Caching.Fusion;
-using ZiggyCreatures.Caching.Fusion.Serialization;
-using TypeExtensions = System.Reflection.TypeExtensions;
+using OrchardCore.ResourceManagement;
 
 namespace EShop.Web.Common.Infrastructure;
 
@@ -34,7 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICacheManagerFactory, EasyCachingManagerFactory>();
 
         //Lets us inject the hybrid cache without using the factory. 
-        services.AddSingleton<ICacheManager>(sp =>
+        services.AddSingleton(sp =>
         {
             var factory = sp.GetRequiredService<ICacheManagerFactory>();
             return factory.GetHybridCache();
@@ -45,24 +29,22 @@ public static class ServiceCollectionExtensions
     {
         services.AddEasyCaching(options =>
         {
-            
             options.UseInMemory(
                 config =>
                 {
                     config.DBConfig = new InMemoryCachingOptions
                     {
                         EnableReadDeepClone = false,
-                        EnableWriteDeepClone = false,
+                        EnableWriteDeepClone = false
                     };
                 },
                 CachingConstValue.MemoryCacheName);
-            
-            
-            
+
+
             var storageConfig = configuration
                 .GetSection("Redis")
                 .Get<DistributedCacheSettings>();
-        
+
             options.WithJson(CachingConstValue.DistributedCache);
             options.UseInMemory(
                 config =>
@@ -70,7 +52,7 @@ public static class ServiceCollectionExtensions
                     config.DBConfig = new InMemoryCachingOptions
                     {
                         EnableReadDeepClone = false,
-                        EnableWriteDeepClone = false,
+                        EnableWriteDeepClone = false
                     };
                 },
                 "DistributedM1");
@@ -79,10 +61,10 @@ public static class ServiceCollectionExtensions
                     conf.DBConfig.ConnectionTimeout = 10_000;
                     conf.DBConfig.Username = storageConfig.Username;
                     conf.DBConfig.Password = storageConfig.Password;
-                    conf.DBConfig.Endpoints.Add(new ServerEndPoint()
+                    conf.DBConfig.Endpoints.Add(new ServerEndPoint
                     {
                         Host = storageConfig.Host,
-                        Port = storageConfig.Port,
+                        Port = storageConfig.Port
                     });
                 },
                 CachingConstValue.DistributedCache);
@@ -150,4 +132,10 @@ public static class ServiceCollectionExtensions
     //         .WithRegisteredMemoryCache()
     //         .WithoutDistributedCache();
     // }
+    
+    public static void AddResources(this IServiceCollection services)
+    {
+        services.AddResourceManagement();
+        services.AddScoped<IResourcesTagHelperProcessor, ResourcesTagHelperProcessor>();
+    }
 }

@@ -172,7 +172,8 @@ public class EShopEngineStartup : EngineStartup<EShopEngine>
         var mvcBuilder = services.AddControllersWithViews(options =>
         {
             options.Filters.AddService<IViewDataAccessor>();
-        });
+        })
+        .AddRazorRuntimeCompilation();
         services.AddSingleton<IApplicationContext>(Engine.ApplicationContext);
 
         foreach (var startup in Startups)

@@ -217,7 +217,6 @@ p {
     height: var(--size);
     width: var(--size);
     pointer-events: none;
-    fill: currentColor;
 }
 
 /*|| Buttons*/

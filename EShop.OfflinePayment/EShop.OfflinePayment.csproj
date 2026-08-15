@@ -10,17 +10,17 @@
         <OutputPath>..\EShop.Web\Modules\EShop.OfflinePayment</OutputPath>
         <OutDir>$(OutputPath)</OutDir>
     </PropertyGroup>
-    
 
+    <ItemGroup>
+        <Content Include="module.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    
     <ItemGroup>
         <ProjectReference Include="..\EShop.Core\EShop.Core.csproj"/>
         <ProjectReference Include="..\EShop.Infrastructure\EShop.Infrastructure.csproj"/>
         <ProjectReference Include="..\EShop.Web.Framework\EShop.Web.Framework.csproj"/>
-    </ItemGroup>
-    
-
-    <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="10.0.2" />
     </ItemGroup>
 
 </Project>

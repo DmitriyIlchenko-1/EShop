@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EShop.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260805071523_init")]
+    [Migration("20260815102758_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -1227,107 +1227,6 @@ namespace EShop.Web.Migrations
                     b.ToTable("Content_ProductMedia", (string)null);
                 });
 
-            modelBuilder.Entity("EShop.Core.Content.Widgets.Domain.Widget", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CreateUrl")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedOnUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("EditUrl")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<bool>("IsPublished")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("ViewComponentName")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Content_Widget", (string)null);
-                });
-
-            modelBuilder.Entity("EShop.Core.Content.Widgets.Domain.WidgetInstance", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreateOnUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Data")
-                        .HasColumnType("text");
-
-                    b.Property<byte>("DisplayOrder")
-                        .HasColumnType("smallint");
-
-                    b.Property<string>("HtmlData")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("LatestUpdatedOnUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime?>("PublishEndUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("PublishStartUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("WidgetId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("WidgetZoneId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WidgetId");
-
-                    b.HasIndex("WidgetZoneId");
-
-                    b.ToTable("Content_WidgetInstance", (string)null);
-                });
-
-            modelBuilder.Entity("EShop.Core.Content.Widgets.Domain.WidgetZone", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Content_WidgetZone", (string)null);
-                });
-
             modelBuilder.Entity("EShop.Core.Data.Cart.Domain.ShoppingCartItem", b =>
                 {
                     b.Property<int>("Id")
@@ -2074,24 +1973,6 @@ namespace EShop.Web.Migrations
                     b.Navigation("MediaFile");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("EShop.Core.Content.Widgets.Domain.WidgetInstance", b =>
-                {
-                    b.HasOne("EShop.Core.Content.Widgets.Domain.Widget", "Widget")
-                        .WithMany()
-                        .HasForeignKey("WidgetId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("EShop.Core.Content.Widgets.Domain.WidgetZone", "WidgetZone")
-                        .WithMany()
-                        .HasForeignKey("WidgetZoneId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Widget");
-
-                    b.Navigation("WidgetZone");
                 });
 
             modelBuilder.Entity("EShop.Core.Data.Cart.Domain.ShoppingCartItem", b =>

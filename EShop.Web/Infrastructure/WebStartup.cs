@@ -11,8 +11,6 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OrchardCore.ResourceManagement;
-using OrchardCore.ResourceManagement.TagHelpers;
-using OrchardCore.Resources.Services;
 
 namespace EShop.Web.Infrastructure;
 
@@ -23,10 +21,6 @@ public class WebStartup : BaseStartup
 
     public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
-         
-        services.AddResourceManagement();
-        services.AddScoped<IResourcesTagHelperProcessor, ResourcesTagHelperProcessor>();
-        
         services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>( );
         services.AddScoped<IUrlHelper>(x =>
         {

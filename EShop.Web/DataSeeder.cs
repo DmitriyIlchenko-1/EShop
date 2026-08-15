@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using EShop.Core.Catalog.Attributes.Services;
 using EShop.Core.Catalog.Categories.Domain;
 using EShop.Core.Catalog.Configuration;
@@ -34,16 +33,13 @@ public class DataSeeder
     private readonly ApplicationDbContext _dbContext;
     private readonly UserManager<User> _userManager;
     private readonly RoleManager<Role> _roleManager;
-    private readonly IProductAttributeMaterializer _materializer;
-    private readonly ISettingFactory _settingFactory;
+    
 
-    public DataSeeder(ApplicationDbContext dbContext, UserManager<User> userManager, RoleManager<Role> roleManager,
-        ISettingFactory settingFactory)
+    public DataSeeder(ApplicationDbContext dbContext, UserManager<User> userManager, RoleManager<Role> roleManager)
     {
         _dbContext = dbContext;
         _userManager = userManager;
         _roleManager = roleManager;
-        _settingFactory = settingFactory;
     }
 
     public async Task SeedDataAsync()
@@ -324,7 +320,7 @@ public class DataSeeder
                 }
             };
 
-            // Create roles if they don't exist
+
             var roleManager = _roleManager;
 
             var roles = new List<Role>
@@ -341,31 +337,10 @@ public class DataSeeder
                 }
             }
 
-            // //Assign users to roles
-            // var userRoles = new List<UserRole>();
-            // var customerRole = _dbContext.Roles.FirstOrDefault(r => r.Name == "Customer");
-            // var adminRole = _dbContext.Roles.FirstOrDefault(r => r.Name == "Administrator");
-
 
             _dbContext.Users.AddRange(users);
             await _userManager.AddPasswordAsync(users[0], "Admin123-");
             await _userManager.AddToRoleAsync(users[0], UserRoleNameConstants.Registered);
-
-            await _dbContext.SaveChangesAsync();
-
-            // if (customerRole != null)
-            // {
-            //     userRoles.Add(new UserRole { UserId = users[0].Id, RoleId = customerRole.Id }); // John is customer
-            //     userRoles.Add(new UserRole { UserId = users[1].Id, RoleId = customerRole.Id }); // Jane is customer
-            // }
-            //
-            // if (adminRole != null)
-            // {
-            //     userRoles.Add(new UserRole { UserId = users[0].Id, RoleId = adminRole.Id }); //John is also admin
-            // }
-            //
-            // _dbContext.UserRoles.AddRange(userRoles);
-
 
             await _dbContext.SaveChangesAsync();
         }
@@ -447,7 +422,7 @@ public class DataSeeder
                 var productName = $"Product {i}";
                 var description = $"This is a description for {productName}.  It is a high-quality product.";
                 var shortDescription = $"Short description for {productName}.";
-                var brand = brands.ElementAt(i % brands.Count); // Random brand assignment
+                var brand = brands.ElementAt(i % brands.Count);
                 var approvedReviewCount = Random.Shared.Next(0, 20);
                 var approvedRatingSum = approvedReviewCount == 0
                     ? 0
@@ -459,7 +434,7 @@ public class DataSeeder
                     ShortDescription = shortDescription,
                     MaxAddToCartNumber = 350,
                     MinAddToCartNumber = Random.Shared.Next(1, 15),
-                    Sku = $"SKU-{i.ToString().PadLeft(3, '0')}", // Create a SKU
+                    Sku = $"SKU-{i.ToString().PadLeft(3, '0')}",
                     IsAvailable = true,
                     IsPublished = true,
                     ShowOnHomePage = true,
@@ -486,9 +461,9 @@ public class DataSeeder
                     },
                     CreatedOnUtc = DateTime.UtcNow,
                     ModifiedOnUtc = DateTime.UtcNow,
-                    IsShippingEnabled = true, // Enable shipping
+                    IsShippingEnabled = true,
                     QuantityUnitId = 1,
-                    Gtin = $"GTIN-{i.ToString().PadLeft(3, '0')}" // Generate Gtin
+                    Gtin = $"GTIN-{i.ToString().PadLeft(3, '0')}"
                 });
             }
 
@@ -527,9 +502,12 @@ public class DataSeeder
                             MediaFile = x,
                         };
                     })
-                    .OrderBy(x => Guid.NewGuid().ToString())
+                    .OrderBy(x => Guid
+                        .NewGuid()
+                        .ToString())
                     .ToArray();
-                productMedias.First().MainImage = true;
+                productMedias.First()
+                    .MainImage = true;
                 _dbContext.ProductMedias.AddRange(productMedias);
             }
 
@@ -1073,7 +1051,9 @@ public class DataSeeder
 
     private async Task SeedCombinationsAsync()
     {
-        var products = _dbContext.Products.Where(x => x.AttributeCombinationRequired).ToList();
+        var products = _dbContext
+            .Products.Where(x => x.AttributeCombinationRequired)
+            .ToList();
         var productVariantAttributes = _dbContext
             .ProductVariantAttributes.Include(x => x.ProductAttribute)
             .Include(x => x.ProductVariantAttributeValues)
@@ -1086,13 +1066,12 @@ public class DataSeeder
             var productVariantAttributeList = productVariantAttributes
                 .Where(x => x.ProductId == product.Id)
                 .ToList();
-            if (!productVariantAttributeList.Any()) continue; // Skip if no attributes
+            if (!productVariantAttributeList.Any()) continue;
 
 
             decimal priceAdjustment = 0;
             decimal weightAdjustment = 0;
-            var rawAttributes = new List<string>(); // Used to create raw attributes JSON
-            // We need to create and assign more than one combination to a product and make sure that one combination doesn't contain all the variants options.
+            var rawAttributes = new List<string>();
 
             var allValues = productVariantAttributeList.Select(x => x.ProductVariantAttributeValues);
             var result = CrossProduct(allValues);
@@ -1185,7 +1164,7 @@ public class DataSeeder
                     {
                         ProductId = product.Id,
                         CategoryId = category.Id,
-                        DisplayOrder = new Random().Next(1, 4) // Assign a random display order
+                        DisplayOrder = new Random().Next(1, 4)
                     });
                 }
             }
@@ -1195,7 +1174,7 @@ public class DataSeeder
     }
 }
 
-public static class Utils
+internal static class SeedUtils
 {
     public static int NextInt32(this Random rng)
     {
@@ -1207,12 +1186,10 @@ public static class Utils
     public static decimal NextDecimalSample(this Random random)
     {
         var sample = 1m;
-        //After ~200 million tries this never took more than one attempt but it is possible to generate combinations of a, b, and c with the approach below resulting in a sample >= 1.
         while (sample >= 1)
         {
             var a = random.NextInt32();
             var b = random.NextInt32();
-            //The high bits of 0.9999999999999999999999999999m are 542101086.
             var c = random.Next(542101087);
             sample = new Decimal(a, b, c, false, 28);
         }

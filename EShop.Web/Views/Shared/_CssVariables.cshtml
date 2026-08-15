@@ -1,0 +1,598 @@
+<style>
+    :root {
+
+        /*PAGE LAYOUT*/
+        --narrow-content-width: 57.6rem;
+        --normal-content-width: 67.2rem;
+        --wide-content-width: 73.6rem;
+        --narrow-page-width: 144rem;
+        --normal-page-width: 192rem;
+        --wide-page-width: 240rem;
+
+        /*Content max-width*/
+        --max-width--body-normal: 50ch;
+        --max-width--body-narrow: 22.75em;
+
+        /*SECTION HEIGHTS*/
+        --section-height-small: 24rem;
+        --section-height-medium: 40rem;
+        --section-height-large: 56rem;
+
+        /*640px*/
+        /*medium*/
+        @@media screen and (min-width: 40em) {
+            --section-height-small: 40svh;
+            --section-height-medium: 55svh;
+            --section-height-large: 70svh;
+        }
+
+        /*960px*/
+        /*large*/
+        @@media screen and (min-width: 60em) {
+            --section-height-small: 50svh;
+            --section-height-medium: 65svh;
+            --section-height-large: 80svh;
+        }
+
+
+        /*|| Icons*/
+        --icon-size-2xs: 0.96rem;
+        --icon-size-xs: 1.36rem;
+        --icon-size-sm: 2rem;
+        --icon-size-md: 2.2rem;
+        --icon-size-lg: 2.4rem;
+        --icon-size-xl: 2.6rem;
+
+
+        /*|| Gaps*/
+        --gap-3xs: 0.2rem;
+        --gap-2xs: 0.48rem;
+        --gap-xs: 0.8rem;
+        --gap-sm: 1.12rem;
+        --gap-md: 1.44rem;
+        --gap-lg: 1.6rem;
+        --gap-xl: 2rem;
+        --gap-2xl: 3.2rem;
+        --gap-3xl: 4.8rem;
+
+
+        --product-thumbnail-bagde-offset: .4rem;
+
+        /*Borders*/
+        --style-border-radius-buttons: 10px; /*from settings*/
+
+
+        /*|| Buttons*/
+        --minimum-touch-target: 44px;
+        --minimum-field-touch-target: 4.4rem;
+        --button-padding-inline: 24px;
+        --button-padding-block: 16px;
+        --btn-primary-border-width: 2px;
+        --btn-secondary-border-width: 1px;
+
+        /*Z-index*/
+        --layer-base: 0;
+        --layer-flat: 1;
+        --layer-raised: 2;
+        --layer-heightened: 4;
+        --layer-sticky: 8;
+        --layer-window-overlay: 10;
+        --layer-header-menu: 12;
+        --layer-overlay: 16;
+        --layer-menu-drawer: 18;
+        --layer-temporary: 20;
+
+        /*|| Spacing*/
+        --space-unit: .4rem;
+
+        --padding-3xs: 0.2rem;
+        --padding-2xs: 0.4rem;
+        --padding-xs: 0.8rem;
+        --padding-sm: 1.12rem;
+        --padding-md: 1.28rem;
+        --padding-lg: 1.6rem;
+        --padding-xl: 2rem;
+        --padding-2xl: 2.4rem;
+        --padding-3xl: 2.8rem;
+        --padding-4xl: 3.2rem;
+        --padding-5xl: 4.8rem;
+        --padding-6xl: 6.4rem;
+
+        --margin-3xs: 0.2rem;
+        --margin-2xs: 0.48rem;
+        --margin-xs: 0.8rem;
+        --margin-sm: 1.12rem;
+        --margin-md: 1.28rem;
+        --margin-lg: 1.6rem;
+        --margin-xl: 2rem;
+        --margin-2xl: 2.4rem;
+        --margin-3xl: 2.8rem;
+        --margin-4xl: 3.2rem;
+        --margin-5xl: 4.8rem;
+        --margin-6xl: 8rem;
+
+
+        --spacing-scale-sm: 0.6;
+        --spacing-scale-md: 0.7;
+        --spacing-scale-default: 1.0;
+        --spacing-scale-lg: 1.2;
+
+        --letter-spacing--heading-tight: -0.03em;
+        --letter-spacing--heading-normal: 0em;
+        --letter-spacing--heading-loose: 0.03em;
+
+        /*|| Typography*/
+
+        --font-body-family: 'DM Sans', sans-serif;
+        --font-body-style: normal;
+        --font-body-weight: 400;
+        --font-body--size: 16;
+
+        --font-heading--family: 'Inter', sans-serif;
+        --font-heading--style: normal;
+        --font-heading--weight: 700;
+
+        --font-subheading--style: normal;
+        --font-subheading--family: 500;
+        --font-subheading--weight: 'Fira Sans', sans-serif;
+
+
+        /*  !*Heading Font Sizes
+          We have our font max breakpoint set to 1000px.
+          It means that as soon as the viewport reaches that number,
+          the font-size will set to the specified user value.
+          The value is hardcoded in here and equals 48px.
+
+          To make font-size fluid - we have to make it scale down with respect
+          to those 48 pixels it can maximum get in 1000px viewport.
+          4.8vw is going to be our 'scaled down 48 pixels' at any given viewport smaller than 1000px.
+          The formula is (absoluteSize / breakpoint) * 100.
+
+          What's defined by the design:
+          1. The upper-bound limit along with the max breakpoint.
+          Traditionally, 48px (3rem) is the biggest size specified in the last media query for the last font breakpoint.
+
+          2. The max breakpoint is also determined by the design - we do not want the font size to grow anymore after reaching it.
+
+          3. The bottom-bound: the design defines possible sizes the headers can be and each header's bottom-bound is the size of the next heading in the hierarchy.
+          The bottom-bound is for the viewport width that isn't enough to get to 4.8vw.
+          We shouldn't be able make a heading less than the size of the next level header.
+          For example, if h4 is clamp(3.5rem, 7.2vw, 4.5rem) - then h3's bottom-bound must be 4.5rem. (h3 shouldn't become smaller than h4).
+
+          We can jump over size values depending on the design values available. If you can set any heading to 48, 56 or 72px (that's the design possible values),
+          and you choose to set h1 to 48px and h2 to 72px, the h2's bottom-bound should be 3.5rem (56px).
+          The h2 can get smaller down to 3.5rem since there's no heading for that value. - this behaviour is something dictated by the design.
+
+
+          What's defined by the fluid typography:
+          1. The ideal value, which scales down the font size taking into account the current viewport width and 48px font-size
+          that it has to adopt for that viewport size.
+
+
+          The sizes used are 56px, 48px, 32px, 24px, 14px, 12px. */
+
+        --font-size--h1: clamp(4.8rem, 5.6vw, 5.6rem);
+        --font-size--h2: clamp(3.6rem, 4.8vw, 4.8rem);
+        --font-size--h3: 3.2rem;
+        --font-size--h4: 2.4rem;
+        --font-size--h5: 1.7rem;
+        --font-size--h6: 1.2rem;
+
+
+        /*Focus*/
+        --focus-outline-width: 0.2rem;
+        --focus-outline-style: solid;
+        --focus-outline-color: #0071e3;
+        --focus-outline-offset: 0.2rem;
+
+
+        /*|| Product Cards*/
+        --product-card-corner-radius: 7px;
+
+        /*|| Modals*/
+        --modal-border-radius: 16px;
+
+
+        /*Line Heights*/
+        --line-height--body-tight: 1.2;
+        --line-height--body-normal: 1.8;
+        --line-height--body-loose: 1.6;
+
+
+        --line-height--heading-tight: 1;
+        --line-height--heading-normal: 1.1;
+        --line-height--heading-loose: 1.3;
+
+
+        /*|| Inputs. Search*/
+        --input-border-width: 1px;
+        --input-border-opacity: .6;
+        --input-border-radius: 10px;
+        --search-input-border-radius: 55px;
+        --color-input-border-success-rgb: 22, 171, 0;
+        --color-input-border-error-rgb: 255, 0, 0;
+        --color-text-danger: #d40f0f;
+
+        /*Animation*/
+        --animation-speed: 0.125s;
+        --animation-easing: ease-in-out;
+
+        /*|| Variants*/
+        --variant-border-width: 1px;
+        --variant-border-style: solid;
+        --variant-outline-offset: 2px;
+
+        /*|| Variants - Color Swatches*/
+        --color-swatch-input-border-radius: 50%;
+        --color-swatch-input-width: 24px;
+        --color-swatch-input-height: 24px;
+        --color-swatch-outer-circle-ratio: 1.25;
+
+
+        /*|| BORDERS*/
+        --border-radius-xs: 0.2rem;
+        --border-radius-sm: 0.6rem;
+        --border-radius-md: 0.8rem;
+        --border-radius-50: 50%;
+        --border-radius-lg: 1rem;
+
+
+        /*START*/
+        /*This shouldn't be in this file, my guess (don't know for sure) is that this is done with some sort of server-side parser that produces all these variables as its output*/
+        --font-h1--weight: var(--font-heading--weight);
+        --font-h1--letter-spacing: var(--letter-spacing--heading-normal);
+        --font-h1--size: var(--font-size--h1);
+        --font-h1--family: var(--font-heading--family);
+        --font-h1--style: var(--font-heading--style);
+        --font-h1--case: none;
+        --font-h1--line-height: var(--line-height--heading-loose);
+        --font-h2--weight: var(--font-heading--weight);
+        --font-h2--letter-spacing: var(--letter-spacing--heading-normal);
+        --font-h2--size: var(--font-size--h2);
+        --font-h2--family: var(--font-heading--family);
+        --font-h2--style: var(--font-heading--style);
+        --font-h2--case: none;
+        --font-h2--line-height: var(--line-height--heading-loose);
+        --font-h3--weight: var(--font-heading--weight);
+        --font-h3--letter-spacing: var(--letter-spacing--heading-normal);
+        --font-h3--size: var(--font-size--h3);
+        --font-h3--family: var(--font-heading--family);
+        --font-h3--style: var(--font-heading--style);
+        --font-h3--case: none;
+        --font-h3--line-height: var(--line-height--heading-loose);
+        --font-h4--weight: var(--font-heading--weight);
+        --font-h4--letter-spacing: var(--letter-spacing--heading-normal);
+        --font-h4--size: var(--font-size--h4);
+        --font-h4--family: var(--font-heading--family);
+        --font-h4--style: var(--font-heading--style);
+        --font-h4--case: none;
+        --font-h4--line-height: var(--line-height--heading-loose);
+        --font-h5--weight: var(--font-heading--weight);
+        --font-h5--letter-spacing: var(--letter-spacing--heading-normal);
+        --font-h5--size: var(--font-size--h5);
+        --font-h5--family: var(--font-heading--family);
+        --font-h5--style: var(--font-heading--style);
+        --font-h5--case: none;
+        --font-h5--line-height: var(--line-height--heading-loose);
+        --font-h6--weight: var(--font-heading--weight);
+        --font-h6--letter-spacing: var(--letter-spacing--heading-normal);
+        --font-h6--size: var(--font-size--h6);
+        --font-h6--family: var(--font-subheading--family);
+        --font-h6--style: var(--font-subheading--style);
+        --font-h6--case: none;
+        --font-h6--line-height: var(--line-height--heading-loose);
+        /*END*/
+
+        /*|| Variant */
+        --variant-border-color: #6f7171;
+        --variant-border-opacity: 0.4;
+        --variant-border-checked-color: #000000;
+
+        --star-color-rgb: 255 159 28;
+
+
+        /*Button colors*/
+        --color-danger-primary-button-background: rgb(255, 255, 255);
+        --color-danger-primary-button-text: rgb(244, 10, 31);
+        --color-danger-primary-button-hover-background: rgb(255, 255, 255);
+        --color-danger-primary-button-hover-text: rgb(255, 0, 0);
+        --color-danger-primary-button-border: rgb(0, 0, 0);
+        --color-danger-primary-button-hover-border: rgb(0, 0, 0);
+
+        --icon-button-danger-action-bg-color: rgb(209, 7, 7);
+        --icon-button-danger-action-color: rgb(235, 234, 234);
+
+
+        --badge-info-bg-color: rgb(0, 90, 225);
+        --badge-info-color: rgb(255, 255, 255);
+
+        --product-card-price-color: rgb(0, 0, 0);
+        --product-label-text--refurbished: #ffffff;
+        --product-label-gradient--refurbished: linear-gradient(145deg, rgba(42, 156, 44, 1) 20%, rgba(42, 156, 44, 0.76) 82%);
+        --product-label-text--sale: #ffffff;
+        --product-label-gradient--sale: linear-gradient(144deg, rgba(244, 43, 65, 0.8), rgb(218, 50, 67) 97%, rgba(247, 23, 23, 0.8) 97.482%);
+        --product-label-text--custom: #000000;
+        --product-label-gradient--custom: linear-gradient(144deg, rgba(244, 120, 43, 0.8), rgb(214, 108, 31) 97%, rgba(212, 92, 18, 0.89) 97.482%);
+
+        --in-stock-text-color: #358c03;
+        --in-stock-background-color: rgba(139, 248, 123, 0.44);
+        --in-stock-border-color: rgba(50, 136, 0, 0.41);
+        --in-stock-animation-color: #0c7a01;
+
+        --low-stock-text-color: #c60202;
+        --low-stock-background-color: rgba(228, 4, 4, 0.13);
+        --low-stock-border-color: rgba(136, 0, 0, 0.41);
+        --low-stock-animation-color: #930303;
+        --heading-gap: calc(8 * var(--space-unit));
+
+        --bg-color: #000;
+        --ui-bg-button: #ffffff;
+        --color-white: #ffffff;
+        --text-color-rgb: 43 43 42;
+        --text-color: rgb(43 43 42);
+        --input-text-color: rgb(43 43 42);
+        --input-bg-color: #fff;
+        --input-bg--unavailable: rgba(0, 0, 0, 0.4);
+        --input-line-though: #6f7171;
+
+        --overlay-color: rgba(18, 18, 18, 0.4);
+        --modal-overlay-color: 0 0 0;
+
+
+        /*Alert colors*/
+        --error-bg-color-rgb: 252 237 238;
+        --error-text-color-rgb: 180 12 28;
+        --success-bg-color-rgb: 232 246 234;
+        --success-text-color-rgb: 44 126 63;
+        --info-bg-color-rgb: 228 237 250;
+        --info-text-color-rgb: 26 102 210;
+        --error-bg-color: rgb(252 237 238);
+        --error-text-color: rgb(180 12 28);
+        --success-bg-color: rgb(232 246 234);
+        --success-text-color: rgb(44 126 63);
+        --info-bg-color: rgb(228 237 250);
+        --info-text-color: rgb(26 102 210);
+
+        --shadow-ring: 0 0 0 1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.05);
+        --shadow-xs: 0 0 0 1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.02), 0 1px 3px -1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.2);
+        --shadow-sm: 0 0.3px 0.4px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.02), 0 0.9px 1.5px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.045), 0 3.5px 6px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.09);
+        --shadow-md: 0 0.9px 1.25px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.025), 0 3px 5px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.05), 0 12px 20px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.09);
+        --shadow-lg: 0 1.2px 1.9px -1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.01), 0 3px 5px -1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.015), 0 8px 15px -1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.05), 0 28px 40px -1px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.1);
+        --shadow-xl: 0 1.5px 2.1px -6px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.009), 0 3.6px 5.2px -6px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.0115), 0 7.3px 10.6px -6px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.0125), 0 16.2px 21.9px -6px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.025), 0 46px 60px -6px hsla(var(--color-black-h), var(--color-black-s), var(--color-black-l), 0.15);
+        /* inner-glow */
+        --inner-glow: inset 0 0 0.5px 1px hsla(var(--color-white-h), var(--color-white-s), var(--color-white-l), 0.075);
+        --inner-glow-top: inset 0 1px 0.5px hsla(var(--color-white-h), var(--color-white-s), var(--color-white-l), 0.075);
+
+
+    }
+
+    :root, .color-scheme-1 {
+        --color-background: rgb(255, 255, 255);
+        --color-background-rgb: 255, 255, 255;
+        --opacity-5-15: 0.15;
+        --opacity-10-25: 0.25;
+        --opacity-35-55: 0.55;
+        --opacity-40-60: 0.6;
+        --opacity-30-60: 0.6;
+        --color-foreground: rgba(0, 0, 0, 0.81);
+        --color-foreground-rgb: 0, 0, 0;
+        --color-foreground-heading: rgb(0, 0, 0);
+        --color-foreground-heading-rgb: 255 255 255;
+        --color-primary: rgb(255 255 255 / 1.0);
+        --color-primary-rgb: 255 255 255;
+        --color-primary-hover: rgb(255 255 255 / 0.69);
+        --color-primary-hover-rgb: 255 255 255;
+        --color-border: rgb(230 230 230 / 1.0);
+        --color-border-rgb: 230 230 230;
+        --color-shadow: rgb(0 0 0 / 1.0);
+        --color-shadow-rgb: 0 0 0;
+        --link-color: #2B2B2AFF;
+
+        /*|| Color Buttons*/
+        --color-primary-button-text: rgb(255 255 255 / 1.0);
+        --color-primary-button-background: rgb(0 0 0 / 1.0);
+        --color-primary-button-border: rgb(0 0 0 / 1.0);
+        --color-primary-button-hover-background: rgb(51 51 51 / 1.0);
+        --color-primary-button-hover-text: rgb(255 255 255 / 1.0);
+        --color-link-active: rgba(255, 0, 0, 0.8);
+        --color-primary-button-hover-border: rgb(0 0 0 / 1.0);
+        --color-secondary-button-text: rgb(23, 23, 23);
+        --color-secondary-button-background: rgba(231, 231, 232, 0.54);
+        --color-secondary-button-border: rgb(255 255 255 / 1.0);
+        --color-secondary-button-hover-text: rgb(0, 0, 0);
+        --color-secondary-button-hover-background: rgba(209, 211, 216, 0.4);
+        --color-secondary-button-hover-border: rgb(255 255 255 / 1.0);
+        --color-input-background: rgb(255 255 255 / 1.0);
+        --color-input-text: rgb(51 51 51 / 1);
+        --color-input-text-rgb: 51 51 51;
+        --color-input-border: rgb(0 0 0 / 0.13);
+        --color-input-hover-background: rgb(250 250 250 / 1.0);
+        --color-variant-background: rgb(255 255 255 / 1.0);
+        --color-variant-border: rgb(230 230 230 / 1.0);
+        --color-variant-text: rgb(0 0 0 / 1.0);
+        --color-variant-text-rgb: 0 0 0;
+        --color-variant-hover-background: rgb(245 245 245 / 1.0);
+        --color-variant-hover-text: rgb(0 0 0 / 1.0);
+        --color-variant-hover-border: rgb(230 230 230 / 1.0);
+        --color-selected-variant-background: rgb(0 0 0 / 1.0);
+        --color-selected-variant-border: rgb(0 0 0 / 1.0);
+        --color-selected-variant-text: rgb(255 255 255 / 1.0);
+        --color-selected-variant-hover-background: rgb(26 26 26 / 1.0);
+        --color-selected-variant-hover-text: rgb(255 255 255 / 1.0);
+        --color-selected-variant-hover-border: rgb(26 26 26 / 1.0);
+
+
+        /*updated theme color values*/
+        --color-primary-darker-h: 250;
+        --color-primary-darker-s: 84%;
+        --color-primary-darker-l: 38%;
+        --color-primary-darker: hsl(var(--color-primary-darker-h), var(--color-primary-darker-s), var(--color-primary-darker-l));
+        --color-primary-dark-h: 250;
+        --color-primary-dark-s: 84%;
+        --color-primary-dark-l: 46%;
+        --color-primary-dark: hsl(var(--color-primary-dark-h), var(--color-primary-dark-s), var(--color-primary-dark-l));
+        --color-primary-h: 250;
+        --color-primary-s: 84%;
+        --color-primary-l: 54%;
+        --color-primary: hsl(var(--color-primary-h), var(--color-primary-s), var(--color-primary-l));
+        --color-primary-light-h: 250;
+        --color-primary-light-s: 84%;
+        --color-primary-light-l: 60%;
+        --color-primary-light: hsl(var(--color-primary-light-h), var(--color-primary-light-s), var(--color-primary-light-l));
+        --color-primary-lighter-h: 250;
+        --color-primary-lighter-s: 84%;
+        --color-primary-lighter-l: 67%;
+        --color-primary-lighter: hsl(var(--color-primary-lighter-h), var(--color-primary-lighter-s), var(--color-primary-lighter-l));
+        --color-accent-darker-h: 342;
+        --color-accent-darker-s: 89%;
+        --color-accent-darker-l: 38%;
+        --color-accent-darker: hsl(var(--color-accent-darker-h), var(--color-accent-darker-s), var(--color-accent-darker-l));
+        --color-accent-dark-h: 342;
+        --color-accent-dark-s: 89%;
+        --color-accent-dark-l: 43%;
+        --color-accent-dark: hsl(var(--color-accent-dark-h), var(--color-accent-dark-s), var(--color-accent-dark-l));
+        --color-accent-h: 342;
+        --color-accent-s: 89%;
+        --color-accent-l: 48%;
+        --color-accent: hsl(var(--color-accent-h), var(--color-accent-s), var(--color-accent-l));
+        --color-accent-light-h: 342;
+        --color-accent-light-s: 89%;
+        --color-accent-light-l: 56%;
+        --color-accent-light: hsl(var(--color-accent-light-h), var(--color-accent-light-s), var(--color-accent-light-l));
+        --color-accent-lighter-h: 342;
+        --color-accent-lighter-s: 89%;
+        --color-accent-lighter-l: 62%;
+        --color-accent-lighter: hsl(var(--color-accent-lighter-h), var(--color-accent-lighter-s), var(--color-accent-lighter-l));
+        --color-black-h: 230;
+        --color-black-s: 13%;
+        --color-black-l: 9%;
+        --color-black: hsl(var(--color-black-h), var(--color-black-s), var(--color-black-l));
+        --color-white-h: 0;
+        --color-white-s: 0%;
+        --color-white-l: 100%;
+        --color-white: hsl(var(--color-white-h), var(--color-white-s), var(--color-white-l));
+        --color-warning-darker-h: 35;
+        --color-warning-darker-s: 79%;
+        --color-warning-darker-l: 48%;
+        --color-warning-darker: hsl(var(--color-warning-darker-h), var(--color-warning-darker-s), var(--color-warning-darker-l));
+        --color-warning-dark-h: 35;
+        --color-warning-dark-s: 79%;
+        --color-warning-dark-l: 56%;
+        --color-warning-dark: hsl(var(--color-warning-dark-h), var(--color-warning-dark-s), var(--color-warning-dark-l));
+        --color-warning-h: 35;
+        --color-warning-s: 79%;
+        --color-warning-l: 66%;
+        --color-warning: hsl(var(--color-warning-h), var(--color-warning-s), var(--color-warning-l));
+        --color-warning-light-h: 35;
+        --color-warning-light-s: 79%;
+        --color-warning-light-l: 74%;
+        --color-warning-light: hsl(var(--color-warning-light-h), var(--color-warning-light-s), var(--color-warning-light-l));
+        --color-warning-lighter-h: 35;
+        --color-warning-lighter-s: 79%;
+        --color-warning-lighter-l: 82%;
+        --color-warning-lighter: hsl(var(--color-warning-lighter-h), var(--color-warning-lighter-s), var(--color-warning-lighter-l));
+        --color-success-darker-h: 170;
+        --color-success-darker-s: 78%;
+        --color-success-darker-l: 26%;
+        --color-success-darker: hsl(var(--color-success-darker-h), var(--color-success-darker-s), var(--color-success-darker-l));
+        --color-success-dark-h: 170;
+        --color-success-dark-s: 78%;
+        --color-success-dark-l: 31%;
+        --color-success-dark: hsl(var(--color-success-dark-h), var(--color-success-dark-s), var(--color-success-dark-l));
+        --color-success-h: 170;
+        --color-success-s: 78%;
+        --color-success-l: 36%;
+        --color-success: hsl(var(--color-success-h), var(--color-success-s), var(--color-success-l));
+        --color-success-light-h: 170;
+        --color-success-light-s: 78%;
+        --color-success-light-l: 42%;
+        --color-success-light: hsl(var(--color-success-light-h), var(--color-success-light-s), var(--color-success-light-l));
+        --color-success-lighter-h: 170;
+        --color-success-lighter-s: 78%;
+        --color-success-lighter-l: 47%;
+        --color-success-lighter: hsl(var(--color-success-lighter-h), var(--color-success-lighter-s), var(--color-success-lighter-l));
+        --color-error-darker-h: 342;
+        --color-error-darker-s: 89%;
+        --color-error-darker-l: 38%;
+        --color-error-darker: hsl(var(--color-error-darker-h), var(--color-error-darker-s), var(--color-error-darker-l));
+        --color-error-dark-h: 342;
+        --color-error-dark-s: 89%;
+        --color-error-dark-l: 43%;
+        --color-error-dark: hsl(var(--color-error-dark-h), var(--color-error-dark-s), var(--color-error-dark-l));
+        --color-error-h: 342;
+        --color-error-s: 89%;
+        --color-error-l: 48%;
+        --color-error: hsl(var(--color-error-h), var(--color-error-s), var(--color-error-l));
+        --color-error-light-h: 342;
+        --color-error-light-s: 89%;
+        --color-error-light-l: 56%;
+        --color-error-light: hsl(var(--color-error-light-h), var(--color-error-light-s), var(--color-error-light-l));
+        --color-error-lighter-h: 342;
+        --color-error-lighter-s: 89%;
+        --color-error-lighter-l: 62%;
+        --color-error-lighter: hsl(var(--color-error-lighter-h), var(--color-error-lighter-s), var(--color-error-lighter-l));
+        --color-bg-darker-h: 240;
+        --color-bg-darker-s: 4%;
+        --color-bg-darker-l: 90%;
+        --color-bg-darker: hsl(var(--color-bg-darker-h), var(--color-bg-darker-s), var(--color-bg-darker-l));
+        --color-bg-dark-h: 240;
+        --color-bg-dark-s: 4%;
+        --color-bg-dark-l: 95%;
+        --color-bg-dark: hsl(var(--color-bg-dark-h), var(--color-bg-dark-s), var(--color-bg-dark-l));
+        --color-bg-h: 0;
+        --color-bg-s: 0%;
+        --color-bg-l: 100%;
+        --color-bg: hsl(var(--color-bg-h), var(--color-bg-s), var(--color-bg-l));
+        --color-bg-light-h: 0;
+        --color-bg-light-s: 0%;
+        --color-bg-light-l: 100%;
+        --color-bg-light: hsl(var(--color-bg-light-h), var(--color-bg-light-s), var(--color-bg-light-l));
+        --color-bg-lighter-h: 0;
+        --color-bg-lighter-s: 0%;
+        --color-bg-lighter-l: 100%;
+        --color-bg-lighter: hsl(var(--color-bg-lighter-h), var(--color-bg-lighter-s), var(--color-bg-lighter-l));
+        --color-contrast-lower-h: 240;
+        --color-contrast-lower-s: 4%;
+        --color-contrast-lower-l: 85%;
+        --color-contrast-lower: hsl(var(--color-contrast-lower-h), var(--color-contrast-lower-s), var(--color-contrast-lower-l));
+        --color-contrast-low-h: 240;
+        --color-contrast-low-s: 4%;
+        --color-contrast-low-l: 65%;
+        --color-contrast-low: hsl(var(--color-contrast-low-h), var(--color-contrast-low-s), var(--color-contrast-low-l));
+        --color-contrast-medium-h: 225;
+        --color-contrast-medium-s: 4%;
+        --color-contrast-medium-l: 47%;
+        --color-contrast-medium: hsl(var(--color-contrast-medium-h), var(--color-contrast-medium-s), var(--color-contrast-medium-l));
+        --color-contrast-high-h: 230;
+        --color-contrast-high-s: 7%;
+        --color-contrast-high-l: 23%;
+        --color-contrast-high: hsl(var(--color-contrast-high-h), var(--color-contrast-high-s), var(--color-contrast-high-l));
+        --color-contrast-higher-h: 230;
+        --color-contrast-higher-s: 13%;
+        --color-contrast-higher-l: 9%;
+        --color-contrast-higher: hsl(var(--color-contrast-higher-h), var(--color-contrast-higher-s), var(--color-contrast-higher-l));
+
+    }
+
+    .color-scheme-2 {
+        --color-background: rgb(255 255 255 / 1.0);
+        --color-foreground: rgba(0, 0, 0);
+        --color-primary-button-text: rgb(255 255 255 / 1.0);
+        --color-primary-button-background: rgb(0 0 0 / 1.0);
+        --color-primary-button-border: rgb(0 0 0 / 1.0);
+        --color-primary-button-hover-text: rgb(255 255 255 / 1.0);
+        --color-primary-button-hover-background: rgb(51 51 51 / 1.0);
+        --color-primary-button-hover-border: rgb(0 0 0 / 1.0);
+        --color-secondary-button-text: rgb(0, 0, 0);
+        --color-secondary-button-background: rgb(0 0 0 / 0.0);
+        --color-secondary-button-border: rgb(0, 0, 0);
+
+        --color-secondary-button-hover-text: rgb(255, 255, 255);
+        --color-secondary-button-hover-background: rgb(27, 26, 26);
+        --color-secondary-button-hover-border: rgb(0, 0, 0);
+
+        --color-link-active: rgba(255, 0, 0, 0.8);
+        --color-foreground-heading: rgb(0, 0, 0);
+        --color-foreground-heading-rgb: 255 255 255;
+    }
+</style>

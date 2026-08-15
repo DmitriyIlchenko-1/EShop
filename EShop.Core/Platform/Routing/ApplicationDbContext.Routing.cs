@@ -1,5 +1,3 @@
-using EShop.Core.Content.Media.Domain;
-using EShop.Core.Content.Widgets.Domain;
 using EShop.Core.Platform.Routing.Domain;
 using Microsoft.EntityFrameworkCore;
 

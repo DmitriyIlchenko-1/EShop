@@ -19,6 +19,7 @@ public class GoogleAuthenticationStartup : IExternalAuthenticationSetup
             options =>
             {
                 var settings = EngineContext.Current.Resolve<GoogleExternalAuthSettings>();
+
                 options.ClientId = settings.ClientId;
                 options.ClientSecret = settings.ClientSecret;
 
@@ -37,7 +38,10 @@ public class GoogleAuthenticationStartup : IExternalAuthenticationSetup
                         if (context.Failure != null)
                         {
                             var errorType = context.Failure.Data.Contains("error")
-                                ? context.Failure.Data["error"].ToString() : null;
+                                ? context
+                                    .Failure.Data["error"]
+                                    .ToString()
+                                : null;
                             if (!errorType.IsEmpty())
                             {
                                 errorUrl += $"&errorType={Uri.EscapeDataString(errorType)}";
@@ -47,8 +51,8 @@ public class GoogleAuthenticationStartup : IExternalAuthenticationSetup
                             {
                                 errorUrl += $"&error={Uri.EscapeDataString(context.Failure.Message)}";
                             }
-                            
                         }
+
                         context.Response.Redirect(errorUrl);
                         return Task.CompletedTask;
                     }

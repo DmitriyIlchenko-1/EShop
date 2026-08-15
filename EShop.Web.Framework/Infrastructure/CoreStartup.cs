@@ -7,7 +7,6 @@ using EShop.Core.Catalog.Products.Services;
 using EShop.Core.Checkout.Orders.Services;
 using EShop.Core.Common.Services;
 using EShop.Core.Content.Media.Services;
-using EShop.Core.Content.Widgets.Services;
 using EShop.Core.Data;
 using EShop.Core.Data.Brands.Services;
 using EShop.Core.Data.Cart.Services;
@@ -51,8 +50,6 @@ public class CoreStartup : BaseStartup
     
     public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IJsonSerializer, NewtonsoftJsonSerializer>();
-        services.AddScoped<IWidgetInstanceService, WidgetInstanceService>();
         services.AddScoped<IMediaStorageProvider, FileMediaStorageProvider>();
         services.AddScoped<IMediaService, MediaService>();
         services.AddSingleton<ICurrencyService, CurrencyService>();
@@ -122,6 +119,8 @@ public class CoreStartup : BaseStartup
 
 
         services.AddScoped<SlugRouteValueTransformer>();
+        
+        services.AddResources();
     }
 
     public override void ConfigureContainer(ContainerBuilder builder, IApplicationContext applicationContext)

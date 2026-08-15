@@ -132,37 +132,6 @@ namespace EShop.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Content_Widget",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    CreateUrl = table.Column<string>(type: "text", nullable: true),
-                    EditUrl = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    IsPublished = table.Column<bool>(type: "boolean", nullable: false),
-                    ViewComponentName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Content_Widget", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Content_WidgetZone",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Content_WidgetZone", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Platform_ActivityLog",
                 columns: table => new
                 {
@@ -449,40 +418,6 @@ namespace EShop.Web.Migrations
                         principalTable: "Content_MediaFile",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Content_WidgetInstance",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    Data = table.Column<string>(type: "text", nullable: true),
-                    HtmlData = table.Column<string>(type: "text", nullable: true),
-                    DisplayOrder = table.Column<byte>(type: "smallint", nullable: false),
-                    CreateOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LatestUpdatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    PublishEndUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    PublishStartUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    WidgetId = table.Column<string>(type: "text", nullable: true),
-                    WidgetZoneId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Content_WidgetInstance", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Content_WidgetInstance_Content_WidgetZone_WidgetZoneId",
-                        column: x => x.WidgetZoneId,
-                        principalTable: "Content_WidgetZone",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Content_WidgetInstance_Content_Widget_WidgetId",
-                        column: x => x.WidgetId,
-                        principalTable: "Content_Widget",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1351,16 +1286,6 @@ namespace EShop.Web.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Content_WidgetInstance_WidgetId",
-                table: "Content_WidgetInstance",
-                column: "WidgetId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Content_WidgetInstance_WidgetZoneId",
-                table: "Content_WidgetInstance",
-                column: "WidgetZoneId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Data_ShoppingCartItem_ProductId",
                 table: "Data_ShoppingCartItem",
                 column: "ProductId");
@@ -1448,9 +1373,6 @@ namespace EShop.Web.Migrations
                 name: "Content_ProductMedia");
 
             migrationBuilder.DropTable(
-                name: "Content_WidgetInstance");
-
-            migrationBuilder.DropTable(
                 name: "Data_ShoppingCartItem");
 
             migrationBuilder.DropTable(
@@ -1506,12 +1428,6 @@ namespace EShop.Web.Migrations
 
             migrationBuilder.DropTable(
                 name: "Common_Label");
-
-            migrationBuilder.DropTable(
-                name: "Content_WidgetZone");
-
-            migrationBuilder.DropTable(
-                name: "Content_Widget");
 
             migrationBuilder.DropTable(
                 name: "Catalog_Category");

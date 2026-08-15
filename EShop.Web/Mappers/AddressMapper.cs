@@ -1,6 +1,6 @@
+ 
+
 using EShop.Core.Common.Domain;
-using EShop.Core.Common.Services;
-using EShop.Core.Platform.Common;
 using EShop.Web.Models.Checkout;
 using Riok.Mapperly.Abstractions;
 
