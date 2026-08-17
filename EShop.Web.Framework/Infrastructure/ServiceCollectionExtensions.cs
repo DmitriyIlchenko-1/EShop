@@ -3,6 +3,7 @@ using EasyCaching.InMemory;
 using EShop.Core.Platform.Caching;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Caching.Adapters.EasyCaching;
+using EShop.Infrastructure.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrchardCore.ResourceManagement;
@@ -40,11 +41,14 @@ public static class ServiceCollectionExtensions
                 },
                 CachingConstValue.MemoryCacheName);
 
-
-            var storageConfig = configuration
+            var redisConfig = configuration
                 .GetSection("Redis")
                 .Get<DistributedCacheSettings>();
-
+            
+            if (!redisConfig.Port.HasValue || redisConfig.Host.IsEmpty())
+            {
+                return;
+            }
             options.WithJson(CachingConstValue.DistributedCache);
             options.UseInMemory(
                 config =>
@@ -59,12 +63,12 @@ public static class ServiceCollectionExtensions
             options.UseRedis(conf =>
                 {
                     conf.DBConfig.ConnectionTimeout = 10_000;
-                    conf.DBConfig.Username = storageConfig.Username;
-                    conf.DBConfig.Password = storageConfig.Password;
+                    conf.DBConfig.Username = redisConfig.Username;
+                    conf.DBConfig.Password = redisConfig.Password;
                     conf.DBConfig.Endpoints.Add(new ServerEndPoint
                     {
-                        Host = storageConfig.Host,
-                        Port = storageConfig.Port
+                        Host = redisConfig.Host,
+                        Port = redisConfig.Port.Value
                     });
                 },
                 CachingConstValue.DistributedCache);

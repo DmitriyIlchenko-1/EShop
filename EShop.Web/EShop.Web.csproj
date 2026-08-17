@@ -3,6 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>4ff4e5c3-3891-4461-a13a-95c915b2c4dc</UserSecretsId>
+
     </PropertyGroup>
 
     <PropertyGroup>
@@ -20,11 +22,15 @@
 
     <ItemGroup>
         <ProjectReference Include="..\EShop.Core\EShop.Core.csproj"/>
-        <ProjectReference Include="..\EShop.ExternalAuth.Google\EShop.ExternalAuth.Google.csproj" />
         <ProjectReference Include="..\EShop.Infrastructure\EShop.Infrastructure.csproj"/>
         <ProjectReference Include="..\EShop.Web.Framework\EShop.Web.Framework.csproj"/>
 
-
+        
+        
+        
+        <!-- This is a temporary measure until I start loading the libraries of the modules into the app domain, which is when I remove this reference-->
+        <ProjectReference Include="..\EShop.ExternalAuth.Google\EShop.ExternalAuth.Google.csproj" />
+        
     </ItemGroup>
 
     <ItemGroup>

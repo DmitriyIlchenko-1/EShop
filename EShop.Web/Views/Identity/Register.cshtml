@@ -57,7 +57,7 @@
             <span class="text-xs" asp-validation-for="Email"></span>
         </div>
     </fieldset>
-    <fieldset class="field-group">
+    <fieldset class="field-group mt-lg">
         <legend class="field-group__label">Your password</legend>
         <div class="mt-md">
             <password-input-component class="password-input field field--text">
@@ -112,9 +112,7 @@
             <span class="text-xs" asp-validation-for="ConfirmPassword"></span>
         </div>
     </fieldset>
-
-
-    <fieldset class="field-group">
+    <fieldset class="field-group mt-lg">
         <legend class="field-group__label">Additional details</legend>
 
         <fieldset eh-if="Model.GenderEnabled" class="radio-group radio-group--col">
@@ -129,7 +127,6 @@
             </div>
         </fieldset>
     </fieldset>
-
     <button class="block mt-8 button mx-auto">Create</button>
     <span class="block fit-width mx-auto mt-5 text-sm">
         Have an account?
