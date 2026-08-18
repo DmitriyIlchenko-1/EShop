@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using EShop.Infrastructure.Engine;
+using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
 using MailKit.Net.Smtp;
 using MimeKit;
@@ -19,17 +20,21 @@ public class DefaultEmailService : IEmailService
 
     public virtual async Task<ISmtpClient> ConnectAsync()
     {
-        var smtpClient = new SmtpClient();
         var mConfig = _app.Configuration.Mail;
+        if (mConfig.Host.IsEmpty() || !mConfig.Port.HasValue)
+        {
+            throw new EmailException("Invalid email configuration");
+        }
+
+        var smtpClient = new SmtpClient();
         var client = new MailKitSmtpClient(smtpClient,
             new MailAccount()
             {
                 Host = mConfig.Host,
-                Port = mConfig.Port,
+                Port = mConfig.Port.Value,
                 Username = mConfig.Username,
                 Password = mConfig.Password,
-                SecureMailOptions = mConfig.SecureMailOptions,
-               
+                SecureMailOptions = mConfig.SecureMailOptions ?? SecureMailOptions.Auto,
             });
         await client.ConnectAsync();
         return client;

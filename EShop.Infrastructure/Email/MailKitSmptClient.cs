@@ -31,7 +31,7 @@ public class MailKitSmtpClient : Disposable, ISmtpClient
         catch (Exception e)
         {
             _client.Dispose();
-            throw new InvalidOperationException(e.Message, e);
+            throw new EmailException(e.Message, e);
         }
     }
 
