@@ -588,8 +588,8 @@ namespace EShop.Web.Migrations
                     b.Property<decimal>("Height")
                         .HasColumnType("numeric");
 
-                    b.Property<bool>("HomePageDisplayOrder")
-                        .HasColumnType("boolean");
+                    b.Property<int>("HomePageDisplayOrder")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("boolean");

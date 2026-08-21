@@ -10,7 +10,7 @@ using EShop.Core.Content.Media.Domain;
 using EShop.Infrastructure.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
+using Microsoft.EntityFrameworkCore.Infrastructure;
 namespace EShop.Core.Catalog.Products.Domain;
 
 internal class ProductMap : IEntityTypeConfiguration<Product>
@@ -109,7 +109,7 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IMerg
 
 
     public bool ShowOnHomePage { get; set; }
-    public bool HomePageDisplayOrder { get; set; }
+    public int HomePageDisplayOrder { get; set; }
 
     public bool IsVisibleIndividually { get; set; }
     public bool IsShippingEnabled { get; set; }
@@ -189,7 +189,13 @@ public class Product : BaseEntity, IAuditableEntity, ISoftDeletableEntity, IMerg
 
     public ICollection<ProductVariantAttributeCombination> ProductVariantAttributeCombinations { get; set; }
 
-    public ICollection<ProductVariantAttribute> ProductVariantAttributes { get; set; }
+    private ICollection<ProductVariantAttribute> _productVariantAttributes;
+
+    public ICollection<ProductVariantAttribute> ProductVariantAttributes
+    {
+        get => _productVariantAttributes ?? LazyLoader.Load(this, ref _productVariantAttributes) ?? (_productVariantAttributes ??= new HashSet<ProductVariantAttribute>());
+        set => _productVariantAttributes = value;
+    }
     public ICollection<Label> Labels { get; set; } = [];
     public ICollection<Discount> AppliedDiscounts { get; set; } = [];
 

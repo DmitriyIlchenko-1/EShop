@@ -20,6 +20,7 @@ public class ShoppingCart
     {
         return Items.Select(x => x.Quantity).Sum();
     }
+   
     public override int GetHashCode()
     {
         return HashCodeCombiner

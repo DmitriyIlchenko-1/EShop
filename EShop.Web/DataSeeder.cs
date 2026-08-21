@@ -44,6 +44,7 @@ public class DataSeeder
 
     public async Task SeedDataAsync()
     {
+        
         bool needsSeeding = false;
         if (await _dbContext.Database.EnsureCreatedAsync() || (_dbContext.Database.HasPendingModelChanges() ||
                                                                (await _dbContext.Database
@@ -263,7 +264,7 @@ public class DataSeeder
                 {
                     //Admin123-
                     Username = "admin123",
-                    Email = "cortezz1ty@gmail.com",
+                    Email = "admin@gmail.com",
                     FirstName = "John",
                     LastName = "Doe",
                     CreatedOnUtc = DateTime.UtcNow,
@@ -427,7 +428,7 @@ public class DataSeeder
                 var approvedRatingSum = approvedReviewCount == 0
                     ? 0
                     : Random.Shared.Next(approvedReviewCount, approvedReviewCount * 5);
-                products.Add(new Product
+                var product = new Product
                 {
                     Name = productName,
                     Description = description,
@@ -437,8 +438,9 @@ public class DataSeeder
                     Sku = $"SKU-{i.ToString().PadLeft(3, '0')}",
                     IsAvailable = true,
                     IsPublished = true,
-                    ShowOnHomePage = true,
-                    AttributeCombinationRequired = Random.Shared.Next() % 2 == 0,
+                    HomePageDisplayOrder = i,
+                    ShowOnHomePage = i < 20,
+                    AttributeCombinationRequired = i > 9 && Random.Shared.Next() % 2 == 0,
                     DisplayStockQuantity = true,
                     ApprovedReviewCount = approvedReviewCount,
                     ApprovedRatingSum = approvedRatingSum,
@@ -464,7 +466,11 @@ public class DataSeeder
                     IsShippingEnabled = true,
                     QuantityUnitId = 1,
                     Gtin = $"GTIN-{i.ToString().PadLeft(3, '0')}"
-                });
+                };
+                
+                Console.WriteLine(i > 10 && Random.Shared.Next() % 2 == 0);
+                Console.WriteLine(product.AttributeCombinationRequired);
+                products.Add(product);
             }
 
             //Image mapping
@@ -483,7 +489,8 @@ public class DataSeeder
                 var mediaFile = new MediaFile()
                 {
                     FileName = imageName,
-                    MediaType = ".jpg"
+                    MediaType = ".jpg",
+                    Width = 1000
                 };
                 imageModels.Add(mediaFile);
             }
@@ -879,8 +886,8 @@ public class DataSeeder
                 {
                     ProductAttributeOptionsSetId = attributeOptionsSets.First(aos => aos.Name == "Color Options")
                         .Id,
-                    Name = "Red", Alias = "Red",
-                    Color = "linear-gradient(to bottom right, #ff6db7, #ff6db7 50%, #75e6ff 50%, #75e6ff)",
+                    Name = "Green", Alias = "Green",
+                    Color = "#14d540",
                     PriceAdjustment = 10, WeightAdjustment = 1,
                     DisplayOrder = 1
                 },
@@ -888,8 +895,8 @@ public class DataSeeder
                 {
                     ProductAttributeOptionsSetId = attributeOptionsSets.First(aos => aos.Name == "Color Options")
                         .Id,
-                    Name = "Blue", Alias = "Blue",
-                    Color = "linear-gradient(to bottom right, #ff6db7, #ff6db7 50%, #75e6ff 50%, #75e6ff)",
+                    Name = "Red", Alias = "Red",
+                    Color = "#d51414",
                     PriceAdjustment = 0, WeightAdjustment = 0,
                     DisplayOrder = 2
                 },
@@ -897,8 +904,26 @@ public class DataSeeder
                 {
                     ProductAttributeOptionsSetId = attributeOptionsSets.First(aos => aos.Name == "Color Options")
                         .Id,
-                    Name = "Green", Alias = "Green",
-                    Color = "linear-gradient(to bottom right, black, blue 50%, red 50%, pink)", PriceAdjustment = 5,
+                    Name = "Pink", Alias = "Pink",
+                    Color = "#eb76b7", PriceAdjustment = 5,
+                    WeightAdjustment = 0.5m,
+                    DisplayOrder = 3
+                },
+                new ProductAttributeOption
+                {
+                    ProductAttributeOptionsSetId = attributeOptionsSets.First(aos => aos.Name == "Color Options")
+                        .Id,
+                    Name = "Yellow", Alias = "Yellow",
+                    Color = "#f5ed05", PriceAdjustment = 5,
+                    WeightAdjustment = 0.5m,
+                    DisplayOrder = 3
+                },
+                new ProductAttributeOption
+                {
+                    ProductAttributeOptionsSetId = attributeOptionsSets.First(aos => aos.Name == "Color Options")
+                        .Id,
+                    Name = "Purpule", Alias = "Purpule",
+                    Color = "#8d1fd1", PriceAdjustment = 5,
                     WeightAdjustment = 0.5m,
                     DisplayOrder = 3
                 },
@@ -984,29 +1009,32 @@ public class DataSeeder
             var productAttributes = _dbContext.ProductAttributes.ToList();
 
             // Assign attributes to products (including Color)
-            foreach (var product in products)
-            {
-                var numAttributes = 2; // Randomly assign between 3 and 5 attributes
-                var selectedAttributes = productAttributes
-                    .OrderBy(x => Guid.NewGuid())
-                    .Take(numAttributes)
-                    .ToList(); // Get unique options
-
-                foreach (var attribute in selectedAttributes)
+             
+                for (int i = 0; i < products.Count; i++)
                 {
-                    _dbContext.ProductVariantAttributes.Add(new ProductVariantAttribute
+                    var numAttributes = 2; // Randomly assign between 3 and 5 attributes
+                    var selectedAttributes = productAttributes
+                        .OrderBy(x => Guid.NewGuid())
+                        .Take(numAttributes)
+                        .ToList(); // Get unique options
+
+                    foreach (var attribute in selectedAttributes)
                     {
-                        ProductId = product.Id,
-                        ProductAttributeId = attribute.Id,
-                        DisplayOrder = new Random().Next(1, 4),
-                        IsRequired = new Random().Next() % 2 == 0,
-                        IsActive = true,
-                        AttributeControlType = attribute.Name == "Color"
-                            ? AttributeControlType.Swatch
-                            : AttributeControlType.RadioButtonPills, //Randomly choose the control type
-                    });
+                        _dbContext.ProductVariantAttributes.Add(new ProductVariantAttribute
+                        {
+                            ProductId = products[i].Id,
+                            ProductAttributeId = attribute.Id,
+                            DisplayOrder = new Random().Next(1, 4),
+                            IsRequired = i > 9,
+                            IsActive = true,
+                            AttributeControlType = attribute.Name == "Color"
+                                ? AttributeControlType.Swatch
+                                : AttributeControlType.RadioButtonPills, //Randomly choose the control type
+                        });
+                    }
                 }
-            }
+                
+           
 
             await _dbContext.SaveChangesAsync();
 
@@ -1074,21 +1102,20 @@ public class DataSeeder
             var rawAttributes = new List<string>();
 
             var allValues = productVariantAttributeList.Select(x => x.ProductVariantAttributeValues);
-            var result = CrossProduct(allValues);
-            int count2 = 0;
-            foreach (var pair in result)
+            var result = CrossProduct(allValues).ToArray();
+            
+            for (var i = 0; i < result.Length; i++)
             {
-                count2++;
                 var combination = new ProductVariantAttributeCombination
                 {
                     ProductId = product.Id,
-                    IsActive = Random.Shared.Next(0, 5) != 0,
+                    IsActive = i < 5,
                     Price = product.Price, // Start with product's base price
                     Weight = product.Weight, // Start with product's base weight
-                    StockQuantity = count2 < 4 ? 0 : (count2 < 7 ? 15 : Random.Shared.Next(20, 300))
+                    StockQuantity = i < 4 ? Random.Shared.Next(20, 300) : 0
                 };
                 var selection = new ProductVariantAttributeSelection();
-                foreach (var value in pair)
+                foreach (var value in result[i])
                 {
                     selection.AddAttribute(value.ProductVariantAttributeId, value.Id);
                 }
@@ -1098,6 +1125,7 @@ public class DataSeeder
                 combination.Weight = decimal.Round(Random.Shared.NextDecimal(10, 900), 4);
                 _dbContext.ProductVariantAttributeCombinations.Add(combination);
             }
+            
         }
 
         await _dbContext.SaveChangesAsync();
@@ -1118,12 +1146,54 @@ public class DataSeeder
             {
                 new Category
                 {
-                    Name = "Electronics", DisplayOrder = 1, Description = "Electronics category", IsPublished = true
+                    Name = "Laptops", DisplayOrder = 1, Description = "Laptop category", IsPublished = true, ShowOnHomePage = true,
+                    MediaFile = new MediaFile()
+                    {
+                        FileName = "laptop-category.jpg",
+                        MimeType = ".jpeg",
+                        Width = 1000
+                    }
                 },
                 new Category
-                    { Name = "Clothing", DisplayOrder = 2, Description = "Clothing category", IsPublished = true },
+                {
+                    Name = "Printers", DisplayOrder = 1, Description = "Printer category", IsPublished = true, ShowOnHomePage = true,
+                    MediaFile = new MediaFile()
+                    {
+                        FileName = "printer-category.jpg",
+                        MimeType = ".jpeg",
+                        Width = 1000
+                    }
+                },
                 new Category
-                    { Name = "Books", DisplayOrder = 3, Description = "Books category", IsPublished = true }
+                {
+                    Name = "Apple products", DisplayOrder = 1, Description = "Apple product category", IsPublished = true, ShowOnHomePage = true,
+                    MediaFile = new MediaFile()
+                    {
+                        FileName = "apple-products.jpg",
+                        MimeType = ".jpeg",
+                        Width = 1000
+                    }
+                },
+                new Category
+                {
+                    Name = "Clothing", DisplayOrder = 2, Description = "Clothing category", IsPublished = true , ShowOnHomePage = true,
+                    MediaFile = new MediaFile()
+                    {
+                        FileName = "clothing-category.jpg",
+                        MimeType = ".jpeg",
+                        Width = 1000
+                    }
+                },
+                new Category
+                {
+                    Name = "Books", DisplayOrder = 3, Description = "Books category", IsPublished = true , ShowOnHomePage = true,
+                    MediaFile = new MediaFile()
+                    {
+                        FileName = "book-category.jpg",
+                        MimeType = ".jpeg",
+                        Width = 1000
+                    }
+                }
             };
 
             //DISCOUNTS

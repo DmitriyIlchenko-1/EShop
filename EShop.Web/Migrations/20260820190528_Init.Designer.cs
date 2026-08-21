@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EShop.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260815102758_init")]
-    partial class init
+    [Migration("20260820190528_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -591,8 +591,8 @@ namespace EShop.Web.Migrations
                     b.Property<decimal>("Height")
                         .HasColumnType("numeric");
 
-                    b.Property<bool>("HomePageDisplayOrder")
-                        .HasColumnType("boolean");
+                    b.Property<int>("HomePageDisplayOrder")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("boolean");

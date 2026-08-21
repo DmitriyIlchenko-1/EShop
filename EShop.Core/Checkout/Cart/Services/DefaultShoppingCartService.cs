@@ -9,6 +9,7 @@ using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Identity.Domain;
 using EShop.Infrastructure.Caching;
 using EShop.Infrastructure.Data;
+using EShop.Infrastructure.Extensions;
 using EShop.Infrastructure.Utilities;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,7 @@ public interface IShoppingCartService
     Task RemoveCartItemAsync(ShoppingCartItem cartItem);
     Task<int> GetUserCartItemCountAsync(User user = null);
     Task<ShoppingCart> GetUserCartAsync(User? user = null);
+    Task<bool> MigrateCartAsync(User migrateFrom, User migrateTo);
     Task<ICollection<string>> ValidateShoppingCartAsync(ShoppingCart shoppingCart);
 
     Task<ICollection<string>> ValidateShoppingCartItemAsync(ShoppingCartItem shoppingCartItem,
@@ -62,7 +64,8 @@ public class DefaultShoppingCartService : IShoppingCartService
         var quantity = ctx.Quantity;
         var query = ctx.VariantQuery;
         var product = ctx.Product;
-        var userCart = await GetUserCartAsync();
+        var user = ctx.User ?? _workContext.CurrentUser;
+        var userCart = await GetUserCartAsync(user);
         var errors = await ValidateShoppingCartAsync(userCart);
         if (quantity < 1)
         {
@@ -77,7 +80,7 @@ public class DefaultShoppingCartService : IShoppingCartService
 
        
         var selection =
-            _attributeMaterializer.CreateAttributeSelection(query, product.ProductVariantAttributes, product.Id);
+           ctx.Selection ?? _attributeMaterializer.CreateAttributeSelection(query, product.ProductVariantAttributes, product.Id);
 
         if (selection.IsEmpty() && (product.AttributeCombinationRequired ||
                                     product.ProductVariantAttributes.Any(x => x.IsRequired)))
@@ -142,7 +145,7 @@ public class DefaultShoppingCartService : IShoppingCartService
 
 
         // combination can be null at this point if product doesn't have any
-        errors = await ValidateShoppingCartItemAsync(item,combination);
+        errors = await ValidateShoppingCartItemAsync(item, combination);
         if (errors.Any())
         {
             return (errors, false);
@@ -155,7 +158,7 @@ public class DefaultShoppingCartService : IShoppingCartService
         {
             userCart.User.ShoppingCartItems.Add(item);
         }
-        
+
         await _db.SaveChangesAsync();
         return (warnings, true);
     }
@@ -185,7 +188,8 @@ public class DefaultShoppingCartService : IShoppingCartService
         }
 
         int stockQuantity = product.StockQuantity;
-        var combination = await _attributeMaterializer.FindAttributeCombinationAsync(item.ProductId, item.AttributeSelection);
+        var combination =
+            await _attributeMaterializer.FindAttributeCombinationAsync(item.ProductId, item.AttributeSelection);
         if (product.AttributeCombinationRequired)
         {
             stockQuantity = combination.StockQuantity;
@@ -196,7 +200,7 @@ public class DefaultShoppingCartService : IShoppingCartService
             (stockQuantity != 0 && stockQuantity > product.MaxAddToCartNumber)
                 ? product.MaxAddToCartNumber
                 : stockQuantity;
-        
+
         if (newQuantity < product.MinAddToCartNumber)
         {
             item.Quantity = product.MinAddToCartNumber;
@@ -281,6 +285,30 @@ public class DefaultShoppingCartService : IShoppingCartService
         return cart;
     }
 
+    public async Task<bool> MigrateCartAsync(User migrateFrom, User migrateTo)
+    {
+        Guard.NotNull(migrateFrom);
+        Guard.NotNull(migrateTo);
+        var migrateFromCart = await GetUserCartAsync(migrateFrom);
+        if (migrateFromCart.GetCount() == 0)
+        {
+            return false;
+        }
+        
+        foreach (var item in migrateFromCart.Items)
+        {
+            var copiedItem = new AddToCartContext(item)
+            {
+                User = migrateTo
+            };
+            await AddProductToCart(copiedItem);
+        }
+
+        await ResetCartAsync(migrateFromCart);
+
+        return true;
+    }
+
     public virtual Task<ICollection<string>> ValidateShoppingCartAsync(ShoppingCart shoppingCart)
     {
         Guard.NotNull(shoppingCart);
@@ -336,7 +364,7 @@ public class DefaultShoppingCartService : IShoppingCartService
                 errors.Add($"Stock quantity is not big enough to reach the minimum order amount for this product");
             }
         }
-         
+
         return errors;
     }
 
@@ -357,7 +385,21 @@ public class DefaultShoppingCartService : IShoppingCartService
 
 public class AddToCartContext
 {
+    public AddToCartContext(ShoppingCartItem item)
+    {
+        Product = item.Product;
+        Quantity = item.Quantity;
+        Selection = item.AttributeSelection;
+        VariantQuery =  ProductVariantQuery.Empty;
+    }
+
+    public AddToCartContext()
+    {
+    }
+
+    public User User { get; set; }
     public Product Product { get; set; }
     public int Quantity { get; set; }
     public ProductVariantQuery VariantQuery { get; set; }
+    public ProductVariantAttributeSelection Selection { get; set; }
 }

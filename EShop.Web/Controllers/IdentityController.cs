@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Claims;
 using EShop.Core.Data;
+using EShop.Core.Data.Cart.Services;
 using EShop.Core.Data.Extensions;
 using EShop.Core.Platform.Common;
 using EShop.Core.Platform.Identity.Configuration;
@@ -19,6 +20,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace EShop.Web.Controllers;
@@ -45,13 +47,13 @@ public class IdentityController : EShopBaseController
     private readonly ApplicationDbContext _dbContext;
     private readonly UserSettings _userSettings;
     private readonly IEmailService _emailService;
+    private readonly IShoppingCartService _shoppingCartService;
     
 
 
     public IdentityController(SignInManager<User> signInManager, UserManager<User> userManager,
         IWorkContext workContext, IActivityLogger activityLogger, INotificationManager notifyManager,
-        ApplicationDbContext dbContext, UserSettings userSettings, IEmailService emailService
-        )
+        ApplicationDbContext dbContext, UserSettings userSettings, IEmailService emailService, IShoppingCartService shoppingCartService)
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -61,7 +63,7 @@ public class IdentityController : EShopBaseController
         _dbContext = dbContext;
         _userSettings = userSettings;
         _emailService = emailService;
-       
+        _shoppingCartService = shoppingCartService;
     }
 
 
@@ -244,6 +246,7 @@ public class IdentityController : EShopBaseController
 
             if (user != null)
             {
+                var guest = _workContext.CurrentUser;
                 var logInResult = await _signInManager.PasswordSignInAsync(user,
                     loginModel.Password,
                     loginModel.RememberMe,
@@ -251,7 +254,7 @@ public class IdentityController : EShopBaseController
 
                 if (logInResult.Succeeded)
                 {
-                    await FinalizeUserLoginAsync(_workContext.CurrentUser, user);
+                    await FinalizeUserLoginAsync(guest, user);
                     return RedirectToLocal(returnUrl);
                 }
                 else
@@ -317,6 +320,7 @@ public class IdentityController : EShopBaseController
         ExternalLoginInfo externalLoginInfo = await _signInManager.GetExternalLoginInfoAsync();
         if (externalLoginInfo != null)
         {
+            
             User user =
                 await _userManager.FindByLoginAsync(externalLoginInfo.LoginProvider, externalLoginInfo.ProviderKey);
 
@@ -344,6 +348,7 @@ public class IdentityController : EShopBaseController
                 }
             }
 
+            var guest = _workContext.CurrentUser;
             //TODO: Do we need to bypass Two Factor? 
             var signInResult = await _signInManager.ExternalLoginSignInAsync(externalLoginInfo.LoginProvider,
                 externalLoginInfo.ProviderKey,
@@ -352,7 +357,7 @@ public class IdentityController : EShopBaseController
 
             if (signInResult.Succeeded)
             {
-                await FinalizeUserLoginAsync(_workContext.CurrentUser, user);
+                await FinalizeUserLoginAsync(guest, user);
                 return RedirectToLocal(returnUrl);
             }
             else if (signInResult.RequiresTwoFactor)
@@ -423,8 +428,9 @@ public class IdentityController : EShopBaseController
                 result = await _userManager.AddLoginAsync(user, info);
                 if (result.Succeeded)
                 {
+                    var guest = _workContext.CurrentUser;
                     await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, true);
-                    await FinalizeUserLoginAsync(_workContext.CurrentUser, user);
+                    await FinalizeUserLoginAsync(guest, user);
                     return await FinalizeUserRegistrationAsync(user, returnUrl);
                 }
             }
@@ -627,12 +633,11 @@ public class IdentityController : EShopBaseController
         }
     }
 
+    
 
     private async Task FinalizeUserLoginAsync(User guest, User user)
     {
-        //TODO:   await MigrateFromGuestAsync(_workContext.CurrentUser, user);
-        //TODO: fire an event;
-
+        await _shoppingCartService.MigrateCartAsync(guest, user);
         ExternalLoginInfo? externalLoginInfo = await _signInManager.GetExternalLoginInfoAsync();
         if (externalLoginInfo != null)
         {

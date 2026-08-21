@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EShop.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -535,7 +535,7 @@ namespace EShop.Web.Migrations
                     Gtin = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
                     HasOptions = table.Column<bool>(type: "boolean", nullable: false),
                     ShowOnHomePage = table.Column<bool>(type: "boolean", nullable: false),
-                    HomePageDisplayOrder = table.Column<bool>(type: "boolean", nullable: false),
+                    HomePageDisplayOrder = table.Column<int>(type: "integer", nullable: false),
                     IsVisibleIndividually = table.Column<bool>(type: "boolean", nullable: false),
                     IsShippingEnabled = table.Column<bool>(type: "boolean", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
